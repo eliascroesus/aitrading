@@ -25,8 +25,8 @@ fetch() {  # fetch <dest> <url>...   the first URL that answers wins
 }
 
 fetch "$RAW/sp500_pit_membership.csv" \
-  "https://raw.githubusercontent.com/fja05680/sp500/master/S%26P%20500%20Historical%20Components%20%26%20Changes(08-01-2025).csv" \
-  "https://raw.githubusercontent.com/hanshof/sp500_constituents/main/sp_500_historical_components.csv"
+  "https://raw.githubusercontent.com/hanshof/sp500_constituents/main/sp_500_historical_components.csv" \
+  "https://raw.githubusercontent.com/fja05680/sp500/master/S%26P%20500%20Historical%20Components%20%26%20Changes(08-01-2025).csv"
 fetch "$RAW/sp500_constituents.csv" \
   "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv"
 fetch "$RAW/vix-daily.csv" \
