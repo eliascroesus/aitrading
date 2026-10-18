@@ -161,6 +161,18 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
         except SystemDeadError as exc:
             log.warning("shadow portfolio is dead: %s", exc)
 
+    # --- hive children (paper portfolios with their own overrides/sleeves) ----------------
+    try:
+        from hive.hive.children import run_children
+
+        children = run_children(settings, cfg, run_date, store=store, classes=classes, universe=universe,
+                                kill=kill, parent_equity=primary.equity_gross,
+                                price_fn_factory=lambda cls, t: latest_close_fn(store, cls, t))
+        if children:
+            journal.write("children", {"children": children})
+    except Exception as exc:  # never let the hive take the primary down
+        log.exception("children run failed: %s", exc)
+
     benchmarks: dict[str, float] = {}
     marks = ledger.equity_marks()
     start_mark = marks[0] if marks else None

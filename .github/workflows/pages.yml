@@ -1,0 +1,32 @@
+name: dashboard-pages
+
+# Publishes reports/dashboard (built by the daily run) to GitHub Pages.
+# Enable Pages with "GitHub Actions" as the source in the repository settings.
+on:
+  push:
+    paths: ["reports/dashboard/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports/dashboard
+      - id: deployment
+        uses: actions/deploy-pages@v4

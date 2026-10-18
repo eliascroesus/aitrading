@@ -198,3 +198,33 @@ regime_crypto_symbol = "BTC"
 min_price_usd = 5.0
 min_history_bars = 300
 max_candidates_for_llm = 8
+
+[operator]
+enabled = true
+max_variants_per_iteration = 3
+insample_start = "2001-01-01"
+insample_end = "2012-12-31"
+outofsample_start = "2013-01-01"
+max_drawdown_tolerance = 1.10
+auto_promote = false
+bounds_file = "config/bounds.toml"
+
+[meme]
+enabled = false
+chain = "solana"
+min_age_hours = 72.0
+min_liquidity_usd = 250000.0
+min_volume_24h_usd = 1000000.0
+max_24h_change_pct = -15.0
+min_6h_change_pct = 0.0
+min_1h_change_pct = 0.0
+require_rugcheck = true
+per_token_pct = 0.01
+total_pct = 0.03
+max_open = 3
+hard_stop_pct = 0.40
+trail_pct = 0.35
+take_half_at_pct = 1.00
+time_stop_hours = 72.0
+slippage_pct = 0.03
+fee_pct = 0.01

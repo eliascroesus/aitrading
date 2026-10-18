@@ -274,6 +274,47 @@ class SurvivalRules(BaseModel):
     )
 
 
+class OperatorRules(BaseModel):
+    """The AI's bounded self-iteration loop (docs/ARCHITECTURE.md, "The operator")."""
+
+    enabled: bool = True
+    max_variants_per_iteration: int = 3
+    insample_start: str = "2001-01-01"
+    insample_end: str = "2012-12-31"
+    outofsample_start: str = "2013-01-01"
+    outofsample_end: str | None = None
+    # A variant earns a shadow seat only if it beats the parent out of sample on
+    # return without worsening the drawdown by more than this factor.
+    max_drawdown_tolerance: float = 1.10
+    # Promotion to live always needs a human; this flag only allows the operator
+    # to *recommend* it in the journal.
+    auto_promote: bool = False
+    bounds_file: str = "config/bounds.toml"
+
+
+class MemeRules(BaseModel):
+    """Memecoin scout sleeve: hard filters from docs/research/02 §7(c). Paper-only by default."""
+
+    enabled: bool = False
+    chain: str = "solana"
+    min_age_hours: float = 72.0
+    min_liquidity_usd: float = 250_000.0
+    min_volume_24h_usd: float = 1_000_000.0
+    max_24h_change_pct: float = -15.0   # has retraced
+    min_6h_change_pct: float = 0.0      # ...and is turning back up
+    min_1h_change_pct: float = 0.0
+    require_rugcheck: bool = True
+    per_token_pct: float = 0.01
+    total_pct: float = 0.03
+    max_open: int = 3
+    hard_stop_pct: float = 0.40
+    trail_pct: float = 0.35
+    take_half_at_pct: float = 1.00
+    time_stop_hours: float = 72.0
+    slippage_pct: float = 0.03
+    fee_pct: float = 0.01
+
+
 class UniverseConfig(BaseModel):
     stock_universe: Literal["sp500", "etfs", "custom"] = "sp500"
     custom_symbols: list[str] = Field(default_factory=list)
@@ -300,6 +341,8 @@ class StrategyConfig(BaseModel):
     risk: RiskLimits = Field(default_factory=RiskLimits)
     survival: SurvivalRules = Field(default_factory=SurvivalRules)
     universe: UniverseConfig = Field(default_factory=UniverseConfig)
+    operator: OperatorRules = Field(default_factory=OperatorRules)
+    meme: MemeRules = Field(default_factory=MemeRules)
 
     def rules_for(self, asset_class: str) -> TrendRules:
         return self.crypto if asset_class == "crypto" else self.stocks

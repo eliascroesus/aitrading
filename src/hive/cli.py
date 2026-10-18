@@ -14,6 +14,26 @@ from hive.log import setup_logging
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="HIVE trading system")
 data_app = typer.Typer(no_args_is_help=True, help="Data cache management")
 app.add_typer(data_app, name="data")
+ui_app = typer.Typer(no_args_is_help=True, help="Dashboard")
+app.add_typer(ui_app, name="ui")
+
+
+@ui_app.command("build")
+def ui_build(out: Path | None = typer.Option(None, help="Output dir (default reports/dashboard)")) -> None:
+    """Generate the self-contained dashboard (index.html + data.json) from state and reports."""
+    from hive.ui.dashboard import build
+
+    s = get_settings()
+    paths = build(s, StrategyConfig.load(), out)
+    rprint({k: str(v) for k, v in paths.items()})
+
+
+@ui_app.command("serve")
+def ui_serve(port: int = typer.Option(8787)) -> None:
+    """Serve the dashboard locally, rebuilding on every page load."""
+    from hive.ui.dashboard import serve
+
+    serve(get_settings(), StrategyConfig.load(), port)
 
 
 @data_app.command("seed")
@@ -202,6 +222,101 @@ def review(days: int = typer.Option(7)) -> None:
         ledger.append("ai_cost", llm.spent_usd, {"label": "review", "date": today.isoformat()})
     rprint(rep.model_dump() if rep else "review failed (fail closed)")
     rprint(f"wrote {out}")
+
+
+hive_app = typer.Typer(no_args_is_help=True, help="Children and operator iterations")
+app.add_typer(hive_app, name="hive")
+
+
+@hive_app.command("list")
+def hive_list() -> None:
+    from hive.hive.registry import HiveRegistry
+
+    s = get_settings()
+    cfg = StrategyConfig.load()
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+    for c in reg.children:
+        rprint(f"{c.id:28s} {c.sleeve:7s} {c.status:8s} born {c.born} days {c.shadow_days:3d} "
+               f"equity {c.equity if c.equity is None else round(c.equity, 2)} voi {c.voi if c.voi is None else round(c.voi, 4)} {c.overrides}")
+    rprint(f"{len(reg.active())} active; {len(reg.iterations)} iterations recorded")
+
+
+@hive_app.command("spawn")
+def hive_spawn(name: str, sleeve: str = typer.Option("stocks", help="stocks | crypto | all | meme"),
+               overrides: str = typer.Option("", help='JSON, e.g. {"stocks.trail_atr": 6}'),
+               force: bool = typer.Option(False, help="Ignore the tier's child limit (human decision)")) -> None:
+    """Spawn a paper-traded child by hand (the operator does this automatically when allowed)."""
+    from hive.hive.registry import Child, HiveRegistry
+    from hive.operator.iterate import load_bounds, validate_overrides
+    from hive.survival.ledger import SurvivalLedger
+
+    s = get_settings()
+    cfg = StrategyConfig.load()
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+    ledger = SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival)
+    tier = ledger.tier(ledger.last_equity_mark() or cfg.survival.starting_bankroll_usd)
+    ov = json.loads(overrides) if overrides else {}
+    if ov:
+        ok, why = validate_overrides(ov, load_bounds(s.hive_config_dir / "bounds.toml"))
+        if not ok:
+            raise typer.BadParameter(why)
+    child = reg.spawn(Child(id="", name=name, kind="scout" if sleeve == "meme" else "variant", sleeve=sleeve,
+                            overrides=ov), tier, force=force)
+    rprint(f"spawned {child.id} ({sleeve}) in shadow mode")
+
+
+@hive_app.command("retire")
+def hive_retire(child_id: str, why: str = typer.Option("retired by human")) -> None:
+    from hive.hive.registry import HiveRegistry
+
+    s = get_settings()
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", StrategyConfig.load().survival)
+    rprint(reg.retire(child_id, why))
+
+
+@hive_app.command("promote")
+def hive_promote(child_id: str, approve: bool = typer.Option(False, help="Required: a human approves")) -> None:
+    """Promote a shadow child to live. Always a human decision."""
+    from hive.hive.registry import HiveRegistry
+
+    s = get_settings()
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", StrategyConfig.load().survival)
+    c = reg.promote(child_id, approved_by_human=approve)
+    rprint(f"{c.id} is now live. Apply its overrides to config/strategy.toml in a commit: {c.overrides}")
+
+
+@app.command()
+def operate(dry_run: bool = typer.Option(False, help="Propose and evaluate without spawning")) -> None:
+    """One operator iteration: propose variants (LLM), backtest them, spawn shadow children if earned."""
+    from hive.agents.llm import LLMClient
+    from hive.hive.registry import HiveRegistry
+    from hive.operator.iterate import default_inputs
+    from hive.operator.iterate import operate as _operate
+    from hive.survival.ledger import SurvivalLedger
+
+    s = get_settings()
+    setup_logging()
+    cfg = StrategyConfig.load()
+    if not cfg.operator.enabled:
+        rprint("operator disabled in config")
+        return
+    ledger = SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival)
+    last = ledger.last_equity_mark() or cfg.survival.starting_bankroll_usd
+    st = ledger.status(last)
+    tier = ledger.tier(st.equity_net)
+    llm = None
+    if s.anthropic_api_key is not None:
+        llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(), budget_usd=st.budget_remaining)
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+    if dry_run:
+        reg.path = s.hive_state_dir / "hive.dryrun.json"
+    rprint(f"operator: tier {tier.name}, budget ${st.budget_remaining:.4f}, llm={'on' if llm and llm.available else 'off'}")
+    recs = _operate(cfg=cfg, registry=reg, tier=tier, status=st.__dict__, llm=llm, model=s.hive_llm_model,
+                    inputs=default_inputs(s, cfg))
+    if llm is not None and llm.spent_usd > 0:
+        ledger.append("ai_cost", llm.spent_usd, {"label": "operator", "date": __import__("datetime").date.today().isoformat()})
+    for r in recs:
+        rprint(r)
 
 
 def _parse_variations(spec: str) -> dict[str, list]:
