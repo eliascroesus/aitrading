@@ -1,0 +1,65 @@
+{
+  "inputs": {
+    "runs": [],
+    "n_decisions": 0,
+    "actions": {
+      "approve": 0,
+      "reduce_half": 0,
+      "veto": 0
+    },
+    "orders": [],
+    "exits": [],
+    "llm_calls": 0,
+    "llm_failures": 0,
+    "ai_cost_usd": 0,
+    "cost_per_decision_usd": 0.0,
+    "shadow_vs_primary": null
+  },
+  "report": {
+    "findings": [
+      {
+        "severity": "warning",
+        "area": "data",
+        "finding": "The weekly journal is empty: runs is an empty list, n_decisions is 0, and llm_calls, llm_failures, orders and exits are all empty or zero. The input does not say why. It could be a deliberate stand-down, a scheduler or ingestion failure, or a logging gap.",
+        "proposed_change": "Have the journal write a heartbeat record for every scheduled run, including runs that make no decision, with a reason code such as no_signal, halted, close_only, data_unavailable or error. An empty week then shows its cause."
+      },
+      {
+        "severity": "warning",
+        "area": "process",
+        "finding": "Zero runs is different from runs that chose cash. If the rules engine did not run, open positions may have gone unmonitored for exits and limits. The summary cannot show whether any positions were open.",
+        "proposed_change": "Add the open-position count and the current halt or close-only state to the weekly summary. Alert when a week has zero runs while positions are open."
+      },
+      {
+        "severity": "info",
+        "area": "calibration",
+        "finding": "With no decisions and no exits, confidence cannot be compared with outcomes this week. shadow_vs_primary is null, so no variant comparison exists either, in-sample or otherwise.",
+        "proposed_change": "Carry calibration and shadow-comparison statistics forward on a rolling multi-week window, so empty weeks do not reset the evidence base."
+      },
+      {
+        "severity": "info",
+        "area": "strategy_drift",
+        "finding": "There were no actions (approve 0, reduce_half 0, veto 0), so no approve-all or veto-all pattern can be judged. No operator proposals appear, so there is no bound-edge clustering or attempt to argue around a limit to report.",
+        "proposed_change": "No change. Re-check the action-mix and proposal-bound audits once decisions resume."
+      },
+      {
+        "severity": "info",
+        "area": "cost",
+        "finding": "ai_cost_usd is 0 and cost_per_decision_usd is 0.0. There is no cost creep or turnover creep this week.",
+        "proposed_change": "No change. Keep tracking cost per decision on a rolling basis once activity resumes."
+      }
+    ],
+    "cost_per_decision_usd": 0.0,
+    "llm_added_value_assessment": "Not assessable this week. There were zero LLM calls, zero decisions and no shadow-versus-primary comparison (null), so there is no evidence that the LLM filter added or removed value net of its cost. This audit call is the only AI cost tied to the week. If empty weeks recur, the firm should check that it does not pay for audits that have nothing to audit."
+  },
+  "call": {
+    "role": "reviewer",
+    "model": "claude-opus-5-5",
+    "ok": true,
+    "cost_usd": 0.024917,
+    "input_tokens": 138,
+    "output_tokens": 915,
+    "cached_tokens": 0,
+    "stop_reason": "end_turn",
+    "error": ""
+  }
+}

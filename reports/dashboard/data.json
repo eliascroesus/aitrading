@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-18T22:39:55+00:00",
+ "generated_at": "2026-10-18T23:46:33+00:00",
  "strategy": {
   "name": "trend-reset-v1",
   "version": "1.2.0"
@@ -7,12 +7,12 @@
  "survival": {
   "status": {
    "equity_gross": 100.0,
-   "equity_net": 99.9584459,
-   "ai_cost_total": 0.041554100000000004,
+   "equity_net": 99.9133369,
+   "ai_cost_total": 0.0866631,
    "ai_cost_today": 0.041554100000000004,
-   "budget_today": 0.04997922295,
-   "budget_remaining": 0.008425122949999996,
-   "runway_days": 12627.132372016238,
+   "budget_today": 0.049956668450000005,
+   "budget_remaining": 0.008402568450000002,
+   "runway_days": 12619.533530987315,
    "tier": "base",
    "dead": false,
    "death_reason": "",
@@ -85,7 +85,7 @@
   ],
   "halts": [],
   "death": null,
-  "ai_cost_total": 0.041554100000000004
+  "ai_cost_total": 0.0866631
  },
  "equity": {
   "dates": [
@@ -550,405 +550,51 @@
   ]
  },
  "journal": {
-  "recent": [
-   {
-    "date": "2026-10-16",
-    "kind": "decision",
-    "symbol": "TRV",
-    "action": "approve",
-    "invalidation": "close_below_ma50_2d",
-    "confidence": 0.6,
-    "rationale": "Cleanest setup: score 0.867, technical 0.6/0.55, debate 0.25. Close 389.54 is above ma_mid 368.71 and ma_long 322.26, 98% of high, with a modest 0.84 ATR pullback. No negative news. Fundamentals and sentiment are uninformative.",
-    "cost_usd": 0.007245433333333334,
-    "note": ""
-   },
-   {
-    "date": "2026-10-16",
-    "kind": "decision",
-    "symbol": "CVX",
-    "action": "veto",
-    "invalidation": "none",
-    "confidence": 0.5,
-    "rationale": "Same energy theme as COP and also extended at the high (pullback 0.0, z_impulse 1.53). Technical 0.45/0.5 and debate 0.15 are weaker than COP. Skipped to avoid doubling correlated exposure.",
-    "cost_usd": 0.0068738133333333335,
-    "note": ""
-   },
-   {
-    "date": "2026-10-16",
-    "kind": "decision",
-    "symbol": "COP",
-    "action": "reduce_half",
-    "invalidation": "close_below_ma50_2d",
-    "confidence": 0.45,
-    "rationale": "Strong trend: score 0.8, technical 0.6/0.6, mom_long 0.566. But it sits at the high with no pullback (0.0 ATR) and z_impulse 1.61, so it is extended. Vol is higher at 0.30. Half size limits entry risk. Taken as the single energy exposure.",
-    "cost_usd": 0.006818913333333333,
-    "note": ""
-   },
-   {
-    "date": "2026-10-16",
-    "kind": "decision",
-    "symbol": "AIZ",
-    "action": "veto",
-    "invalidation": "none",
-    "confidence": 0.55,
-    "rationale": "Mediocre setup: score 0.5, technical 0.3/0.4, debate 0.1. Deep 3.07 ATR pullback with z_reset slightly negative. Not enough edge.",
-    "cost_usd": 0.006849113333333334,
-    "note": ""
-   },
-   {
-    "date": "2026-10-16",
-    "kind": "decision",
-    "symbol": "PKG",
-    "action": "veto",
-    "invalidation": "none",
-    "confidence": 0.6,
-    "rationale": "Weak: score 0.33, close 236.0 is below ma_mid 237.85, mom_vol_adj 0.54, pullback 4.0 ATR. No edge.",
-    "cost_usd": 0.0068516133333333335,
-    "note": ""
-   },
-   {
-    "date": "2026-10-16",
-    "kind": "decision",
-    "symbol": "CINF",
-    "action": "veto",
-    "invalidation": "none",
-    "confidence": 0.65,
-    "rationale": "Weakest candidate: score 0.167, negative z_impulse, technical 0.2/0.35, 88% of high. No edge.",
-    "cost_usd": 0.006915213333333333,
-    "note": ""
-   },
-   {
-    "date": "2026-10-16",
-    "kind": "order",
-    "symbol": "TRV",
-    "side": "buy",
-    "notional": 17.23,
-    "ok": true,
-    "fill_price": 0.0,
-    "filled_qty": 0.0,
-    "message": "OrderStatus.ACCEPTED"
-   },
-   {
-    "date": "2026-10-16",
-    "kind": "order",
-    "symbol": "COP",
-    "side": "buy",
-    "notional": 7.53,
-    "ok": true,
-    "fill_price": 0.0,
-    "filled_qty": 0.0,
-    "message": "OrderStatus.ACCEPTED"
-   }
-  ],
-  "llm_calls": [
-   {
-    "date": "2026-10-16",
-    "role": "fundamental",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00020815000000000002,
-    "input_tokens": 24,
-    "output_tokens": 199,
-    "cached_tokens": 0,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "technical",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.0002548,
-    "input_tokens": 198,
-    "output_tokens": 254,
-    "cached_tokens": 0,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "sentiment",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.0001708,
-    "input_tokens": 68,
-    "output_tokens": 110,
-    "cached_tokens": 0,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "debate",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00034735,
-    "input_tokens": 611,
-    "output_tokens": 377,
-    "cached_tokens": 0,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "fundamental",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 9.340000000000001e-05,
-    "input_tokens": 24,
-    "output_tokens": 165,
-    "cached_tokens": 850,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "technical",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00017474,
-    "input_tokens": 196,
-    "output_tokens": 293,
-    "cached_tokens": 864,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "sentiment",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 7.852e-05,
-    "input_tokens": 68,
-    "output_tokens": 126,
-    "cached_tokens": 872,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "debate",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00026282,
-    "input_tokens": 625,
-    "output_tokens": 385,
-    "cached_tokens": 782,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "fundamental",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 7.93e-05,
-    "input_tokens": 23,
-    "output_tokens": 137,
-    "cached_tokens": 850,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "technical",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00017063999999999998,
-    "input_tokens": 195,
-    "output_tokens": 285,
-    "cached_tokens": 864,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "sentiment",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 6.842e-05,
-    "input_tokens": 67,
-    "output_tokens": 106,
-    "cached_tokens": 872,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "debate",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00023622,
-    "input_tokens": 564,
-    "output_tokens": 344,
-    "cached_tokens": 782,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "fundamental",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 9.2e-05,
-    "input_tokens": 25,
-    "output_tokens": 162,
-    "cached_tokens": 850,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "technical",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00018063999999999998,
-    "input_tokens": 195,
-    "output_tokens": 305,
-    "cached_tokens": 864,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "sentiment",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 8.412e-05,
-    "input_tokens": 69,
-    "output_tokens": 137,
-    "cached_tokens": 872,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "debate",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00022801999999999998,
-    "input_tokens": 642,
-    "output_tokens": 312,
-    "cached_tokens": 782,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "fundamental",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.0001004,
-    "input_tokens": 24,
-    "output_tokens": 179,
-    "cached_tokens": 850,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "technical",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00018154000000000003,
-    "input_tokens": 199,
-    "output_tokens": 306,
-    "cached_tokens": 864,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "sentiment",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 7.002e-05,
-    "input_tokens": 68,
-    "output_tokens": 109,
-    "cached_tokens": 872,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "debate",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00023532,
-    "input_tokens": 635,
-    "output_tokens": 328,
-    "cached_tokens": 782,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "fundamental",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 9.340000000000001e-05,
-    "input_tokens": 24,
-    "output_tokens": 165,
-    "cached_tokens": 850,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "technical",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00020233999999999996,
-    "input_tokens": 197,
-    "output_tokens": 348,
-    "cached_tokens": 864,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "sentiment",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 8.201999999999999e-05,
-    "input_tokens": 68,
-    "output_tokens": 133,
-    "cached_tokens": 872,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "debate",
-    "model": "claude-haiku-5-5",
-    "ok": true,
-    "cost_usd": 0.00027312,
-    "input_tokens": 683,
-    "output_tokens": 394,
-    "cached_tokens": 782,
-    "stop_reason": "end_turn",
-    "error": ""
-   },
-   {
-    "date": "2026-10-16",
-    "role": "portfolio_manager",
-    "model": "claude-opus-5-5",
-    "ok": true,
-    "cost_usd": 0.037586,
-    "input_tokens": 2639,
-    "output_tokens": 1051,
-    "cached_tokens": 0,
-    "stop_reason": "end_turn",
-    "error": ""
-   }
-  ],
-  "anomalies_30d": 9,
+  "recent": [],
+  "llm_calls": [],
+  "anomalies_30d": 0,
   "broken_chains": [],
-  "n_files": 1
+  "n_files": 0
  },
  "hive": {
-  "children": [],
+  "children": [
+   {
+    "id": "meme-scout",
+    "name": "meme scout",
+    "kind": "scout",
+    "sleeve": "meme",
+    "overrides": {},
+    "status": "shadow",
+    "born": "2026-10-18",
+    "retired": null,
+    "equity": null,
+    "start_equity": null,
+    "parent_start_equity": null,
+    "voi": null,
+    "shadow_days": 0,
+    "hypothesis": "",
+    "notes": [],
+    "metrics": {}
+   }
+  ],
   "iterations": []
+ },
+ "allocation": {
+  "crypto_sleeve_pct": 0.4,
+  "updated": "2026-10-18",
+  "history": [
+   {
+    "date": "2026-10-18",
+    "from": 0.4,
+    "to": 0.4,
+    "why": "hold: only 0 closed trades in 42 days",
+    "scorecard": {
+     "window_days": 42,
+     "pnl_by_class": {},
+     "trades_by_class": {}
+    }
+   }
+  ]
  },
  "backtests": [
   {
