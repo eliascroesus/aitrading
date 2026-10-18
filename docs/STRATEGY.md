@@ -74,6 +74,11 @@ close > max(high[t−1], high[t−2]) **and** close > EMA10 **and** ROC_5 > 0
 * Regime multiplier (below) and survival-tier multiplier apply on top.
 * Fractional shares (Alpaca ≥ $1); Hyperliquid ≥ $10 notional.
 
+**Allocation between desks (since 1.2.0):** the crypto sleeve's share of
+equity starts at 40% and moves ±5 points a week toward the desk with the
+better realised P&L over 42 days, within 20–60% (`hive allocate`,
+`state/allocation.json`). Position sizing inside a sleeve is unchanged.
+
 ## 6. Exits (first one that fires)
 
 1. **Chandelier stop:** max(previous stop, highest close since entry − 5·ATR); 3·ATR after 63 bars. Checked against the day's low. *(v1.0 used 4·ATR.)*

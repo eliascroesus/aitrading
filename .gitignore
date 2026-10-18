@@ -24,7 +24,6 @@ data/cache/
 data/raw/
 state/*.db
 state/*.sqlite
-state/journal/
 reports/*.png
 reports/*.html
 

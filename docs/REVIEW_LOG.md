@@ -44,5 +44,15 @@ bankroll guard that refuses to size on an un-reset paper account, a broker
 tradability check, and a fix for the operator prompt's `N` placeholder, which
 had been rewriting every capital N in the prompt (including "JSON").
 
+Same day, after the first live paper run: the cycle now runs every day at
+00:37 UTC (crypto has a closed bar every UTC day; stock and crypto bars share a
+run date; classes without a bar on the run date skip entries); the crypto
+refresh drops the forming UTC candle, which the first design had been feeding
+into the features; decision journals are committed with the state; `exit`
+journal entries carry asset class and P&L; a news desk reads headlines for open
+positions and exits on a material negative event; and a weekly, bounded capital
+allocator moves the crypto sleeve toward the desk that earned
+(`docs/research/05-incentives.md`).
+
 ### Done well (reviewer's words)
 Point-in-time features with a no-lookahead test; internally consistent backtest accounting; fail-closed LLM layer with enum-only actions; sound ledger hash chain; layered live-mode gating and no withdraw path anywhere.

@@ -69,6 +69,7 @@ hive ui build && hive ui serve          # http://127.0.0.1:8787 (GitHub Pages pu
 #   a pre-built example (33 replayed days of 2020): docs/examples/dashboard-replay-2020/index.html
 hive operate                            # the operator proposes variants, code backtests, spawns shadow children
 hive hive list | spawn | retire | promote <id> --approve   # promotion is always a human decision
+hive allocate                           # weekly: capital moves toward the desk that earned (bounded, no LLM)
 ```
 
 Full setup (accounts, keys, hosts, costs, go-live checklist): `docs/SETUP.md`.
@@ -79,9 +80,11 @@ every run before any order.
 
 ## Scheduling
 
-`.github/workflows/daily.yml` runs the cycle after the US close on weekdays
-(paper unless secrets say otherwise) and commits `state/` and `reports/` back
-to the repo so the public record is the git history itself.
+`.github/workflows/daily.yml` runs the cycle every day at 00:37 UTC, after the
+US close and the crypto UTC day close (weekends and holidays trade the crypto
+sleeve only), and commits `state/` and `reports/` back to the repo so the public
+record is the git history itself. `weekly.yml` runs the auditor, the operator and
+the capital allocator on Sundays.
 
 ## Honesty rules for the study
 

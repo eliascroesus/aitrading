@@ -138,6 +138,7 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
     # --- hive registry (children / iterations) -----------------------------------------------
     hive = _read_json(state / "hive.json") or {"children": [], "iterations": []}
     data["hive"] = hive
+    data["allocation"] = _read_json(state / "allocation.json") or {}
 
     # --- backtests & experiments --------------------------------------------------------------
     bts = []

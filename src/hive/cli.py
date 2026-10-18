@@ -155,6 +155,11 @@ def run(
         if bench is None:
             raise typer.BadParameter("no cached data; run `hive data seed` first")
         last = bench.index[-1].date()
+        btc = store.get("crypto", cfg.universe.regime_crypto_symbol)
+        if btc is not None and len(btc):
+            # Crypto closes a bar every UTC day, so weekend runs trade the crypto sleeve;
+            # classes without a bar on the run date are skipped automatically.
+            last = max(last, btc.index[-1].date())
         as_of = last.isoformat()
         age = (__import__("datetime").date.today() - last).days
         if age > 5:
@@ -317,6 +322,29 @@ def operate(dry_run: bool = typer.Option(False, help="Propose and evaluate witho
         ledger.append("ai_cost", llm.spent_usd, {"label": "operator", "date": __import__("datetime").date.today().isoformat()})
     for r in recs:
         rprint(r)
+
+
+@app.command()
+def allocate() -> None:
+    """Weekly capital allocation between desks from realised results (bounded; no LLM)."""
+    from datetime import date as _date
+
+    from hive.hive.allocation import rebalance
+    from hive.survival.ledger import SurvivalLedger
+
+    s = get_settings()
+    setup_logging()
+    cfg = StrategyConfig.load()
+    before = None
+    path = s.hive_state_dir / "allocation.json"
+    if path.exists():
+        before = json.loads(path.read_text()).get("crypto_sleeve_pct")
+    alloc = rebalance(path, s.hive_state_dir / "journal", _date.today(), cfg.risk.crypto_sleeve_pct)
+    last = alloc["history"][-1]
+    if before is not None and abs(float(before) - float(alloc["crypto_sleeve_pct"])) > 1e-9:
+        SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival).append(
+            "allocation_change", 0.0, {"from": before, "to": alloc["crypto_sleeve_pct"], "why": last["why"]})
+    rprint(f"allocation: crypto sleeve {float(alloc['crypto_sleeve_pct']):.0%} — {last['why']}")
 
 
 def _parse_variations(spec: str) -> dict[str, list]:

@@ -1,0 +1,23 @@
+{
+  "children": [
+    {
+      "id": "meme-scout",
+      "name": "meme scout",
+      "kind": "scout",
+      "sleeve": "meme",
+      "overrides": {},
+      "status": "shadow",
+      "born": "2026-10-18",
+      "retired": null,
+      "equity": null,
+      "start_equity": null,
+      "parent_start_equity": null,
+      "voi": null,
+      "shadow_days": 0,
+      "hypothesis": "",
+      "notes": [],
+      "metrics": {}
+    }
+  ],
+  "iterations": []
+}

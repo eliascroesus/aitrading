@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import logging
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
@@ -91,11 +92,28 @@ def write_post_mortem(settings: Settings, ledger: SurvivalLedger, reason: str, r
     return out
 
 
+def apply_allocation(settings: Settings, cfg: StrategyConfig) -> StrategyConfig:
+    """The weekly allocator (hive allocate) moves the crypto sleeve's share of equity
+    inside its bounds; the run reads the result so capital follows results."""
+    path = settings.hive_state_dir / "allocation.json"
+    if not path.exists():
+        return cfg
+    try:
+        pct = float(json.loads(path.read_text()).get("crypto_sleeve_pct", cfg.risk.crypto_sleeve_pct))
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return cfg
+    pct = min(max(pct, 0.0), 1.0)
+    if abs(pct - cfg.risk.crypto_sleeve_pct) < 1e-9:
+        return cfg
+    return cfg.model_copy(update={"risk": cfg.risk.model_copy(update={"crypto_sleeve_pct": pct})})
+
+
 def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_shadow: bool = True,
             llm_enabled: bool | None = None) -> dict[str, Path]:
     ts = pd.Timestamp(run_date)
     rd = ts.date().isoformat()
     clear_feature_cache()
+    cfg = apply_allocation(settings, cfg)
     store = BarStore(settings.hive_data_dir / "cache")
     classes = asset_classes_from_store(store, cfg)
     pit = settings.hive_data_dir / "raw" / "sp500_pit_membership.csv"

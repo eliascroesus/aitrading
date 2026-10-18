@@ -16,7 +16,7 @@ from typing import Any
 import pandas as pd
 
 from hive.agents import prompts
-from hive.agents.llm import LLMClient
+from hive.agents.llm import BudgetExceededError, LLMClient
 from hive.agents.pipeline import CandidateContext, CandidatePipeline, features_payload
 from hive.config import StrategyConfig
 from hive.data.bars import as_of
@@ -234,6 +234,16 @@ class DailyRun:
                 close_only = True
                 summary.notes.append("drawdown halt cooldown: close-only")
 
+        # The day's research budget is granted once, here, and shared by the news desk
+        # (open positions) and the candidate pipeline; nothing re-grants it later.
+        self._news_pipe = None
+        if self.llm is not None and self.llm.available:
+            self.llm.budget_usd = self.llm.spent_usd + budget
+            if budget > 0 and self.news_fn is not None:
+                self._news_pipe = CandidatePipeline(self.llm, cheap_model=self.cheap_model,
+                                                    decision_model=self.decision_model, effort="low",
+                                                    pm_effort=self.effort)
+
         # --- regime -------------------------------------------------------------
         bench = self.store.get("etf", self.cfg.universe.regime_stock_symbol)
         vix_bars = self.store.get("index", "VIX")
@@ -304,7 +314,6 @@ class DailyRun:
         spent_before = self.llm.spent_usd if self.llm is not None else 0.0
         if not top.empty:
             if self.llm is not None and self.llm.available:
-                self.llm.budget_usd = self.llm.spent_usd + budget
                 pipe = CandidatePipeline(self.llm, cheap_model=self.cheap_model,
                                          decision_model=self.decision_model, effort="low",
                                          pm_effort=self.effort)
@@ -518,11 +527,16 @@ class DailyRun:
                 reason = "invalidation"
             elif pos.invalidation_condition == "benchmark_regime_red" and str(reg["state"]) == "red":
                 reason = "invalidation"
+            if reason is None and self._news_negative(sym, pos):
+                reason = "news_material_negative"
             if reason:
                 self.broker.cancel_open_orders(sym)
                 res = self.broker.close_position(sym)
+                pnl = ((float(res.fill_price) - pos.entry_price) * pos.qty
+                       if res.ok and res.fill_price else None)
                 exits.append({"symbol": sym, "reason": reason, "ok": res.ok, "price": res.fill_price,
-                              "bars_held": pos.bars_held, "message": res.message})
+                              "bars_held": pos.bars_held, "message": res.message,
+                              "asset_class": pos.asset_class, "pnl_usd": pnl})
                 self.journal.write("exit", exits[-1])
                 if res.ok:
                     self.book.remove(sym)
@@ -537,6 +551,34 @@ class DailyRun:
                     self.journal.write("stop_ratchet", {"symbol": sym, "stop": new_stop})
             self.book.save()
         return exits
+
+    def _news_negative(self, sym: str, pos: OpenPosition) -> bool:
+        """The news desk: the quarantined reader checks today's headlines for every open
+        position and the position is closed on a material negative event. Only bounded
+        fields leave the reader; the cost comes out of the day's research budget."""
+        pipe = getattr(self, "_news_pipe", None)
+        if pipe is None or self.news_fn is None:
+            return False
+        try:
+            headlines = self.news_fn(sym)
+        except Exception as exc:
+            self.journal.write("news_error", {"symbol": sym, "error": str(exc)[:200]})
+            return False
+        if not headlines:
+            return False
+        ctx = CandidateContext(symbol=sym, asset_class=pos.asset_class, features={}, headlines=headlines,
+                               company_names=self.company_names.get(sym, []))
+        try:
+            digest, cost = pipe.read_news(ctx)
+        except BudgetExceededError as exc:
+            self.journal.write("news_skip", {"symbol": sym, "reason": str(exc)[:120]})
+            return False
+        if digest is None:
+            return False
+        self.journal.write("news_watch", {"symbol": sym, "material_negative": digest.material_negative,
+                                          "net_sentiment": digest.net_sentiment,
+                                          "attention_spike": digest.attention_spike, "cost_usd": cost})
+        return bool(digest.material_negative)
 
     def _candidates(self, mult: dict[str, float]) -> pd.DataFrame:
         allowed = self.universe.members(self.run_date) if self.universe is not None else None

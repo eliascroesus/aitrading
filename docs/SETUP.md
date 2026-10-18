@@ -34,12 +34,16 @@ Put keys in `.env` (copy `.env.example`). Never commit it.
    in the Actions cache. Optional: the daily run bootstraps itself from a
    cold cache with ~2.5 years of bars, and the weekly run fetches the full
    history when it needs it. Price data never goes into git.
-5. `.github/workflows/daily.yml` runs after the US close on weekdays:
-   restore cache → `hive data refresh` → `hive run` → `hive ui build` →
-   commit `state/` and `reports/`. The git history **is** the public record.
-6. `.github/workflows/weekly.yml` runs on Sundays: `hive review` (auditor)
-   then `hive operate` (the iteration loop). New shadow children and every
-   verdict land in `state/hive.json` and on the dashboard.
+5. `.github/workflows/daily.yml` runs **every day at 00:37 UTC**, after the US
+   close and the crypto UTC-day close: restore cache → `hive data refresh` →
+   `hive run` → `hive ui build` → commit `state/` and `reports/`. On weekends
+   and US holidays only the crypto sleeve has a new bar, so only it trades. The
+   git history **is** the public record (decision journals included).
+6. `.github/workflows/weekly.yml` runs on Sundays: `hive review` (auditor),
+   `hive operate` (the iteration loop) and `hive allocate` (capital moves one
+   step toward the desk that earned, inside 20–60% for the crypto sleeve). New
+   shadow children, every verdict and every allocation change land in `state/`
+   and on the dashboard.
 7. Caches unused for 7 days are evicted by GitHub; the next run simply
    rebuilds (step 4 happens again, automatically).
 
@@ -73,8 +77,9 @@ hive status
 
 | When | Command | What happens |
 |---|---|---|
-| every weekday after the close | `hive run` | regime → signals → LLM filter (if key) → risk → orders → ledger → report; children trade their paper books |
-| every weekday | `hive ui build` | dashboard rebuilt from state |
+| every day 00:37 UTC | `hive run` | regime → news desk on open positions → signals → LLM filter (if key) → risk → orders → ledger → report; children trade their paper books; weekends: crypto only |
+| every day | `hive ui build` | dashboard rebuilt from state |
+| weekly (Sunday, `weekly.yml`) | `hive allocate` | the crypto sleeve's share of equity moves ±5 points toward the desk that earned, within 20–60%, from realised P&L; no LLM |
 | weekly (Sunday, `weekly.yml`) | `hive review` | the auditor reads the journals and proposes changes (never applies them) |
 | weekly (Sunday, `weekly.yml`) | `hive operate` | the operator proposes ≤ 3 config variants inside `config/bounds.toml`, code backtests them in/out of sample, winners become shadow children if the tier allows |
 | when a child has earned it | `hive hive promote <id> --approve` | **a human** promotes; then apply its overrides to `config/strategy.toml` in a commit |

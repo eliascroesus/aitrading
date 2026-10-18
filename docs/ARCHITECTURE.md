@@ -89,6 +89,15 @@ orchestrator checks it daily and exits when it fires.
   | growth | $250–1k + 30 net-positive days | 3 paper sub-agents, larger research budget |
   | hive | > $1k + 60 days + human approval | 5 paper sub-agents, second strategy sleeve |
 
+* **Capital follows results.** Every Sunday `hive allocate` reads the realised
+  P&L of each desk (asset class) from the decision journals over the last 42
+  days and moves the crypto sleeve's share of equity one step (5 points) toward
+  the desk that earned, inside 20–60%. It is the prop-firm scaling plan applied
+  to desks (`docs/research/05-incentives.md`), done in code, never by the LLM.
+* **The news desk.** Each run, the quarantined reader checks the day's headlines
+  for every open position; a material negative event closes it at the next
+  open. Only bounded fields leave the reader; the cost comes out of the day's
+  research budget.
 * **Sub-agents (children)** are paper portfolios: they cost nothing but compute,
   so the tiers gate how many may run, not whether. Each runs in shadow for
   ≥ 14 days, is scored by value of information against the parent, is retired

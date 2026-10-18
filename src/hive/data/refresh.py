@@ -6,6 +6,8 @@ import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+import pandas as pd
+
 from hive.config import StrategyConfig
 from hive.data.sources import hyperliquid_source, yfinance_source
 from hive.data.store import BarStore
@@ -17,6 +19,19 @@ log = logging.getLogger(__name__)
 def _chunks(items: list[str], n: int):
     for i in range(0, len(items), n):
         yield items[i : i + n]
+
+
+def complete_days(bars: pd.DataFrame) -> pd.DataFrame:
+    """Drop the current UTC day. Crypto trades around the clock, so the last daily
+    candle a source returns is still forming; a signal computed on it would change
+    by the close. The run therefore sees only closed days."""
+    if not len(bars):
+        return bars
+    idx = pd.DatetimeIndex(bars.index)
+    if idx.tz is not None:
+        idx = idx.tz_convert("UTC").tz_localize(None)
+    today = pd.Timestamp(datetime.now(UTC).date())
+    return bars[idx.normalize() < today]
 
 
 def refresh_all(store: BarStore, cfg: StrategyConfig, *, pit_csv: Path | None, days: int = 400,
@@ -46,7 +61,7 @@ def refresh_all(store: BarStore, cfg: StrategyConfig, *, pit_csv: Path | None, d
     for coin in cfg.universe.crypto_symbols:
         done = False
         try:
-            bars = hyperliquid_source.fetch_daily(coin, days=days, testnet=hl_testnet)
+            bars = complete_days(hyperliquid_source.fetch_daily(coin, days=days, testnet=hl_testnet))
             if len(bars):
                 store.upsert("crypto", coin, bars, source="hyperliquid_candles")
                 done = True
@@ -56,8 +71,10 @@ def refresh_all(store: BarStore, cfg: StrategyConfig, *, pit_csv: Path | None, d
             try:
                 got = yfinance_source.fetch_daily([yfinance_source.yahoo_crypto_symbol(coin)], start=start)
                 for _, bars in got.items():
-                    store.upsert("crypto", coin, bars, source="yfinance")
-                    done = True
+                    bars = complete_days(bars)
+                    if len(bars):
+                        store.upsert("crypto", coin, bars, source="yfinance")
+                        done = True
             except Exception as exc:
                 counts["errors"] += 1
                 log.warning("yfinance crypto failed for %s: %s", coin, exc)

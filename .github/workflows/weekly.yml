@@ -44,6 +44,8 @@ jobs:
         run: .venv/bin/hive review --days 7 || echo "review skipped"
       - name: Operator iteration
         run: .venv/bin/hive operate
+      - name: Capital allocation between desks (bounded, from realised results)
+        run: .venv/bin/hive allocate
       - name: Rebuild the dashboard
         run: .venv/bin/hive ui build
       - uses: actions/configure-pages@v5

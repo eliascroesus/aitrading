@@ -1,7 +1,10 @@
 name: daily-run
 
-# Post-close US session, odd minute to dodge top-of-hour queueing. Paper by
-# default: the run gets --live only when the HIVE_MODE secret is "live", and
+# Every day at 00:37 UTC: the US session closed at 21:00 UTC and the crypto
+# UTC day closed at 00:00, so both sleeves see their latest *closed* bar. On
+# weekends and US holidays only the crypto sleeve has a new bar and the stock
+# sleeve is skipped automatically. Odd minute to dodge top-of-hour queueing.
+# Paper by default: the run gets --live only when the HIVE_MODE secret is "live", and
 # the code then also demands the confirmation phrase in HIVE_LIVE_CONFIRM —
 # two deliberate human actions before real money moves.
 #
@@ -12,7 +15,7 @@ name: daily-run
 # the operator's backtests need.
 on:
   schedule:
-    - cron: "37 21 * * 1-5"
+    - cron: "37 0 * * *"
   workflow_dispatch:
 
 permissions:

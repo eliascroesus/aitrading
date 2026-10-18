@@ -9,6 +9,10 @@ from pathlib import Path
 from hive.orchestrator.run import RunSummary
 
 
+def _days(v) -> str:
+    return "n/a" if v is None else f"{float(v):,.0f} days"
+
+
 def write_daily_report(out_dir: Path, primary: RunSummary, shadow: RunSummary | None,
                        benchmarks: dict[str, float], survival: dict | None) -> dict[str, Path]:
     out_dir = Path(out_dir)
@@ -29,7 +33,7 @@ def write_daily_report(out_dir: Path, primary: RunSummary, shadow: RunSummary | 
         lines.append("**Benchmarks**: " + ", ".join(f"{k} ${v:.2f}" for k, v in benchmarks.items()))
     if survival:
         lines.append(f"**Survival**: budget today ${survival.get('budget_today', 0):.4f}, "
-                     f"runway {survival.get('runway_days')} days, dead={survival.get('dead')}")
+                     f"runway {_days(survival.get('runway_days'))}, dead={survival.get('dead')}")
     lines += ["", f"**Regime**: `{primary.regime.get('state')}` crash_guard={primary.regime.get('crash_guard')}", ""]
     if primary.notes:
         lines += ["**Notes**: " + "; ".join(primary.notes), ""]
