@@ -41,7 +41,7 @@ LLM agents may only research, debate and veto.**
 | Signals | `hive.signals` | Pure functions of bars + `StrategyConfig`. No network, no LLM. Row *t* depends only on rows ≤ *t* (tested). |
 | Backtest | `hive.backtest` | Signal at close *t*, fill at open *t+1*; stops on the day's low; costs on every fill; same config object as live. |
 | Risk | `hive.risk` | Hard gates in code. LLM actions are `approve / reduce_half / veto` — they can only shrink. |
-| Agents | `hive.agents` | Anthropic SDK, structured outputs, prompt caching, anonymised tickers in news prompts, cost accounting per call. |
+| Agents | `hive.agents` | Anthropic SDK, structured outputs, anonymised tickers in news prompts, bounded fields only between agents, cost accounting and estimate-based budget gating per call. |
 | Execution | `hive.execution` | One `Broker` protocol; paper by default; live needs an explicit confirmation phrase; Hyperliquid uses an agent wallet that cannot withdraw. |
 | Survival | `hive.survival` | Hash-chained ledger; equity net of AI costs; death floor; tiers with hysteresis; children start in shadow mode. |
 | Orchestrator | `hive.orchestrator` | Wires the daily run; writes the journal and the report; respects the kill switch before any order. |
