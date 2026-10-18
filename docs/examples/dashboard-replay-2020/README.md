@@ -1,7 +1,7 @@
 # Example dashboard — 2020 replay
 
 `index.html` (open it in a browser; `data.json` is the same data as JSON) is
-what `hive ui build` produces after **32 replayed trading days, 2020-05-26 to
+what `hive ui build` produces after **33 replayed trading days, 2020-05-26 to
 2020-07-10**, on the cached Qlib/CoinMetrics history. It exists so the UI can be
 seen before the live study starts. The live dashboard is published to GitHub
 Pages by `.github/workflows/pages.yml` after every daily run.
