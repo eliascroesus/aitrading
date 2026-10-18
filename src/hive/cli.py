@@ -33,6 +33,21 @@ def data_seed(
     rprint(summary)
 
 
+@data_app.command("refresh")
+def data_refresh(days: int = typer.Option(400, help="Lookback for the network refresh")) -> None:
+    """Refresh the cache from network sources (yfinance, Hyperliquid). Best effort."""
+    from hive.data.refresh import refresh_all
+    from hive.data.store import BarStore
+
+    setup_logging()
+    s = get_settings()
+    cfg = StrategyConfig.load()
+    store = BarStore(s.hive_data_dir / "cache")
+    counts = refresh_all(store, cfg, pit_csv=s.hive_data_dir / "raw" / "sp500_pit_membership.csv",
+                         days=days, hl_testnet=s.hl_testnet)
+    rprint(counts)
+
+
 @data_app.command("status")
 def data_status() -> None:
     from hive.data.store import BarStore
@@ -198,6 +213,7 @@ def experiment(
     n_jobs: int = typer.Option(3),
     out: Path | None = typer.Option(None, help="CSV path"),
     config: Path | None = typer.Option(None),
+    entry_mode: str = typer.Option("signal", help="signal | template_cross | random_template"),
 ) -> None:
     """Robustness grid / one-at-a-time sensitivity / null test on cached data."""
     from hive.backtest.costs import ALPACA_CRYPTO, ALPACA_STOCKS
@@ -228,12 +244,13 @@ def experiment(
     out = out or (s.hive_reports_dir / "experiments" / f"{kind}-{sleeve}-{start}-{end or 'end'}.csv")
     rprint(f"[bold]experiment[/bold] {kind} sleeve={sleeve} {start}..{end or 'end'} symbols={len(bars)}")
     rprint({"benchmark": {k: round(v, 4) for k, v in benchmark_row(inputs).items()}})
+    extra = {"entry_mode": entry_mode} if entry_mode != "signal" else {}
     if kind == "oat":
-        df = run_oat(inputs, cfg, _parse_variations(params), out_csv=out, n_jobs=n_jobs)
+        df = run_oat(inputs, cfg, _parse_variations(params), out_csv=out, n_jobs=n_jobs, extra=extra)
         cols = ["param", "value", "cagr", "sharpe", "max_drawdown", "n_trades", "win_rate",
                 "profit_factor", "avg_hold_days", "avg_exposure", "n_drawdown_halts"]
     elif kind == "grid":
-        df = run_grid(inputs, cfg, _parse_variations(params), out_csv=out, n_jobs=n_jobs)
+        df = run_grid(inputs, cfg, _parse_variations(params), out_csv=out, n_jobs=n_jobs, extra=extra)
         cols = list(df.columns)
     else:
         df = run_null_test(inputs, cfg, seeds=list(range(seeds)), out_csv=out, n_jobs=n_jobs)

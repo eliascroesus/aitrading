@@ -105,6 +105,14 @@ class Backtester:
                 mask = f["template_ok"].to_numpy() & (rng.random(len(f)) < p)
                 for day in f.index[mask]:
                     self.signal_days.setdefault(day, []).append(sym)
+        elif self.entry_mode == "template_cross":
+            # Alternative entry: the day the trend template first passes (a
+            # fresh qualification above the rising long MA, near the highs).
+            for sym, f in self.features.items():
+                t = f["template_ok"].to_numpy()
+                cross = t & ~np.r_[False, t[:-1]]
+                for day in f.index[cross]:
+                    self.signal_days.setdefault(day, []).append(sym)
         else:
             for sym, f in self.features.items():
                 for day in f.index[f["entry_signal"].to_numpy()]:

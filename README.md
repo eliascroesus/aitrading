@@ -1,13 +1,73 @@
 # HIVE — a survival-constrained multi-agent AI trading system
 
-A public study: an AI trading agent starts with **$100**. Its own LLM and data costs
-are paid out of that bankroll. If the bankroll reaches the death floor, the agent
-shuts down permanently. If it grows, it unlocks sub-agents (more research, more
-news coverage, more strategies) — a hive.
+A public study. An AI trading system starts with **$100**. Its own LLM and
+data costs are paid out of that bankroll; if the bankroll reaches the death
+floor it shuts down permanently; if it grows it unlocks sub-agents (more
+research, more news coverage, a second strategy) — a hive.
 
-> Status: under construction. See `docs/` for the research, architecture and
-> strategy specification, and `docs/BACKTEST_RESULTS.md` for results.
+One design rule, taken from every live LLM-trading experiment we could find
+(see `docs/RESEARCH.md`): **deterministic code finds, sizes and protects every
+trade; LLM agents may only research, debate and veto.**
 
-Nothing in this repository is investment advice. Most retail trading strategies
-lose money after costs; this project exists to measure, transparently, what an
-AI-run strategy actually does.
+> Nothing here is investment advice. Most retail trading loses money after
+> costs; this project exists to measure, transparently, what an AI-run
+> strategy actually does — including its own running costs.
+
+## What is in the box
+
+| Layer | Package | What it does |
+|---|---|---|
+| Data | `hive.data` | Point-in-time bars with a parquet cache; survivorship-free S&P 500 membership; offline seeders (Qlib US daily 2000–2020, CoinMetrics BTC/ETH, VIX) and network refresh (yfinance, Hyperliquid) |
+| Signals | `hive.signals` | The pre-registered rule set: rising 200DMA template → strong impulse → quiet pullback that resets short-term ROC → breakout trigger; ATR sizing; regime gate |
+| Backtest | `hive.backtest` | Next-open fills, intraday stops, costs, drawdown halts; metrics; robustness grid, null test, walk-forward experiments |
+| Risk | `hive.risk` | Hard gates in code: stops required, position/heat/exposure caps, daily-loss and drawdown halts, kill switch; the LLM can only `approve / reduce_half / veto` |
+| Agents | `hive.agents` | Quarantined news reader (anonymised, bounded outputs), fundamental/technical/sentiment analysts, one-round bull-vs-bear, portfolio manager, weekly auditor; every call cost-accounted; fail closed |
+| Execution | `hive.execution` | `PaperBroker`, `AlpacaBroker` (paper by default), `HyperliquidBroker` (agent wallet, testnet by default, eligibility flag) — no transfer tool exists |
+| Survival | `hive.survival` | Hash-chained ledger; equity net of AI costs; daily AI budget; death floor; tiers with hysteresis; children start in shadow mode |
+| Orchestrator | `hive.orchestrator` | The daily cycle, position book, hash-chained journal, rules-only shadow portfolio, daily markdown/JSON reports |
+
+Documentation: `docs/ARCHITECTURE.md`, `docs/STRATEGY.md`, `docs/DATA.md`,
+`docs/RESEARCH.md` (+ the four source reports in `docs/research/`),
+`docs/BACKTEST_RESULTS.md`.
+
+## Quick start
+
+```bash
+uv venv --python 3.13 && uv pip install -e ".[dev]"
+cp .env.example .env                      # paper mode by default; add keys when ready
+pytest -q && ruff check src tests
+
+# Offline backtests (see docs/DATA.md for where the files come from)
+hive data seed --qlib-root /path/to/qlib_us_1d   # + data/raw/{sp500_pit_membership.csv,coinmetrics/,vix-daily.csv}
+hive backtest --sleeve stocks --start 2001-01-01
+hive experiment --kind null --seeds 5
+hive experiment --kind oat --params "stocks.trail_atr=3,4,5;stocks.reset_period=15,21,30"
+
+# Paper trading cycle (post-close), replayable on cached dates
+hive data refresh
+hive run                     # primary (LLM filter if ANTHROPIC_API_KEY set) + rules-only shadow
+hive run --as-of 2020-11-10  # replay a historical day on cached data
+hive status
+hive review                  # weekly auditor: proposals only, never applied
+```
+
+Live trading requires **both** `HIVE_MODE=live` with the confirmation phrase in
+`HIVE_LIVE_CONFIRM` and the `--live` flag. Creating the file `state/KILL` stops
+every run before any order.
+
+## Scheduling
+
+`.github/workflows/daily.yml` runs the cycle after the US close on weekdays
+(paper unless secrets say otherwise) and commits `state/` and `reports/` back
+to the repo so the public record is the git history itself.
+
+## Honesty rules for the study
+
+* All rules and thresholds are pre-registered in `config/strategy.toml`; any
+  change is a commit.
+* Three lines are published every day: buy-and-hold benchmark, rules-only
+  shadow, rules + LLM filter — the research question is whether the LLM layer
+  beats rules-only *net of its own cost*.
+* Backtests of the LLM layer before the model's training cutoff are not
+  evidence; only forward results count for it.
+* Every death is published. No capital is added quietly.

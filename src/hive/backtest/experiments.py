@@ -89,13 +89,13 @@ def run_grid(
 
 def run_oat(
     inputs: ExperimentInputs, cfg: StrategyConfig, variations: dict[str, list[Any]], *,
-    out_csv: Path, n_jobs: int = 3,
+    out_csv: Path, n_jobs: int = 3, extra: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """One-at-a-time sensitivity: vary each parameter alone around the base config."""
     cells: list[dict[str, Any]] = [{}]
     for k, vals in variations.items():
         cells += [{k: v} for v in vals]
-    jobs = [(inputs, cfg, cell, {}) for cell in cells]
+    jobs = [(inputs, cfg, cell, extra or {}) for cell in cells]
     rows = []
     with ProcessPoolExecutor(max_workers=n_jobs) as ex:
         for cell, row in zip(cells, ex.map(_run_one, jobs), strict=True):

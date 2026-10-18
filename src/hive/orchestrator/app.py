@@ -80,6 +80,20 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
         llm = LLMClient(api_key=settings.anthropic_api_key.get_secret_value(), budget_usd=0.0,
                         on_call=lambda c: calls_journal.write("llm_call", c.__dict__))
 
+    news_fn = fundamentals_fn = None
+    if settings.hive_mode != "backtest" and settings.hive_network_data:
+        from hive.data.sources.fundamentals import fundamentals_snapshot
+        from hive.data.sources.news import finnhub_company_news, google_news_headlines
+
+        fk = settings.finnhub_api_key.get_secret_value() if settings.finnhub_api_key else None
+
+        def news_fn(sym: str) -> list[tuple[str, str]]:
+            items = finnhub_company_news(sym, fk) if fk else []
+            return items or google_news_headlines(f"{sym} stock")
+
+        def fundamentals_fn(sym: str) -> dict:
+            return fundamentals_snapshot(sym, as_of=run_date, finnhub_key=fk)
+
     primary_broker = build_primary_broker(settings, store, classes, ts, cfg.survival.starting_bankroll_usd)
     primary = DailyRun(
         label="primary", run_date=run_date, cfg=cfg, store=store, broker=primary_broker,
@@ -87,7 +101,7 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
         journal=Journal(settings.hive_state_dir / "journal", rd), ledger=ledger, llm=llm,
         universe=universe, asset_classes=classes, kill_switch=kill,
         cheap_model=settings.hive_llm_cheap_model, decision_model=settings.hive_llm_model,
-        effort=settings.hive_llm_effort,
+        effort=settings.hive_llm_effort, news_fn=news_fn, fundamentals_fn=fundamentals_fn,
     ).execute()
 
     shadow: RunSummary | None = None

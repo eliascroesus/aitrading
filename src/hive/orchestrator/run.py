@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
@@ -67,7 +68,11 @@ class DailyRun:
         cheap_model: str = "claude-haiku-5-5",
         decision_model: str = "claude-opus-5-5",
         effort: str = "medium",
+        news_fn: Callable[[str], list[tuple[str, str]]] | None = None,
+        fundamentals_fn: Callable[[str], dict[str, Any]] | None = None,
     ):
+        self.news_fn = news_fn
+        self.fundamentals_fn = fundamentals_fn
         self.label = label
         self.run_date = pd.Timestamp(run_date)
         self.cfg = cfg
@@ -178,14 +183,44 @@ class DailyRun:
         # --- decisions (LLM filter or rules-only) ---------------------------------
         actions: dict[str, tuple[str, str]] = {}  # symbol -> (action, invalidation)
         top = cands.head(self.cfg.universe.max_candidates_for_llm)
+        # Deterministic earnings blackout (needs a fundamentals source; skipped when absent).
+        fundamentals: dict[str, dict[str, Any]] = {}
+        if not top.empty and self.fundamentals_fn is not None:
+            keep = []
+            for _, r in top.iterrows():
+                sym = r["symbol"]
+                rules = self.cfg.rules_for(self.asset_classes.get(sym, "stock"))
+                try:
+                    facts = self.fundamentals_fn(sym) or {}
+                except Exception as exc:  # a data hiccup must never crash the run
+                    facts = {"error": str(exc)[:200]}
+                fundamentals[sym] = facts
+                eid = facts.get("earnings_in_days")
+                if isinstance(eid, int) and 0 <= eid <= rules.earnings_blackout_bars:
+                    self.journal.write("blackout", {"symbol": sym, "earnings_in_days": eid})
+                    continue
+                keep.append(sym)
+            top = top[top["symbol"].isin(keep)]
         if not top.empty:
             if self.llm is not None and self.llm.available:
                 self.llm.budget_usd = self.llm.spent_usd + budget
                 pipe = CandidatePipeline(self.llm, cheap_model=self.cheap_model,
                                          decision_model=self.decision_model, effort="low",
                                          pm_effort=self.effort)
-                ctxs = [CandidateContext(symbol=r["symbol"], asset_class=self.asset_classes.get(r["symbol"], "stock"),
-                                         features=features_payload(r)) for _, r in top.iterrows()]
+                ctxs = []
+                for _, r in top.iterrows():
+                    sym = r["symbol"]
+                    headlines: list[tuple[str, str]] = []
+                    if self.news_fn is not None:
+                        try:
+                            headlines = self.news_fn(sym)
+                        except Exception as exc:
+                            self.journal.write("news_error", {"symbol": sym, "error": str(exc)[:200]})
+                    ctxs.append(CandidateContext(
+                        symbol=sym, asset_class=self.asset_classes.get(sym, "stock"),
+                        features=features_payload(r), fundamentals=fundamentals.get(sym, {}),
+                        headlines=headlines,
+                    ))
                 evals = pipe.evaluate(ctxs, {"equity": equity, "cash": cash, "n_positions": len(self.book),
                                              "regime": summary.regime})
                 for ev in evals:

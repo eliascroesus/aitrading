@@ -93,6 +93,22 @@ def test_risk_caps_bound_position_size(cfg):
     assert t["qty"] * t["r_per_share"] <= 100.0 * cfg.risk.risk_per_trade_pct * 1.05
 
 
+def test_alternative_entry_modes(cfg):
+    bars = _scenario()
+    bt = Backtester({"AAA": bars}, bars, cfg, ALPACA_STOCKS, initial_equity=100.0, entry_mode="template_cross")
+    # template_cross fires only on the first day the template passes
+    f = bt.features["AAA"]
+    days = [d for d, syms in bt.signal_days.items() if "AAA" in syms]
+    assert days and all(bool(f.loc[d, "template_ok"]) for d in days)
+    first_ok = f.index[f["template_ok"].to_numpy()][0]
+    assert days[0] == first_ok
+    res = bt.run()
+    assert not res.trades.empty
+    null = Backtester({"AAA": bars}, bars, cfg, ALPACA_STOCKS, initial_equity=100.0,
+                      entry_mode="random_template", seed=1)
+    assert all(bool(f.loc[d, "template_ok"]) for d in null.signal_days)
+
+
 def test_drawdown_halt_liquidates(cfg):
     cfg.risk.max_drawdown_halt_pct = 0.02
     close, volume = textbook_setup()
