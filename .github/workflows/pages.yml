@@ -1,6 +1,8 @@
 name: dashboard-pages
 
-# Publishes reports/dashboard (built by the daily run) to GitHub Pages.
+# Publishes reports/dashboard to GitHub Pages when a person pushes a rebuilt
+# dashboard (the scheduled workflows deploy their own build directly, because a
+# GITHUB_TOKEN push does not trigger this workflow).
 # Enable Pages with "GitHub Actions" as the source in the repository settings.
 on:
   push:

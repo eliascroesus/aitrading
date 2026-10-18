@@ -44,6 +44,10 @@ jobs:
         run: .venv/bin/hive operate
       - name: Rebuild the dashboard
         run: .venv/bin/hive ui build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports/dashboard
       - name: Commit state and reports
         run: |
           git config user.name "hive-bot"
@@ -52,3 +56,22 @@ jobs:
           git diff --cached --quiet || git commit -m "weekly review + operator iteration $(date -u +%F)"
           git pull --rebase origin "$GITHUB_REF_NAME"
           git push
+
+  # Commits made with GITHUB_TOKEN do not trigger other workflows, so pages.yml
+  # would never see the bot's push: publish the dashboard from here instead.
+  pages:
+    needs: iterate
+    if: ${{ always() && needs.iterate.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
