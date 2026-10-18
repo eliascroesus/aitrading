@@ -1,0 +1,44 @@
+name: daily-run
+
+# Post-close US session, odd minute to dodge top-of-hour queueing. Paper by
+# default: live requires HIVE_MODE=live and HIVE_LIVE_CONFIRM in secrets AND
+# the --live flag below, on purpose.
+on:
+  schedule:
+    - cron: "37 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hive-daily
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      HIVE_MODE: ${{ secrets.HIVE_MODE || 'paper' }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+      ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+      FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+      HIVE_LLM_MODEL: ${{ vars.HIVE_LLM_MODEL || 'claude-opus-5-5' }}
+      HIVE_LLM_CHEAP_MODEL: ${{ vars.HIVE_LLM_CHEAP_MODEL || 'claude-haiku-5-5' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv --python 3.13 && uv pip install -e .
+      - name: Refresh data cache (network sources)
+        run: .venv/bin/hive data refresh || echo "refresh failed; using cached data"
+      - name: Daily cycle (paper unless secrets say otherwise)
+        run: .venv/bin/hive run
+      - name: Commit state and reports
+        run: |
+          git config user.name "hive-bot"
+          git config user.email "hive-bot@users.noreply.github.com"
+          git add state reports
+          git diff --cached --quiet || git commit -m "daily run $(date -u +%F)"
+          git push

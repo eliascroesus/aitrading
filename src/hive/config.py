@@ -206,6 +206,9 @@ class RiskLimits(BaseModel):
     portfolio_vol_lookback: int = 20
     max_daily_loss_pct: float = 0.04
     max_drawdown_halt_pct: float = 0.25
+    # After a drawdown halt: liquidate, wait this many bars, then resume with a
+    # fresh drawdown window. Live, a halt also pages the operator.
+    halt_cooldown_bars: int = 21
     min_order_notional_usd: float = 1.0
     # Crypto sleeve
     crypto_sleeve_pct: float = 0.40

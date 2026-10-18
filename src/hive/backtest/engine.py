@@ -66,9 +66,13 @@ class Backtester:
         fractional: bool = True,
         use_regime_filter: bool = True,
         vix: pd.Series | None = None,
+        entry_mode: str = "signal",
+        seed: int = 0,
     ):
         self.cfg = config
         self.cost = cost
+        self.entry_mode = entry_mode
+        self.seed = seed
         self.initial_equity = float(initial_equity or config.survival.starting_bankroll_usd)
         self.universe = universe
         self.candidate_filter = candidate_filter
@@ -90,9 +94,21 @@ class Backtester:
         # Sparse index of entry signals: day -> symbols. Scanning every symbol
         # every day is O(days x symbols) of pandas row lookups and far too slow.
         self.signal_days: dict[pd.Timestamp, list[str]] = {}
-        for sym, f in self.features.items():
-            for day in f.index[f["entry_signal"].to_numpy()]:
-                self.signal_days.setdefault(day, []).append(sym)
+        if self.entry_mode == "random_template":
+            # Null test: random entry days among template-passing bars, at the
+            # same overall frequency as the real signal.
+            n_signal = sum(int(f["entry_signal"].sum()) for f in self.features.values())
+            n_template = sum(int(f["template_ok"].sum()) for f in self.features.values())
+            p = n_signal / n_template if n_template else 0.0
+            rng = np.random.default_rng(self.seed)
+            for sym, f in self.features.items():
+                mask = f["template_ok"].to_numpy() & (rng.random(len(f)) < p)
+                for day in f.index[mask]:
+                    self.signal_days.setdefault(day, []).append(sym)
+        else:
+            for sym, f in self.features.items():
+                for day in f.index[f["entry_signal"].to_numpy()]:
+                    self.signal_days.setdefault(day, []).append(sym)
 
         calendar = benchmark_bars.index
         if start:
@@ -113,6 +129,8 @@ class Backtester:
         pending_exits: dict[str, str] = {}  # symbol -> reason
         peak_equity = cash
         halted = False
+        halt_bars_left = 0
+        n_halts = 0
         daily_log: list[dict] = []
         day_start_equity = cash
 
@@ -190,10 +208,16 @@ class Backtester:
             day_start_equity = equity
             if dd <= -cfg.risk.max_drawdown_halt_pct and not halted:
                 halted = True
+                halt_bars_left = cfg.risk.halt_cooldown_bars
+                n_halts += 1
                 log.warning("%s drawdown %.1f%% breached halt; liquidating", day.date(), dd * 100)
             if halted:
                 for sym in list(positions):
                     pending_exits[sym] = "dd_halt"
+                halt_bars_left -= 1
+                if halt_bars_left <= 0 and not positions:
+                    halted = False
+                    peak_equity = equity  # fresh drawdown window after the cooldown
                 daily_log.append({"date": day, "equity": equity, "cash": cash, "n_pos": len(positions),
                                   "state": "halted", "n_pending": 0})
                 continue
@@ -291,6 +315,7 @@ class Backtester:
         exposure_s = pd.Series(dict(exposure_hist), name="exposure")
         trades_df = pd.DataFrame(trades)
         metrics = summarize(equity_s, trades_df, exposure_s)
+        metrics["n_drawdown_halts"] = n_halts
         return BacktestResult(equity_s, exposure_s, trades_df, metrics, cfg, daily_log)
 
     # ------------------------------------------------------------------
