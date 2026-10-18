@@ -61,13 +61,17 @@ REVIEW_SYSTEM = (
     "you say is applied automatically. " + OBJECTIVE
 )
 
-_TICKER_RE = re.compile(r"\$?\b[A-Z]{1,5}\b")
-
-
 def anonymise(text: str, names: list[str]) -> str:
-    """Replace company names and tickers with THE_COMPANY (Glasserman-Lin anonymisation)."""
+    """Replace company names and tickers with THE_COMPANY (Glasserman-Lin anonymisation).
+
+    Tickers match case-sensitively on word boundaries (so the ticker ``A`` does not
+    eat every letter a); company names match case-insensitively on boundaries.
+    """
     out = text
-    for n in sorted({x for x in names if x}, key=len, reverse=True):
-        out = re.sub(re.escape(n), "THE_COMPANY", out, flags=re.IGNORECASE)
-        out = re.sub(r"\$" + re.escape(n.upper()) + r"\b", "THE_COMPANY", out)
+    for n in sorted({x.strip() for x in names if x and x.strip()}, key=len, reverse=True):
+        is_ticker = n.isupper() and len(n) <= 5 and n.isalpha()
+        if is_ticker:
+            out = re.sub(r"\$?\b" + re.escape(n) + r"\b", "THE_COMPANY", out)
+        else:
+            out = re.sub(r"\b" + re.escape(n) + r"(?:\b|(?=[.,;:!?]))", "THE_COMPANY", out, flags=re.IGNORECASE)
     return out

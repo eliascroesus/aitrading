@@ -112,10 +112,20 @@ def test_tier_hysteresis_and_upgrade_requirements(tmp_path):
     # Jumping to $300 without a 30-day positive streak stays base
     assert led.tier(300.0).name == "base"
     t = datetime(2026, 1, 1, tzinfo=UTC)
-    for i in range(31):
-        led.append("equity_mark", 100.0 + i * 7, ts=t + timedelta(days=i))
+    for i in range(70):
+        d = (t + timedelta(days=i)).date().isoformat()
+        led.append("equity_mark", 100.0 + i * 3, {"date": d}, ts=t + timedelta(days=i))
+    # each of the last 40 dates is above its mark 30 days earlier
     assert led.net_positive_days() >= 30
     assert led.tier(300.0).name == "growth"
+    # a mark below its 30-day-earlier value breaks the streak
+    led.append("equity_mark", 50.0, {"date": (t + timedelta(days=70)).date().isoformat()},
+               ts=t + timedelta(days=70))
+    assert led.net_positive_days() == 0
+    # marks are deduplicated per date (re-runs do not create fake streaks)
+    led.append("equity_mark", 400.0, {"date": (t + timedelta(days=70)).date().isoformat()},
+               ts=t + timedelta(days=70, hours=1))
+    assert led.equity_marks()[-1][1] == 400.0 and len(led.equity_marks()) == 71
 
 
 def test_death_conditions(tmp_path):

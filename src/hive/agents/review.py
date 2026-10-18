@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from hive.agents import prompts
-from hive.agents.llm import LLMClient
+from hive.agents.llm import BudgetExceededError, LLMClient
 from hive.agents.schemas import ReviewReport
 from hive.orchestrator.journal import Journal
 
@@ -41,11 +41,16 @@ def collect_review_inputs(state_dir: Path, days: int = 7) -> dict:
 
 
 def run_review(llm: LLMClient, model: str, inputs: dict, out_path: Path) -> ReviewReport | None:
-    parsed, call = llm.parse(
-        role="reviewer", model=model, system=prompts.REVIEW_SYSTEM,
-        user="Weekly journal summary:\n" + json.dumps(inputs, default=str)[:60_000],
-        schema=ReviewReport, effort="medium", max_tokens=4000,
-    )
+    try:
+        parsed, call = llm.parse(
+            role="reviewer", model=model, system=prompts.REVIEW_SYSTEM,
+            user="Weekly journal summary:\n" + json.dumps(inputs, default=str)[:60_000],
+            schema=ReviewReport, effort="medium", max_tokens=4000,
+        )
+    except BudgetExceededError as exc:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps({"inputs": inputs, "report": None, "error": str(exc)}, indent=2, default=str))
+        return None
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps({"inputs": inputs, "report": parsed.model_dump() if parsed else None,
                                     "call": call.__dict__}, indent=2, default=str))

@@ -37,3 +37,16 @@ class Journal:
         if not Path(path).exists():
             return []
         return [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()]
+
+    @staticmethod
+    def verify_file(path: Path) -> bool:
+        prev = "0" * 64
+        for e in Journal.read(path):
+            h = e.get("hash")
+            body = {k: v for k, v in e.items() if k != "hash"}
+            if e.get("prev_hash") != prev:
+                return False
+            if hashlib.sha256(json.dumps(body, sort_keys=True, default=str).encode()).hexdigest() != h:
+                return False
+            prev = h
+        return True

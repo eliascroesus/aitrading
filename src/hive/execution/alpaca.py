@@ -37,7 +37,10 @@ class AlpacaBroker:
         out: dict[str, BrokerPosition] = {}
         for p in self.client.get_all_positions():
             ac = "crypto" if str(getattr(p, "asset_class", "")).lower().endswith("crypto") else "stock"
-            sym = p.symbol.replace("/USD", "") if ac == "crypto" else p.symbol
+            sym = p.symbol
+            if ac == "crypto":  # Alpaca reports crypto positions as BTCUSD or BTC/USD
+                sym = sym.replace("/USD", "")
+                sym = sym[:-3] if sym.endswith("USD") else sym
             out[sym] = BrokerPosition(
                 symbol=sym, asset_class=ac, qty=float(p.qty), avg_price=float(p.avg_entry_price),
                 current_price=float(p.current_price or p.avg_entry_price),

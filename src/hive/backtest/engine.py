@@ -15,7 +15,7 @@ from hive.config import StrategyConfig, TrendRules
 from hive.data.bars import adjust_ohlc
 from hive.data.universe import PointInTimeUniverse
 from hive.signals.features import compute_features, initial_stop, rank_candidates
-from hive.signals.regime import regime_frame
+from hive.signals.regime import class_multipliers, regime_frame
 from hive.signals.sizing import size_position
 
 log = logging.getLogger(__name__)
@@ -37,6 +37,7 @@ class Position:
     highest_close: float
     fees: float = 0.0
     bars_held: int = 0
+    failure_checked: bool = False
 
 
 @dataclass
@@ -68,6 +69,7 @@ class Backtester:
         vix: pd.Series | None = None,
         entry_mode: str = "signal",
         seed: int = 0,
+        calendar: pd.DatetimeIndex | None = None,
     ):
         self.cfg = config
         self.cost = cost
@@ -83,6 +85,7 @@ class Backtester:
         self.rules: dict[str, TrendRules] = {}
         self.px: dict[str, pd.DataFrame] = {}
         self.features: dict[str, pd.DataFrame] = {}
+        self.last_bar: dict[str, pd.Timestamp] = {}
         for sym, bars in bars_by_symbol.items():
             rules = config.rules_for(self.asset_class[sym])
             if len(bars) <= rules.ma_long:
@@ -90,7 +93,22 @@ class Backtester:
             self.rules[sym] = rules
             self.px[sym] = adjust_ohlc(bars)
             self.features[sym] = compute_features(bars, rules)
-        self.regime = regime_frame(benchmark_bars, config.regime, vix)
+            self.last_bar[sym] = bars.index[-1]
+        self.periods_per_year = (
+            365 if all(self.asset_class[s] == "crypto" for s in self.px) and self.px else 252
+        )
+
+        # Calendar: the benchmark's, or a supplied one (e.g. the union of all
+        # symbols' bars for a mixed stock+crypto sleeve). The regime is
+        # forward-filled onto it so weekend crypto bars see Friday's regime.
+        cal = calendar if calendar is not None else benchmark_bars.index
+        if start:
+            cal = cal[cal >= pd.Timestamp(start)]
+        if end:
+            cal = cal[cal <= pd.Timestamp(end)]
+        self.calendar = cal
+        self.regime = regime_frame(benchmark_bars, config.regime, vix).reindex(cal, method="ffill")
+
         # Sparse index of entry signals: day -> symbols. Scanning every symbol
         # every day is O(days x symbols) of pandas row lookups and far too slow.
         self.signal_days: dict[pd.Timestamp, list[str]] = {}
@@ -118,13 +136,6 @@ class Backtester:
                 for day in f.index[f["entry_signal"].to_numpy()]:
                     self.signal_days.setdefault(day, []).append(sym)
 
-        calendar = benchmark_bars.index
-        if start:
-            calendar = calendar[calendar >= pd.Timestamp(start)]
-        if end:
-            calendar = calendar[calendar <= pd.Timestamp(end)]
-        self.calendar = calendar
-
     # ------------------------------------------------------------------
     def run(self) -> BacktestResult:
         cfg = self.cfg
@@ -134,7 +145,7 @@ class Backtester:
         equity_hist: list[tuple[pd.Timestamp, float]] = []
         exposure_hist: list[tuple[pd.Timestamp, float]] = []
         pending_entries: list[dict] = []  # decided at close t, filled at open t+1
-        pending_exits: dict[str, str] = {}  # symbol -> reason
+        pending_exits: dict[str, str] = {}  # symbol -> reason (kept until a bar exists)
         peak_equity = cash
         halted = False
         halt_bars_left = 0
@@ -143,15 +154,26 @@ class Backtester:
         day_start_equity = cash
 
         for day in self.calendar:
-            # ---- 1. fills at today's open for yesterday's decisions ---------
+            # ---- 0. names whose history ended while held: close at the last bar
+            for sym, pos in list(positions.items()):
+                if day > self.last_bar[sym]:
+                    last_close = float(self.px[sym]["close"].iloc[-1])
+                    cash += self._close_position(pos, last_close, self.last_bar[sym], "delisted", trades)
+                    del positions[sym]
+                    pending_exits.pop(sym, None)
+
+            # ---- 1. fills at today's open for earlier decisions --------------
             for sym, reason in list(pending_exits.items()):
                 pos = positions.get(sym)
-                bar = self._bar(sym, day)
-                if pos is None or bar is None:
+                if pos is None:
+                    del pending_exits[sym]
                     continue
+                bar = self._bar(sym, day)
+                if bar is None:
+                    continue  # no bar today (e.g. holiday for this venue): keep pending
                 cash += self._close_position(pos, bar["open"], day, reason, trades)
                 del positions[sym]
-            pending_exits.clear()
+                del pending_exits[sym]
 
             for order in pending_entries:
                 sym = order["symbol"]
@@ -188,12 +210,14 @@ class Backtester:
                     fill = min(bar["open"], pos.stop_price)
                     cash += self._close_position(pos, fill, day, "stop", trades)
                     del positions[sym]
+                    pending_exits.pop(sym, None)
 
             # ---- 3. mark to market at close; ratchet trailing stops ---------
             mv = 0.0
             for sym, pos in positions.items():
                 bar = self._bar(sym, day)
                 if bar is None:
+                    mv += pos.qty * self._last_close_before(sym, day)
                     continue
                 pos.bars_held += 1
                 close = bar["close"]
@@ -220,34 +244,35 @@ class Backtester:
                 n_halts += 1
                 log.warning("%s drawdown %.1f%% breached halt; liquidating", day.date(), dd * 100)
             if halted:
-                for sym in list(positions):
-                    pending_exits[sym] = "dd_halt"
+                for sym in positions:
+                    pending_exits.setdefault(sym, "dd_halt")
                 halt_bars_left -= 1
-                if halt_bars_left <= 0 and not positions:
+                if halt_bars_left <= 0:
                     halted = False
                     peak_equity = equity  # fresh drawdown window after the cooldown
                 daily_log.append({"date": day, "equity": equity, "cash": cash, "n_pos": len(positions),
                                   "state": "halted", "n_pending": 0})
                 continue
-            if daily_loss <= -cfg.risk.max_daily_loss_pct:
-                # Daily loss breach: no new entries today; existing stops still manage exits.
-                daily_loss_block = True
-            else:
-                daily_loss_block = False
+            daily_loss_block = daily_loss <= -cfg.risk.max_daily_loss_pct
 
             # ---- 5. rule exits decided at close, filled next open ------------
             for sym, pos in positions.items():
+                if sym in pending_exits:
+                    continue
                 f = self.features[sym]
                 rules = self.rules[sym]
                 if day not in f.index:
                     continue
                 row = f.loc[day]
                 close = float(row["close"])
+                failure_due = pos.bars_held >= rules.failure_stop_bars and not pos.failure_checked
+                if failure_due:
+                    pos.failure_checked = True
                 if row["below_mid_streak"] >= rules.exit_closes_below_mid or (
                     bool(row["below_long"]) and rules.exit_closes_below_long <= 1
                 ):
                     pending_exits[sym] = "trend_break"
-                elif pos.bars_held == rules.failure_stop_bars and close < pos.entry_price + rules.failure_stop_min_r * pos.r_per_share:
+                elif failure_due and close < pos.entry_price + rules.failure_stop_min_r * pos.r_per_share:
                     pending_exits[sym] = "failure_stop"
                 elif pos.bars_held >= rules.review_bars and not bool(row["template_ok"]):
                     pending_exits[sym] = "review"
@@ -256,21 +281,8 @@ class Backtester:
 
             # ---- 6. new entries ---------------------------------------------
             reg = self.regime.loc[day] if day in self.regime.index else None
-            if self.use_regime_filter and reg is not None:
-                state = str(reg["state"])
-                base_mult = float(reg["risk_multiplier"])
-                allow = {"stock": bool(reg["allow_new_stock"]), "etf": bool(reg["allow_new_etf"]),
-                         "crypto": bool(reg["allow_new_stock"])}
-                # RED blocks stocks/crypto outright; ETFs passing their own template
-                # may still enter at full size. YELLOW halves everything.
-                mult = {ac: (base_mult if ok else 0.0) for ac, ok in allow.items()}
-                if state == "red" and allow["etf"]:
-                    mult["etf"] = 1.0
-            else:
-                state = "off"
-                allow = {"stock": True, "etf": True, "crypto": True}
-                mult = {"stock": 1.0, "etf": 1.0, "crypto": 1.0}
-            risk_mult = max(mult.values())
+            mult = class_multipliers(reg, use_filter=self.use_regime_filter)
+            state = str(reg["state"]) if (reg is not None and self.use_regime_filter) else "off"
             n_open_after_exits = len(positions) - len(pending_exits)
             slots = min(cfg.risk.max_positions - n_open_after_exits, cfg.risk.max_new_entries_per_day)
             open_risk = sum(
@@ -278,8 +290,11 @@ class Backtester:
                 if p.symbol not in pending_exits
             ) / equity if equity > 0 else 0.0
             port_vol = self._portfolio_vol(equity_hist)
-            if slots > 0 and risk_mult > 0 and not daily_loss_block:
-                cands = self._candidates(day, positions, allow)
+            n_crypto = sum(1 for p in positions.values() if p.asset_class == "crypto")
+            crypto_exp = sum(p.qty * self._close_or(p, day) for p in positions.values()
+                             if p.asset_class == "crypto") / equity if equity > 0 else 0.0
+            if slots > 0 and max(mult.values()) > 0 and not daily_loss_block:
+                cands = self._candidates(day, positions, mult)
                 if self.candidate_filter is not None and not cands.empty:
                     cands = self.candidate_filter(day, cands)
                 gross_now = mv / equity if equity > 0 else 0.0
@@ -290,17 +305,26 @@ class Backtester:
                     if open_risk >= cfg.risk.max_open_risk_pct:
                         break
                     sym = row["symbol"]
+                    ac = self.asset_class[sym]
+                    if ac == "crypto" and (n_crypto >= cfg.risk.crypto_max_positions
+                                           or crypto_exp >= cfg.risk.crypto_sleeve_pct):
+                        continue
                     rules = self.rules[sym]
                     price = float(row["close"])
                     stop = initial_stop(price, row, rules)
                     d = size_position(
-                        equity=equity, price=price, stop_price=stop, risk=cfg.risk,
-                        asset_class=self.asset_class[sym],
-                        risk_multiplier=mult.get(self.asset_class[sym], 0.0),
-                        portfolio_vol_ann=port_vol, fractional=self.fractional,
+                        equity=equity, price=price, stop_price=stop, risk=cfg.risk, asset_class=ac,
+                        risk_multiplier=mult.get(ac, 0.0), portfolio_vol_ann=port_vol,
+                        fractional=self.fractional,
                     )
                     if d.notional <= 0:
                         continue
+                    if ac == "crypto":
+                        room = max(cfg.risk.crypto_sleeve_pct - crypto_exp, 0.0) * equity
+                        if d.notional > room:
+                            continue
+                        crypto_exp += d.notional / equity
+                        n_crypto += 1
                     pending_entries.append({"symbol": sym, "notional": d.notional,
                                             "r_per_share": d.r_per_share})
                     gross_now += d.notional / equity
@@ -309,20 +333,21 @@ class Backtester:
             daily_log.append({"date": day, "equity": equity, "cash": cash, "n_pos": len(positions),
                               "state": state, "n_pending": len(pending_entries)})
 
-        # Liquidate at the last close so the final equity is realised (and pays
-        # its exit costs); the last equity point becomes the realised cash.
+        # Liquidate at each name's last available close so the final equity is
+        # realised (and pays its exit costs); the last point becomes realised cash.
         last = self.calendar[-1]
         for sym, pos in list(positions.items()):
-            bar = self._bar(sym, last)
-            if bar is not None:
-                cash += self._close_position(pos, bar["close"], last, "end_of_test", trades)
+            px = self.px[sym].loc[:last]
+            if len(px):
+                cash += self._close_position(pos, float(px["close"].iloc[-1]), min(last, px.index[-1]),
+                                             "end_of_test", trades)
                 del positions[sym]
         if equity_hist and not positions:
             equity_hist[-1] = (last, cash)
         equity_s = pd.Series(dict(equity_hist), name="equity")
         exposure_s = pd.Series(dict(exposure_hist), name="exposure")
         trades_df = pd.DataFrame(trades)
-        metrics = summarize(equity_s, trades_df, exposure_s)
+        metrics = summarize(equity_s, trades_df, exposure_s, periods_per_year=self.periods_per_year)
         metrics["n_drawdown_halts"] = n_halts
         return BacktestResult(equity_s, exposure_s, trades_df, metrics, cfg, daily_log)
 
@@ -333,9 +358,13 @@ class Backtester:
             return None
         return px.loc[day]
 
+    def _last_close_before(self, sym: str, day: pd.Timestamp) -> float:
+        px = self.px[sym].loc[:day]
+        return float(px["close"].iloc[-1]) if len(px) else 0.0
+
     def _close_or(self, pos: Position, day: pd.Timestamp) -> float:
         bar = self._bar(pos.symbol, day)
-        return float(bar["close"]) if bar is not None else pos.entry_price
+        return float(bar["close"]) if bar is not None else self._last_close_before(pos.symbol, day) or pos.entry_price
 
     def _portfolio_vol(self, equity_hist: list[tuple[pd.Timestamp, float]]) -> float | None:
         lb = self.cfg.risk.portfolio_vol_lookback
@@ -343,10 +372,10 @@ class Backtester:
             return None
         vals = np.array([e for _, e in equity_hist[-(lb + 1):]], dtype=float)
         rets = np.diff(np.log(vals))
-        return float(rets.std(ddof=1) * np.sqrt(252)) if len(rets) > 1 else None
+        return float(rets.std(ddof=1) * np.sqrt(self.periods_per_year)) if len(rets) > 1 else None
 
     def _candidates(
-        self, day: pd.Timestamp, positions: dict[str, Position], allow: dict[str, bool]
+        self, day: pd.Timestamp, positions: dict[str, Position], mult: dict[str, float]
     ) -> pd.DataFrame:
         symbols = self.signal_days.get(day)
         if not symbols:
@@ -355,7 +384,7 @@ class Backtester:
         rows = []
         for sym in symbols:
             ac = self.asset_class[sym]
-            if sym in positions or not allow.get(ac, False):
+            if sym in positions or mult.get(ac, 0.0) <= 0:
                 continue
             if allowed is not None and ac == "stock" and sym not in allowed:
                 continue

@@ -134,7 +134,12 @@ def run(
         bench = store.get("etf", cfg.universe.regime_stock_symbol)
         if bench is None:
             raise typer.BadParameter("no cached data; run `hive data seed` first")
-        as_of = bench.index[-1].date().isoformat()
+        last = bench.index[-1].date()
+        as_of = last.isoformat()
+        age = (__import__("datetime").date.today() - last).days
+        if age > 5:
+            rprint(f"[yellow]cached data ends {as_of} ({age} days ago): this is a replay; "
+                   f"run `hive data refresh` for a current cycle[/yellow]")
     try:
         paths = run_day(s, cfg, __import__("datetime").date.fromisoformat(as_of),
                         with_shadow=not no_shadow, llm_enabled=False if no_llm else None)
@@ -162,7 +167,11 @@ def status() -> None:
     for label in ("primary", "shadow"):
         book = PositionBook(s.hive_state_dir / f"book_{label}.json")
         rprint(f"{label}: {len(book)} open positions: {sorted(book.positions)}")
-    rprint(f"kill switch: {'ENGAGED' if s.kill_switch_engaged() else 'off'}; ledger chain ok: {ledger.verify()}")
+    from hive.orchestrator.journal import Journal
+
+    bad = [p.name for p in sorted((s.hive_state_dir / "journal").glob("*.jsonl")) if not Journal.verify_file(p)]
+    rprint(f"kill switch: {'ENGAGED' if s.kill_switch_engaged() else 'off'}; ledger chain ok: {ledger.verify()}; "
+           f"journal chains ok: {not bad}{' broken: ' + ', '.join(bad) if bad else ''}")
 
 
 @app.command()
@@ -178,9 +187,19 @@ def review(days: int = typer.Option(7)) -> None:
     if s.anthropic_api_key is None:
         rprint("[yellow]no ANTHROPIC_API_KEY: inputs printed, no LLM review[/yellow]")
         return
-    llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(), budget_usd=1.0)
-    out = s.hive_reports_dir / "reviews" / f"review-{__import__('datetime').date.today().isoformat()}.json"
+    from hive.survival.ledger import SurvivalLedger
+
+    cfg = StrategyConfig.load()
+    ledger = SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival)
+    last = ledger.last_equity_mark() or cfg.survival.starting_bankroll_usd
+    # The weekly review is paid from the bankroll like every other call.
+    budget = ledger.status(last).budget_remaining
+    llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(), budget_usd=max(budget, 0.0))
+    today = __import__("datetime").date.today()
+    out = s.hive_reports_dir / "reviews" / f"review-{today.isoformat()}.json"
     rep = run_review(llm, s.hive_llm_model, inputs, out)
+    if llm.spent_usd > 0:
+        ledger.append("ai_cost", llm.spent_usd, {"label": "review", "date": today.isoformat()})
     rprint(rep.model_dump() if rep else "review failed (fail closed)")
     rprint(f"wrote {out}")
 

@@ -33,6 +33,12 @@ class BudgetExceededError(RuntimeError):
     pass
 
 
+def estimate_call_cost_usd(model: str, input_chars: int, max_tokens: int, output_fraction: float = 0.25) -> float:
+    """Rough pre-call estimate: ~4 chars per input token; assume a quarter of max_tokens out."""
+    p = PRICES.get(model, PRICES["claude-opus-5-5"])
+    return (input_chars / 4.0 * p[0] + max_tokens * output_fraction * p[1]) / 1_000_000.0
+
+
 @dataclass
 class LLMCall:
     role: str
@@ -85,14 +91,19 @@ class LLMClient:
         schema: type[T],
         effort: str = "low",
         max_tokens: int = 2048,
-        reserve_usd: float = 0.02,
+        reserve_usd: float = 0.0005,
     ) -> tuple[T | None, LLMCall]:
         if self._client is None:
             call = LLMCall(role, model, False, 0.0, 0, 0, 0, "no_client", "LLM disabled")
             self.on_call(call)
             return None, call
-        if self.remaining_usd < reserve_usd:
-            raise BudgetExceededError(f"daily AI budget exhausted (spent ${self.spent_usd:.4f})")
+        # Gate on the *estimated* cost of this call, not a fixed reserve, so one
+        # large portfolio-manager call cannot overshoot a small daily budget.
+        est = max(estimate_call_cost_usd(model, len(system) + len(user), max_tokens), reserve_usd)
+        if self.remaining_usd < est:
+            raise BudgetExceededError(
+                f"daily AI budget exhausted (spent ${self.spent_usd:.4f}, next call ~${est:.4f})"
+            )
         try:
             resp = self._client.messages.parse(
                 model=model,

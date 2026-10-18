@@ -155,8 +155,8 @@ def rank_candidates(cands: pd.DataFrame) -> pd.DataFrame:
     if cands.empty:
         return cands
     out = cands.copy()
-    mom = out["mom_vol_adj"].fillna(out["mom_vol_adj"].min())
-    out["score"] = 0.6 * mom.rank(pct=True) + 0.4 * out["pct_of_high"].rank(pct=True)
+    mom = out["mom_vol_adj"].fillna(out["mom_vol_adj"].min()).fillna(0.0)
+    out["score"] = (0.6 * mom.rank(pct=True) + 0.4 * out["pct_of_high"].rank(pct=True)).fillna(0.0)
     return out.sort_values("score", ascending=False).reset_index(drop=True)
 
 

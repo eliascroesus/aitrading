@@ -1,4 +1,9 @@
-"""DailyRun: one post-close cycle for one portfolio (primary or shadow)."""
+"""DailyRun: one post-close cycle for one portfolio (primary or shadow).
+
+Units: every price the broker sees (entries, stops, marks) is in **dollars**
+(the unadjusted close). Features are computed on the total-return series, so
+each row carries ``k = raw_close / close`` to convert ATRs and swing lows.
+"""
 
 from __future__ import annotations
 
@@ -22,7 +27,7 @@ from hive.orchestrator.book import OpenPosition, PositionBook
 from hive.orchestrator.journal import Journal
 from hive.risk.engine import OrderIntent, PortfolioSnapshot, PositionInfo, RiskEngine
 from hive.signals.features import compute_features, initial_stop, rank_candidates
-from hive.signals.regime import regime_at, regime_frame
+from hive.signals.regime import class_multipliers, regime_at, regime_frame
 from hive.signals.sizing import size_position
 from hive.survival.ledger import SurvivalLedger
 
@@ -71,9 +76,11 @@ class DailyRun:
         effort: str = "medium",
         news_fn: Callable[[str], list[tuple[str, str]]] | None = None,
         fundamentals_fn: Callable[[str], dict[str, Any]] | None = None,
+        company_names: dict[str, list[str]] | None = None,
     ):
         self.news_fn = news_fn
         self.fundamentals_fn = fundamentals_fn
+        self.company_names = company_names or {}
         self.label = label
         self.run_date = pd.Timestamp(run_date)
         self.cfg = cfg
@@ -89,44 +96,78 @@ class DailyRun:
         self.cheap_model = cheap_model
         self.decision_model = decision_model
         self.effort = effort
-        self._bars_cache: dict[str, pd.DataFrame] = {}
+        self._bars_cache: dict[tuple[str, bool], pd.DataFrame | None] = {}
+        self._features_cache: dict[tuple[str, bool], pd.DataFrame | None] = {}
 
-    # ------------------------------------------------------------------ helpers
-    def bars(self, symbol: str) -> pd.DataFrame | None:
-        if symbol not in self._bars_cache:
+    # ------------------------------------------------------------------ data
+    def bars(self, symbol: str, *, for_candidate: bool = True) -> pd.DataFrame | None:
+        """Bars as of the run date. Candidates get the quality-truncated series;
+        open positions get the raw series so a genuine crash still triggers exits."""
+        key = (symbol, for_candidate)
+        if key not in self._bars_cache:
             ac = self.asset_classes.get(symbol, "stock")
             b = self.store.get(ac, symbol)
             if b is not None:
                 b = as_of(b, self.run_date)
-                b, anomaly = truncate_at_first_anomaly(b, max_abs_return=max_abs_return_for(ac))
-                if anomaly is not None:
-                    self.journal.write("data_anomaly", {"symbol": symbol, "date": str(anomaly.date.date()),
-                                                        "kind": anomaly.kind, "value": anomaly.value})
-            self._bars_cache[symbol] = b
-        return self._bars_cache[symbol]
+                if for_candidate:
+                    b, anomaly = truncate_at_first_anomaly(b, max_abs_return=max_abs_return_for(ac))
+                    if anomaly is not None:
+                        self.journal.write("data_anomaly", {"symbol": symbol, "date": str(anomaly.date.date()),
+                                                            "kind": anomaly.kind, "value": anomaly.value})
+            self._bars_cache[key] = b
+        return self._bars_cache[key]
 
-    def _features(self, symbol: str) -> pd.DataFrame | None:
-        b = self.bars(symbol)
-        if b is None or len(b) < self.cfg.universe.min_history_bars:
+    def _features(self, symbol: str, *, for_candidate: bool = True) -> pd.DataFrame | None:
+        key = (symbol, for_candidate)
+        if key not in self._features_cache:
+            b = self.bars(symbol, for_candidate=for_candidate)
+            if b is None or len(b) < self.cfg.universe.min_history_bars:
+                self._features_cache[key] = None
+            else:
+                self._features_cache[key] = compute_features(
+                    b, self.cfg.rules_for(self.asset_classes.get(symbol, "stock")))
+        return self._features_cache[key]
+
+    def raw_price(self, symbol: str, column: str = "close") -> float | None:
+        b = self.bars(symbol, for_candidate=False)
+        if b is None or len(b) == 0 or b.index[-1] != self.run_date:
             return None
-        return compute_features(b, self.cfg.rules_for(self.asset_classes.get(symbol, "stock")))
+        return float(b[column].iloc[-1])
 
-    def _snapshot(self, equity: float, cash: float, entries_today: int = 0) -> PortfolioSnapshot:
+    @staticmethod
+    def _k(row: pd.Series) -> float:
+        """Dollar-per-adjusted-unit conversion for a feature row."""
+        c, rc = float(row["close"]), float(row["raw_close"])
+        return rc / c if c > 0 and rc > 0 else 1.0
+
+    def _snapshot(self, equity: float, cash: float, status: Any | None) -> PortfolioSnapshot:
         infos = {}
         for s, p in self.book.positions.items():
-            b = self.bars(s)
-            px = float(b["close"].iloc[-1]) if b is not None and len(b) else p.entry_price
+            px = self.raw_price(s) or p.entry_price
             infos[s] = PositionInfo(s, p.asset_class, p.qty, px, p.stop_price)
+        rd = self.run_date.date().isoformat()
+        entries_today = sum(1 for p in self.book.positions.values() if p.entry_date == rd)
         marks = [m for _, m in self.ledger.equity_marks()] if self.ledger else []
         return PortfolioSnapshot(
             equity=equity, cash=cash, positions=infos,
             day_start_equity=marks[-1] if marks else None,
-            peak_equity=max(marks) if marks else None, entries_today=entries_today,
+            peak_equity=(status.peak_equity if status is not None else None),
+            entries_today=entries_today,
         )
 
     # ------------------------------------------------------------------ main
     def execute(self) -> RunSummary:
         rd = self.run_date.date().isoformat()
+        # Paper brokers mirror the backtester: queued orders fill at today's open,
+        # resting stops are evaluated against today's low.
+        if hasattr(self.broker, "process_pending"):
+            for r in self.broker.process_pending(lambda s: self.raw_price(s, "open")):
+                self.journal.write("fill", {"symbol": r.order_id, "qty": r.filled_qty, "price": r.fill_price,
+                                            "message": r.message})
+        if hasattr(self.broker, "check_stops"):
+            for r in self.broker.check_stops(lambda s: self.raw_price(s, "low"), lambda s: self.raw_price(s, "open")):
+                self.journal.write("stop_fill", {"qty": r.filled_qty, "price": r.fill_price})
+
         equity = float(self.broker.equity())
         summary = RunSummary(rd, self.label, equity, equity, "n/a", {})
         self.journal.write("run_start", {"label": self.label, "date": rd, "equity": equity})
@@ -134,63 +175,82 @@ class DailyRun:
         if self.kill_switch:
             summary.notes.append("kill switch engaged: no orders")
             self.journal.write("kill_switch", {})
+            if self.ledger is not None:
+                self.ledger.append("equity_mark", equity, {"label": self.label, "date": rd})
             return summary
 
         # --- survival ---------------------------------------------------------
         budget = 0.0
         tier_mult, close_only = 1.0, False
+        status = None
         if self.ledger is not None:
-            st = self.ledger.status(equity, on=self.run_date.date())
-            summary.equity_net, summary.tier = st.equity_net, st.tier
-            tier = self.ledger.tier(st.equity_net)
+            status = self.ledger.status(equity, on=self.run_date.date())
+            summary.equity_net, summary.tier = status.equity_net, status.tier
+            tier = self.ledger.tier(status.equity_net)
             self.ledger.record_tier(tier)
-            tier_mult, close_only, budget = tier.risk_multiplier, tier.close_only, st.budget_remaining
-            self.journal.write("survival", {"equity_net": st.equity_net, "tier": st.tier,
-                                            "budget_today": st.budget_today, "runway_days": st.runway_days})
-            if st.dead:
+            tier_mult, close_only, budget = tier.risk_multiplier, tier.close_only, status.budget_remaining
+            self.journal.write("survival", {"equity_net": status.equity_net, "tier": status.tier,
+                                            "budget_today": status.budget_today, "runway_days": status.runway_days,
+                                            "in_halt_cooldown": status.in_halt_cooldown})
+            if status.dead:
                 self._flatten_all("death")
-                self.journal.write("death", {"reason": st.death_reason})
-                raise SystemDeadError(st.death_reason)
+                if self.ledger.death_recorded() is None:
+                    self.ledger.record_death(self.run_date.date(), status.death_reason, equity)
+                self.journal.write("death", {"reason": status.death_reason})
+                raise SystemDeadError(status.death_reason)
+            if status.in_halt_cooldown:
+                close_only = True
+                summary.notes.append("drawdown halt cooldown: close-only")
 
         # --- regime -------------------------------------------------------------
-        bench_sym = self.cfg.universe.regime_stock_symbol
-        bench = self.store.get("etf", bench_sym)
+        bench = self.store.get("etf", self.cfg.universe.regime_stock_symbol)
         vix_bars = self.store.get("index", "VIX")
         if bench is None:
-            raise FileNotFoundError(f"benchmark {bench_sym} missing from cache")
-        reg = regime_at(
-            regime_frame(as_of(bench, self.run_date), self.cfg.regime,
-                         vix_bars["close"] if vix_bars is not None else None),
-            self.run_date,
-        )
-        summary.regime = {k: (bool(v) if isinstance(v, (bool,)) else v) for k, v in reg.to_dict().items()}
+            raise FileNotFoundError(f"benchmark {self.cfg.universe.regime_stock_symbol} missing from cache")
+        reg = regime_at(regime_frame(as_of(bench, self.run_date), self.cfg.regime,
+                                     vix_bars["close"] if vix_bars is not None else None), self.run_date)
+        mult = class_multipliers(reg)
+        btc = self.store.get("crypto", self.cfg.universe.regime_crypto_symbol)
+        if btc is not None and len(as_of(btc, self.run_date)) > self.cfg.regime.ma_long:
+            reg_c = regime_at(regime_frame(as_of(btc, self.run_date), self.cfg.regime), self.run_date)
+            mult["crypto"] = class_multipliers(reg_c)["stock"]
+        summary.regime = {k: (bool(v) if isinstance(v, bool) else v) for k, v in reg.to_dict().items()}
+        summary.regime["class_multipliers"] = mult
         self.journal.write("regime", summary.regime)
 
         # --- manage open positions ---------------------------------------------
+        self._sync_book_with_broker()
         risk = RiskEngine(self.cfg.risk, kill_switch=lambda: self.kill_switch,
                           tier_risk_multiplier=tier_mult, close_only=close_only)
-        self._sync_book_with_broker()
-        exits = self._manage_positions()
-        summary.exits = exits
+        snap0 = self._snapshot(equity, float(self.broker.cash()), status)
+        halted, why_halt = risk.halted(snap0)
+        if halted and self.ledger is not None and not (status and status.in_halt_cooldown):
+            self._flatten_all("dd_halt")
+            self.ledger.record_halt(self.run_date.date(), self.cfg.risk.halt_cooldown_bars, equity)
+            summary.notes.append(f"drawdown halt: liquidated, cooldown {self.cfg.risk.halt_cooldown_bars}d")
+            close_only = True
+            risk = RiskEngine(self.cfg.risk, kill_switch=lambda: self.kill_switch,
+                              tier_risk_multiplier=tier_mult, close_only=True)
+        summary.exits = self._manage_positions(reg)
+        self._ensure_stops()
 
         # --- candidates ----------------------------------------------------------
         cash = float(self.broker.cash())
-        snap = self._snapshot(equity, cash)
+        snap = self._snapshot(equity, cash, status)
         blocked, why = risk.buys_blocked(snap)
         cands = pd.DataFrame()
         if not blocked:
-            cands = self._candidates(reg)
+            cands = self._candidates(mult)
         else:
             summary.notes.append(f"buys blocked: {why}")
         summary.candidates = cands.head(self.cfg.universe.max_candidates_for_llm)[
-            ["symbol", "score", "close", "atr", "pct_of_high", "z_reset", "pullback_atr"]
+            ["symbol", "score", "raw_close", "atr_pct", "pct_of_high", "z_reset", "pullback_atr"]
         ].round(4).to_dict("records") if not cands.empty else []
         self.journal.write("candidates", {"n": len(cands), "top": summary.candidates})
 
         # --- decisions (LLM filter or rules-only) ---------------------------------
         actions: dict[str, tuple[str, str]] = {}  # symbol -> (action, invalidation)
         top = cands.head(self.cfg.universe.max_candidates_for_llm)
-        # Deterministic earnings blackout (needs a fundamentals source; skipped when absent).
         fundamentals: dict[str, dict[str, Any]] = {}
         if not top.empty and self.fundamentals_fn is not None:
             keep = []
@@ -200,7 +260,8 @@ class DailyRun:
                 try:
                     facts = self.fundamentals_fn(sym) or {}
                 except Exception as exc:  # a data hiccup must never crash the run
-                    facts = {"error": str(exc)[:200]}
+                    self.journal.write("fundamentals_error", {"symbol": sym, "error": str(exc)[:200]})
+                    facts = {}
                 fundamentals[sym] = facts
                 eid = facts.get("earnings_in_days")
                 if isinstance(eid, int) and 0 <= eid <= rules.earnings_blackout_bars:
@@ -208,6 +269,7 @@ class DailyRun:
                     continue
                 keep.append(sym)
             top = top[top["symbol"].isin(keep)]
+        spent_before = self.llm.spent_usd if self.llm is not None else 0.0
         if not top.empty:
             if self.llm is not None and self.llm.available:
                 self.llm.budget_usd = self.llm.spent_usd + budget
@@ -226,30 +288,33 @@ class DailyRun:
                     ctxs.append(CandidateContext(
                         symbol=sym, asset_class=self.asset_classes.get(sym, "stock"),
                         features=features_payload(r), fundamentals=fundamentals.get(sym, {}),
-                        headlines=headlines,
+                        headlines=headlines, company_names=self.company_names.get(sym, []),
                     ))
                 evals = pipe.evaluate(ctxs, {"equity": equity, "cash": cash, "n_positions": len(self.book),
-                                             "regime": summary.regime})
+                                             "regime_risk_multiplier": float(reg["risk_multiplier"])})
                 for ev in evals:
                     actions[ev.symbol] = (ev.decision.action, ev.decision.invalidation_condition)
-                    summary.ai_cost_usd += ev.cost_usd
                     summary.decisions.append({"symbol": ev.symbol, "action": ev.decision.action,
                                               "invalidation": ev.decision.invalidation_condition,
                                               "confidence": ev.decision.confidence,
-                                              "rationale": ev.decision.rationale, "cost_usd": ev.cost_usd})
-                if summary.ai_cost_usd > 0 and self.ledger is not None:
-                    self.ledger.append("ai_cost", summary.ai_cost_usd, {"label": self.label, "date": rd})
+                                              "rationale": ev.decision.rationale, "cost_usd": ev.cost_usd,
+                                              "note": ev.note})
             else:
                 for _, r in top.iterrows():
                     actions[r["symbol"]] = ("approve", "none")
                     summary.decisions.append({"symbol": r["symbol"], "action": "approve",
                                               "invalidation": "none", "confidence": None,
-                                              "rationale": "rules-only", "cost_usd": 0.0})
+                                              "rationale": "rules-only", "cost_usd": 0.0, "note": ""})
             self.journal.write("decisions", {"decisions": summary.decisions})
+        # Book what the LLM actually spent (not what succeeded), so nothing leaks.
+        if self.llm is not None:
+            summary.ai_cost_usd = max(self.llm.spent_usd - spent_before, 0.0)
+            if summary.ai_cost_usd > 0 and self.ledger is not None:
+                self.ledger.append("ai_cost", summary.ai_cost_usd, {"label": self.label, "date": rd})
 
         # --- sizing, risk, orders -------------------------------------------------------
         intents: list[OrderIntent] = []
-        mult = float(reg["risk_multiplier"])
+        port_vol = self.ledger.portfolio_vol_ann() if self.ledger is not None else None
         for _, r in top.iterrows():
             sym = r["symbol"]
             action, inval = actions.get(sym, ("veto", "none"))
@@ -257,14 +322,19 @@ class DailyRun:
                 continue
             ac = self.asset_classes.get(sym, "stock")
             rules = self.cfg.rules_for(ac)
-            price = float(r["close"])
-            stop = initial_stop(price, r, rules)
+            k = self._k(r)
+            price = float(r["raw_close"])
+            stop = initial_stop(price, pd.Series({"atr": float(r["atr"]) * k, "swing_low": float(r["swing_low"]) * k}),
+                                rules)
             d = size_position(equity=equity, price=price, stop_price=stop, risk=self.cfg.risk,
-                              asset_class=ac, risk_multiplier=mult * (0.5 if action == "reduce_half" else 1.0))
+                              asset_class=ac, risk_multiplier=mult.get(ac, 0.0), portfolio_vol_ann=port_vol)
             if d.notional <= 0:
                 continue
-            intents.append(OrderIntent(sym, ac, "buy", d.notional, d.qty, price, stop,
-                                       reason=f"entry:{action}:{inval}", source=self.label))
+            it = OrderIntent(sym, ac, "buy", d.notional, d.qty, price, stop,
+                             reason=f"entry:{action}:{inval}", source=self.label)
+            it = RiskEngine.apply_llm_action(it, action)  # reduce_half halves after sizing
+            if it is not None:
+                intents.append(it)
         verdicts = risk.pre_trade(intents, snap)
         self.journal.write("risk", {"verdicts": [{"symbol": v.intent.symbol, "approved": v.approved,
                                                   "reasons": list(v.reasons),
@@ -280,16 +350,19 @@ class DailyRun:
                      "fill_price": res.fill_price, "filled_qty": res.filled_qty, "message": res.message}
             summary.orders.append(order)
             if res.ok:
-                fill_px = res.fill_price or it.price
-                qty = res.filled_qty or (it.notional / fill_px)
-                stop_px = fill_px - (it.price - it.stop_price)
-                stop_res = self.broker.submit_stop(it.symbol, qty, stop_px, asset_class=it.asset_class)
-                self.book.add(OpenPosition(
+                confirmed = res.filled_qty > 0 and res.fill_price > 0
+                fill_px = res.fill_price if confirmed else it.price
+                qty = res.filled_qty if confirmed else it.notional / fill_px
+                r_ps = it.price - it.stop_price
+                pos = OpenPosition(
                     symbol=it.symbol, asset_class=it.asset_class, qty=qty, entry_price=fill_px,
-                    entry_date=rd, r_per_share=it.price - it.stop_price, stop_price=stop_px,
-                    highest_close=fill_px, invalidation_condition=it.reason.split(":")[-1],
-                    source=self.label, stop_order_id=stop_res.order_id,
-                ))
+                    entry_date=rd, r_per_share=r_ps, stop_price=fill_px - r_ps, highest_close=fill_px,
+                    invalidation_condition=it.reason.split(":")[-1], source=self.label,
+                    meta={"fill_pending": not confirmed, "order_id": res.order_id},
+                )
+                self.book.add(pos)
+                if confirmed:
+                    self._arm_stop(pos)
             self.journal.write("order", order)
 
         # --- ledger & positions ---------------------------------------------------------------
@@ -302,7 +375,8 @@ class DailyRun:
             summary.equity_net = equity_end
         summary.positions = [
             {"symbol": p.symbol, "qty": round(p.qty, 6), "entry": p.entry_price, "stop": round(p.stop_price, 4),
-             "bars_held": p.bars_held, "source": p.source}
+             "bars_held": p.bars_held, "source": p.source, "stop_armed": bool(p.stop_order_id),
+             "fill_pending": bool(p.meta.get("fill_pending"))}
             for p in self.book.positions.values()
         ]
         self.journal.write("run_end", {"equity": equity_end, "equity_net": summary.equity_net,
@@ -311,31 +385,85 @@ class DailyRun:
 
     # ------------------------------------------------------------------ pieces
     def _sync_book_with_broker(self) -> None:
-        """Reconcile: a position the broker no longer holds (stop filled) leaves the book."""
+        """Two-way reconciliation between the book and what the broker actually holds."""
         held = self.broker.positions()
-        for sym in list(self.book.positions):
-            if sym not in held:
-                self.journal.write("reconcile", {"symbol": sym, "event": "closed_at_broker"})
-                self.book.remove(sym)
+        pending_ids = {o.get("symbol") for o in self.broker.pending_orders()} if hasattr(self.broker, "pending_orders") else set()
+        for sym, pos in list(self.book.positions.items()):
+            bp = held.get(sym)
+            if bp is not None:
+                if pos.meta.get("fill_pending"):
+                    pos.qty, pos.entry_price = bp.qty, bp.avg_price
+                    pos.stop_price = bp.avg_price - pos.r_per_share
+                    pos.highest_close = bp.avg_price
+                    pos.meta["fill_pending"] = False
+                    self.journal.write("fill_confirmed", {"symbol": sym, "qty": bp.qty, "price": bp.avg_price})
+                elif abs(bp.qty - pos.qty) > 1e-6:
+                    pos.qty = bp.qty
+                continue
+            if pos.meta.get("fill_pending") and (sym in pending_ids or pos.entry_date == self.run_date.date().isoformat()):
+                continue  # still queued at the broker
+            self.journal.write("reconcile", {"symbol": sym, "event": "closed_or_unfilled_at_broker"})
+            self.book.remove(sym)
+        for sym, bp in held.items():
+            if sym in self.book or bp.qty <= 0:
+                continue
+            # Position at the broker we do not know about: adopt it with a protective stop.
+            f = self._features(sym, for_candidate=False)
+            rules = self.cfg.rules_for(bp.asset_class)
+            atr = float(f["atr"].iloc[-1] * self._k(f.iloc[-1])) if f is not None and pd.notna(f["atr"].iloc[-1]) else bp.avg_price * 0.03
+            r_ps = rules.stop_initial_atr * atr
+            self.book.add(OpenPosition(symbol=sym, asset_class=bp.asset_class, qty=bp.qty, entry_price=bp.avg_price,
+                                       entry_date=self.run_date.date().isoformat(), r_per_share=r_ps,
+                                       stop_price=bp.avg_price - r_ps, highest_close=bp.current_price,
+                                       source="reconciled"))
+            self.journal.write("reconcile", {"symbol": sym, "event": "adopted_from_broker", "qty": bp.qty})
+        self.book.save()
 
-    def _manage_positions(self) -> list[dict[str, Any]]:
+    def _arm_stop(self, pos: OpenPosition) -> bool:
+        res = self.broker.submit_stop(pos.symbol, pos.qty, pos.stop_price, asset_class=pos.asset_class)
+        pos.stop_order_id = res.order_id if res.ok else ""
+        if not res.ok:
+            pos.meta["stop_failures"] = int(pos.meta.get("stop_failures", 0)) + 1
+            self.journal.write("stop_failed", {"symbol": pos.symbol, "message": res.message,
+                                               "failures": pos.meta["stop_failures"]})
+        self.book.save()
+        return res.ok
+
+    def _ensure_stops(self) -> None:
+        """Every confirmed position must have a resting stop; two failures close it."""
+        for sym, pos in list(self.book.positions.items()):
+            if pos.meta.get("fill_pending") or pos.stop_order_id:
+                continue
+            if not self._arm_stop(pos) and int(pos.meta.get("stop_failures", 0)) >= 2:
+                res = self.broker.close_position(sym)
+                self.journal.write("exit", {"symbol": sym, "reason": "no_protective_stop", "ok": res.ok})
+                if res.ok:
+                    self.book.remove(sym)
+
+    def _manage_positions(self, reg: pd.Series) -> list[dict[str, Any]]:
         exits: list[dict[str, Any]] = []
         for sym, pos in list(self.book.positions.items()):
-            f = self._features(sym)
+            if pos.meta.get("fill_pending"):
+                continue
+            f = self._features(sym, for_candidate=False)
             if f is None or self.run_date not in f.index:
                 continue
             row = f.loc[self.run_date]
             rules = self.cfg.rules_for(pos.asset_class)
-            close = float(row["close"])
+            k = self._k(row)
+            close = float(row["raw_close"])
             pos.bars_held += 1
             pos.highest_close = max(pos.highest_close, close)
-            atr = float(row["atr"]) if pd.notna(row["atr"]) else None
+            atr = float(row["atr"]) * k if pd.notna(row["atr"]) else None
+            failure_due = pos.bars_held >= rules.failure_stop_bars and not pos.meta.get("failure_checked")
+            if failure_due:
+                pos.meta["failure_checked"] = True
             reason = None
             if close <= pos.stop_price:
                 reason = "stop"
             elif row["below_mid_streak"] >= rules.exit_closes_below_mid or bool(row["below_long"]):
                 reason = "trend_break"
-            elif pos.bars_held == rules.failure_stop_bars and close < pos.entry_price + rules.failure_stop_min_r * pos.r_per_share:
+            elif failure_due and close < pos.entry_price + rules.failure_stop_min_r * pos.r_per_share:
                 reason = "failure_stop"
             elif pos.bars_held >= rules.review_bars and not bool(row["template_ok"]):
                 reason = "review"
@@ -345,7 +473,13 @@ class DailyRun:
                 reason = "invalidation"
             elif pos.invalidation_condition == "close_below_ma200" and bool(row["below_long"]):
                 reason = "invalidation"
+            elif (pos.invalidation_condition == "close_below_entry_minus_3atr" and atr
+                  and close < pos.entry_price - 3 * atr):
+                reason = "invalidation"
+            elif pos.invalidation_condition == "benchmark_regime_red" and str(reg["state"]) == "red":
+                reason = "invalidation"
             if reason:
+                self.broker.cancel_open_orders(sym)
                 res = self.broker.close_position(sym)
                 exits.append({"symbol": sym, "reason": reason, "ok": res.ok, "price": res.fill_price,
                               "bars_held": pos.bars_held, "message": res.message})
@@ -358,21 +492,17 @@ class DailyRun:
                 new_stop = max(pos.stop_price, pos.highest_close - atr * mult)
                 if new_stop > pos.stop_price + 1e-9:
                     self.broker.cancel_open_orders(sym)
-                    sr = self.broker.submit_stop(sym, pos.qty, new_stop, asset_class=pos.asset_class)
-                    pos.stop_price, pos.stop_order_id = new_stop, sr.order_id
+                    pos.stop_price = new_stop
+                    self._arm_stop(pos)
                     self.journal.write("stop_ratchet", {"symbol": sym, "stop": new_stop})
             self.book.save()
         return exits
 
-    def _candidates(self, reg: pd.Series) -> pd.DataFrame:
+    def _candidates(self, mult: dict[str, float]) -> pd.DataFrame:
         allowed = self.universe.members(self.run_date) if self.universe is not None else None
         rows = []
         for sym, ac in self.asset_classes.items():
-            if sym in self.book or ac == "index":
-                continue
-            if ac == "stock" and not bool(reg["allow_new_stock"]):
-                continue
-            if ac == "etf" and not bool(reg["allow_new_etf"]):
+            if sym in self.book or ac == "index" or mult.get(ac, 0.0) <= 0:
                 continue
             if allowed is not None and ac == "stock" and sym not in allowed:
                 continue

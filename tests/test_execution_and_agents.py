@@ -15,7 +15,7 @@ from hive.execution.paper import PaperBroker
 def test_paper_broker_roundtrip_and_stops(tmp_path):
     prices = {"AAA": 10.0}
     pb = PaperBroker(tmp_path / "paper.json", lambda s: prices.get(s), starting_cash=100.0,
-                     cost=CostModel(commission_pct=0.0, slippage_bps=0.0))
+                     cost=CostModel(commission_pct=0.0, slippage_bps=0.0), fill_mode="immediate")
     r = pb.submit_market("AAA", "buy", notional=20.0)
     assert r.ok and r.filled_qty == pytest.approx(2.0)
     assert pb.cash() == pytest.approx(80.0) and pb.equity() == pytest.approx(100.0)
@@ -24,7 +24,7 @@ def test_paper_broker_roundtrip_and_stops(tmp_path):
     assert pb.equity() == pytest.approx(102.0)
     # reload from disk
     pb2 = PaperBroker(tmp_path / "paper.json", lambda s: prices.get(s),
-                      cost=CostModel(commission_pct=0.0, slippage_bps=0.0))
+                      cost=CostModel(commission_pct=0.0, slippage_bps=0.0), fill_mode="immediate")
     assert pb2.positions()["AAA"].qty == pytest.approx(2.0)
     # stop triggers when low trades through, fills at the stop
     fills = pb2.check_stops(low_fn=lambda s: 8.5)
@@ -33,9 +33,11 @@ def test_paper_broker_roundtrip_and_stops(tmp_path):
     assert not pb2.submit_market("AAA", "sell", qty=1.0).ok
 
 
-def test_paper_broker_rejects_overspend(tmp_path):
-    pb = PaperBroker(tmp_path / "p.json", lambda s: 10.0, starting_cash=10.0)
-    assert not pb.submit_market("AAA", "buy", notional=50.0).ok
+def test_paper_broker_scales_overspend_to_cash(tmp_path):
+    pb = PaperBroker(tmp_path / "p.json", lambda s: 10.0, starting_cash=10.0, fill_mode="immediate",
+                     cost=CostModel(commission_pct=0.0, slippage_bps=0.0))
+    r = pb.submit_market("AAA", "buy", notional=50.0)
+    assert r.ok and r.filled_qty == pytest.approx(1.0) and pb.cash() == pytest.approx(0.0)
 
 
 # ---------------------------------------------------------------- hyperliquid helpers

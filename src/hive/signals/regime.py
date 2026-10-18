@@ -74,6 +74,25 @@ def regime_frame(
     return out[REGIME_COLUMNS]
 
 
+def class_multipliers(reg: pd.Series | None, *, use_filter: bool = True) -> dict[str, float]:
+    """Per-asset-class risk multiplier for new entries (0 = blocked).
+
+    RED blocks stocks and crypto outright; ETFs passing their own template may
+    still enter at full size. YELLOW halves everything. The crash guard blocks
+    all. Shared by the backtester and the live run so the two cannot diverge.
+    """
+    if not use_filter or reg is None:
+        return {"stock": 1.0, "etf": 1.0, "crypto": 1.0}
+    state = str(reg["state"])
+    base = float(reg["risk_multiplier"])
+    allow_stock, allow_etf = bool(reg["allow_new_stock"]), bool(reg["allow_new_etf"])
+    out = {"stock": base if allow_stock else 0.0, "crypto": base if allow_stock else 0.0,
+           "etf": base if allow_etf else 0.0}
+    if state == RegimeState.RED.value and allow_etf:
+        out["etf"] = 1.0
+    return out
+
+
 def regime_at(frame: pd.DataFrame, when: pd.Timestamp | str) -> pd.Series:
     sub = frame.loc[: pd.Timestamp(when)]
     if sub.empty:

@@ -74,8 +74,9 @@ def buy_and_hold(equity_start: float, bars: pd.DataFrame) -> pd.Series:
     return (px / px.iloc[0]) * equity_start
 
 
-def summarize(equity: pd.Series, trades: pd.DataFrame, exposure: pd.Series | None = None) -> dict[str, float]:
-    out = equity_metrics(equity)
+def summarize(equity: pd.Series, trades: pd.DataFrame, exposure: pd.Series | None = None,
+              *, periods_per_year: int = 252) -> dict[str, float]:
+    out = equity_metrics(equity, periods_per_year=periods_per_year)
     out.update(trade_metrics(trades))
     if exposure is not None:
         out.update(exposure_metrics(exposure))

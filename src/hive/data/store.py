@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from hive.data.bars import BAR_COLUMNS, normalize_bars
@@ -92,9 +93,32 @@ class BarStore:
         *,
         source: str,
     ) -> Path:
-        """Merge new rows into the cached frame (new rows win on overlap)."""
+        """Merge new rows into the cached frame (new rows win on overlap).
+
+        Different sources use different adjustment bases (a Qlib total-return
+        index normalised at the first bar vs. yfinance's backward adjustment
+        anchored at the last bar). Splicing them raw puts a step of 100x in
+        ``adj_close`` at the seam, so the old rows' ``adj_close`` is rescaled
+        to the new basis on the first overlapping bar (or at the seam when
+        there is no overlap), keeping ``adj_close/close`` continuous.
+        """
         new_bars = normalize_bars(new_bars) if list(new_bars.columns) != BAR_COLUMNS else new_bars
         old = self.get(asset_class, symbol)
-        merged = new_bars if old is None else pd.concat([old, new_bars])
+        if old is None or new_bars.empty:
+            merged = new_bars if old is None else old
+        else:
+            old = old.copy()
+            overlap = old.index.intersection(new_bars.index)
+            if len(overlap):
+                anchor = overlap[0]
+                k = float(new_bars.at[anchor, "adj_close"] / old.at[anchor, "adj_close"])
+            else:
+                # No overlap: carry the new factor (adj/close) back onto the old rows.
+                f_new = float(new_bars["adj_close"].iloc[0] / new_bars["close"].iloc[0])
+                f_old = float(old["adj_close"].iloc[-1] / old["close"].iloc[-1])
+                k = f_new / f_old
+            if np.isfinite(k) and k > 0:
+                old["adj_close"] = old["adj_close"] * k
+            merged = pd.concat([old, new_bars])
         merged = merged[~merged.index.duplicated(keep="last")].sort_index()
         return self.put(asset_class, symbol, merged, source=source)

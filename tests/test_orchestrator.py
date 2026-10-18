@@ -33,7 +33,7 @@ def test_daily_run_replay_opens_positions_and_books_costs(tmp_path):
     store, bars = _seed_store(tmp_path)
     s = Settings(hive_mode="paper", hive_data_dir=tmp_path, hive_state_dir=tmp_path / "state",
                  hive_reports_dir=tmp_path / "reports", hive_llm_enabled=False, anthropic_api_key=None,
-                 alpaca_api_key=None, _env_file=None)
+                 alpaca_api_key=None, hive_network_data=False, _env_file=None)
     cfg = StrategyConfig()
     # the entry signal fires near the end of the textbook path; pick that day
     from hive.signals.features import compute_features
@@ -67,7 +67,8 @@ def test_kill_switch_blocks_orders(tmp_path):
     (tmp_path / "state" / "KILL").write_text("stop")
     s = Settings(hive_mode="paper", hive_data_dir=tmp_path, hive_state_dir=tmp_path / "state",
                  hive_reports_dir=tmp_path / "reports", hive_kill_switch_file=tmp_path / "state" / "KILL",
-                 hive_llm_enabled=False, anthropic_api_key=None, alpaca_api_key=None, _env_file=None)
+                 hive_llm_enabled=False, anthropic_api_key=None, alpaca_api_key=None,
+                 hive_network_data=False, _env_file=None)
     cfg = StrategyConfig()
     run_day(s, cfg, date(2019, 6, 3), with_shadow=False)
     assert len(PositionBook(tmp_path / "state" / "book_primary.json")) == 0

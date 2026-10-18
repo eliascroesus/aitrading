@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
+from typing import Any
 
 import pandas as pd
 
@@ -63,6 +64,32 @@ def _veto(symbol: str, why: str) -> CandidateDecision:
 def _fmt(d: dict) -> str:
     return json.dumps({k: (round(v, 4) if isinstance(v, float) else v) for k, v in d.items()},
                       default=str, sort_keys=True)
+
+
+def _numeric_only(d: dict) -> dict:
+    """Keep numbers/bools/None only: no free text from data sources reaches the model."""
+    return {k: v for k, v in d.items() if isinstance(v, (int, float, bool)) or v is None}
+
+
+def bounded_view(obj: Any) -> Any:
+    """Strip free-text fields from analyst/reader outputs before they reach the PM.
+
+    Only enums, numbers and booleans survive: ``summary``, ``rationale``,
+    ``flags``, ``source_ids`` and debate prose are journaled but never fed
+    forward, so a headline cannot smuggle instructions into the decision model.
+    """
+    if obj is None:
+        return None
+    d = obj.model_dump() if hasattr(obj, "model_dump") else dict(obj)
+    out: dict[str, Any] = {}
+    for k, v in d.items():
+        if k in ("summary", "rationale", "flags", "source_ids", "bull_case", "bear_case", "key_risk"):
+            continue
+        if isinstance(v, list):
+            out[k] = [bounded_view(x) for x in v if isinstance(x, (dict, int, float, bool)) or hasattr(x, "model_dump")]
+        elif isinstance(v, (int, float, bool, str)) or v is None:
+            out[k] = v
+    return out
 
 
 class CandidatePipeline:
@@ -128,22 +155,27 @@ class CandidatePipeline:
                     ev.cost_usd += c1
                     evals.append(ev)
                     continue
-                ev.fundamental, c2 = self.analyst("fundamental", prompts.FUNDAMENTAL_SYSTEM, ctx, ctx.fundamentals)
+                ev.cost_usd += c1
+                facts = _numeric_only(ctx.fundamentals)
+                ev.fundamental, c2 = self.analyst("fundamental", prompts.FUNDAMENTAL_SYSTEM, ctx, facts)
+                ev.cost_usd += c2
                 ev.technical, c3 = self.analyst("technical", prompts.TECHNICAL_SYSTEM, ctx, ctx.features)
-                ev.sentiment, c4 = self.analyst("sentiment", prompts.SENTIMENT_SYSTEM, ctx, ev.news.model_dump())
+                ev.cost_usd += c3
+                ev.sentiment, c4 = self.analyst("sentiment", prompts.SENTIMENT_SYSTEM, ctx, bounded_view(ev.news))
+                ev.cost_usd += c4
                 ev.debate, c5 = self.debate(ctx, {"fundamental": ev.fundamental, "technical": ev.technical,
                                                   "sentiment": ev.sentiment})
-                ev.cost_usd += c1 + c2 + c3 + c4 + c5
+                ev.cost_usd += c5
                 if any(v is None for v in (ev.fundamental, ev.technical, ev.sentiment, ev.debate)):
                     ev.decision = _veto(ctx.symbol, "an analyst call failed (fail closed)")
                     evals.append(ev)
                     continue
                 packets.append({
                     "symbol": ctx.symbol, "asset_class": ctx.asset_class, "features": ctx.features,
-                    "fundamentals": ctx.fundamentals,
-                    "news": ev.news.model_dump(), "fundamental": ev.fundamental.model_dump(),
-                    "technical": ev.technical.model_dump(), "sentiment": ev.sentiment.model_dump(),
-                    "debate": ev.debate.model_dump(),
+                    "fundamentals": facts,
+                    "news": bounded_view(ev.news), "fundamental": bounded_view(ev.fundamental),
+                    "technical": bounded_view(ev.technical), "sentiment": bounded_view(ev.sentiment),
+                    "debate": bounded_view(ev.debate),
                 })
                 evals.append(ev)
             except BudgetExceededError as exc:
@@ -152,12 +184,20 @@ class CandidatePipeline:
                 evals.append(ev)
         if not packets:
             return evals
-        pm, call = self.llm.parse(
-            role="portfolio_manager", model=self.decision_model, system=prompts.PM_SYSTEM,
-            user=f"Risk snapshot: {_fmt(risk_snapshot)}\nCandidates: {json.dumps(packets, default=str)}",
-            schema=PMDecision, effort=self.pm_effort, max_tokens=3000,
-        )
         by_symbol = {e.symbol: e for e in evals}
+        try:
+            pm, call = self.llm.parse(
+                role="portfolio_manager", model=self.decision_model, system=prompts.PM_SYSTEM,
+                user=f"Risk snapshot: {_fmt(_numeric_only(risk_snapshot))}\n"
+                     f"Candidates: {json.dumps(packets, default=str)}",
+                schema=PMDecision, effort=self.pm_effort, max_tokens=3000,
+            )
+        except BudgetExceededError as exc:
+            for p in packets:
+                ev = by_symbol[p["symbol"]]
+                ev.decision = _veto(p["symbol"], f"budget exhausted before PM: {exc}")
+                ev.note = "rules-only"
+            return evals
         if pm is None:
             for p in packets:
                 by_symbol[p["symbol"]].decision = _veto(p["symbol"], "PM call failed (fail closed)")
