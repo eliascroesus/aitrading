@@ -86,7 +86,7 @@ def test_llm_fail_closed_and_budget():
     assert parsed == view and call.ok and call.cost_usd > 0
     parsed2, call2 = llm.parse(role="t", model="claude-haiku-5-5", system="s", user="u", schema=AnalystView)
     assert parsed2 is None and not call2.ok and llm.failures == 1
-    llm.spent_usd = 0.049
+    llm.spent_usd = 0.0498  # remaining $0.0002 < the $0.0005 floor on the per-call estimate
     with pytest.raises(BudgetExceededError):
         llm.parse(role="t", model="claude-haiku-5-5", system="s", user="u", schema=AnalystView)
     assert len(calls) == 2
