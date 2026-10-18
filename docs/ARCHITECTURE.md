@@ -99,6 +99,40 @@ misalignment studies — see `RESEARCH.md`). The metaphor lives in the ledger an
 the documentary, not in the agents' objective, which is stated as "maximise
 risk-adjusted return net of costs; shutdown is an acceptable outcome".
 
+## The operator and the hive (how the system iterates on itself)
+
+```
+weekly: hive operate
+  ledger/journal summary + current tunables + pre-registered bounds (config/bounds.toml)
+        │
+        ▼  LLM (decision model, budgeted): ≤ 3 proposals {name, hypothesis, overrides ≤ 3 params}
+  code validates every override against the bounds → rejects anything else
+        │
+        ▼  code backtests each variant in-sample and out-of-sample vs the parent
+  verdict (code): OOS CAGR > parent AND OOS drawdown within tolerance AND IS return ≥ 0
+        │
+        ▼  if the survival tier allows a child → spawned as a SHADOW paper portfolio
+daily: children trade their own paper books (stocks / crypto / all / meme sleeves)
+  value of information = child return − parent return over the same days; losers retire
+        │
+        ▼  human: `hive hive promote <id> --approve` → overrides committed to strategy.toml
+```
+
+The operator can propose, measure and recommend. It cannot change limits,
+budgets or the universe, cannot spend past the ledger's daily budget, and
+cannot promote anything to live. Every proposal, verdict and child mark is in
+`state/hive.json` and on the dashboard.
+
+## The dashboard
+
+`hive ui build` renders `reports/dashboard/index.html` from the ledger, books,
+journals, daily reports and backtest outputs: survival tiles (net equity,
+tier, runway, AI budget, regime, integrity), the three published equity lines
+indexed to 100, drawdown, cumulative AI spend, positions with stop status,
+the latest run's decisions, the tier ladder, children and operator iterations,
+backtests and every experiment cell, LLM call costs by role, recent activity.
+No server: GitHub Pages serves it; `hive ui serve` runs it locally.
+
 ## Safety baseline
 
 * No transfer/withdraw tool exists anywhere in the codebase. Hyperliquid runs

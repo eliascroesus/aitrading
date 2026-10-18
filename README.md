@@ -25,6 +25,9 @@ trade; LLM agents may only research, debate and veto.**
 | Execution | `hive.execution` | `PaperBroker`, `AlpacaBroker` (paper by default), `HyperliquidBroker` (agent wallet, testnet by default, eligibility flag) — no transfer tool exists |
 | Survival | `hive.survival` | Hash-chained ledger; equity net of AI costs; daily AI budget; death floor; tiers with hysteresis; children start in shadow mode |
 | Orchestrator | `hive.orchestrator` | The daily cycle, position book, hash-chained journal, rules-only shadow portfolio, daily markdown/JSON reports |
+| Hive & operator | `hive.hive`, `hive.operator` | Children (strategy variants / scouts per sleeve) as paper portfolios with value-of-information scoring; the bounded iteration loop that proposes, backtests and spawns them; human-only promotion |
+| Meme scout | `hive.meme` | DexScreener/RugCheck scanner with the research's hard filters and caps; paper-only (live Jupiter execution is an explicit guard) |
+| UI | `hive.ui` | Self-contained dashboard built from state; GitHub Pages deploy |
 
 Documentation: `docs/ARCHITECTURE.md`, `docs/STRATEGY.md`, `docs/DATA.md`,
 `docs/RESEARCH.md` (+ the four source reports in `docs/research/`),
@@ -54,11 +57,18 @@ hive experiment --kind oat --params "stocks.trail_atr=3,4,5;stocks.reset_period=
 
 # Paper trading cycle (post-close), replayable on cached dates
 hive data refresh
-hive run                     # primary (LLM filter if ANTHROPIC_API_KEY set) + rules-only shadow
+hive run                     # primary (LLM filter if ANTHROPIC_API_KEY set) + rules-only shadow + children
 hive run --as-of 2020-11-10  # replay a historical day on cached data
 hive status
 hive review                  # weekly auditor: proposals only, never applied
+
+# The dashboard and the hive
+hive ui build && hive ui serve          # http://127.0.0.1:8787 (GitHub Pages publishes the same page)
+hive operate                            # the operator proposes variants, code backtests, spawns shadow children
+hive hive list | spawn | retire | promote <id> --approve   # promotion is always a human decision
 ```
+
+Full setup (accounts, keys, hosts, costs, go-live checklist): `docs/SETUP.md`.
 
 Live trading requires **both** `HIVE_MODE=live` with the confirmation phrase in
 `HIVE_LIVE_CONFIRM` and the `--live` flag. Creating the file `state/KILL` stops
