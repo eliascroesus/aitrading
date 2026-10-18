@@ -112,6 +112,8 @@ first; the aggressive sleeve stays at 0% until the core has a live track record.
 
 ## 10. Validation protocol (required before live)
 
+0. Data-quality guard applied to every series (`DATA.md`); any result whose
+   profit concentrates in one trade is a data problem until proven otherwise.
 1. Walk-forward backtest with costs: stocks 2001–2020 (offline data), crypto
    2015–2026; results in `BACKTEST_RESULTS.md`.
 2. Robustness grid: impulse window 42/63/90, reset window 15/21/30, S1 threshold 1.0/1.5/2.0, trail 3/4/5 ATR.

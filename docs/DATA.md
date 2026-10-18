@@ -24,6 +24,27 @@ only the cache; paper/live runs refresh it from the network first.
 | News | Alpaca News (Benzinga), Finnhub company news, Google News RSS | Reaches only the quarantined reader. |
 | X/social sentiment | Optional, batched Grok `x_search` or X API pay-per-use | Off by default; cost is charged to the ledger when on. |
 
+## Data quality guard (`hive.data.quality`)
+
+Yahoo-derived histories carry corrupted prints around delistings and
+acquisitions: `CBE` (Cooper Industries, acquired Nov-2012) printed a ×1,000
+close on its last days, which turned one backtest trade into +105,794% and
+produced a fictitious 29% CAGR in a first-pass experiment. The guard now
+truncates every series at its first implausible row before any signal sees
+it, in backtests and in the live cycle alike:
+
+* a one-day move > 50% (75% for crypto) **that reverts** to within 30% of the
+  pre-move price within 5 bars — a spike;
+* such a move within the last 5 bars of a series — unverifiable, the
+  delisting-day case;
+* an OHLC row that is inconsistent or non-positive.
+
+Genuine persistent moves (Bitcoin's +55% day in Nov-2010, a financial's
+rebound in 2008) are kept. With this rule 35 of ~800 S&P 500 series are
+truncated (several are real 2008/2020 extremes — a conservative loss) and no
+ETF or crypto series is affected. The first-pass outputs on uncleaned data are
+kept in `reports/experiments/contaminated-uncleaned-data/` for transparency.
+
 ## Point-in-time discipline
 
 * `as_of(bars, t)` is the only sanctioned way to slice time; signals are
