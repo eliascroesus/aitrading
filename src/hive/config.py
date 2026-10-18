@@ -1,0 +1,308 @@
+"""Runtime settings (secrets, paths, modes) and the pre-registered strategy config.
+
+Two kinds of configuration, kept deliberately separate:
+
+* ``Settings``       — environment-driven: API keys, venue modes, directories.
+                       Never committed. Loaded from ``.env`` / environment.
+* ``StrategyConfig`` — the trading rules and risk limits. Committed to git as
+                       ``config/strategy.toml`` so that every parameter is
+                       pre-registered and auditable for the study.
+
+The rule parameters follow docs/STRATEGY.md ("ROC reset above a rising 200DMA"),
+which in turn cites the evidence in docs/RESEARCH.md.
+"""
+
+from __future__ import annotations
+
+import tomllib
+from pathlib import Path
+from typing import Literal
+
+from pydantic import BaseModel, Field, SecretStr, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+Mode = Literal["backtest", "paper", "live"]
+AssetClass = Literal["stock", "etf", "crypto"]
+LIVE_CONFIRMATION_PHRASE = "I_UNDERSTAND_THIS_TRADES_REAL_MONEY"
+
+
+class Settings(BaseSettings):
+    """Environment-driven settings. Secrets are ``SecretStr`` so they never log."""
+
+    model_config = SettingsConfigDict(
+        env_file=REPO_ROOT / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
+    )
+
+    # --- run mode -----------------------------------------------------------
+    hive_mode: Mode = "paper"
+    # Live trading requires this exact phrase in the environment, on purpose.
+    hive_live_confirm: str = ""
+    hive_run_id: str | None = None
+
+    # --- directories --------------------------------------------------------
+    hive_data_dir: Path = REPO_ROOT / "data"
+    hive_state_dir: Path = REPO_ROOT / "state"
+    hive_reports_dir: Path = REPO_ROOT / "reports"
+    hive_config_dir: Path = REPO_ROOT / "config"
+    # If this file exists, every run exits before placing any order.
+    hive_kill_switch_file: Path = REPO_ROOT / "state" / "KILL"
+
+    # --- LLM ----------------------------------------------------------------
+    anthropic_api_key: SecretStr | None = None
+    # Decision-making roles (portfolio manager, risk review) use this model.
+    hive_llm_model: str = "claude-opus-5-5"
+    # Bulk/quarantined roles (news summarisation, triage) use this model.
+    hive_llm_cheap_model: str = "claude-haiku-5-5"
+    hive_llm_effort: Literal["low", "medium", "high", "xhigh", "max"] = "medium"
+    hive_llm_enabled: bool = True
+
+    # --- Alpaca (US stocks/ETFs; paper by default) --------------------------
+    alpaca_api_key: SecretStr | None = None
+    alpaca_secret_key: SecretStr | None = None
+    alpaca_paper: bool = True
+
+    # --- Hyperliquid (crypto perps; testnet by default) ---------------------
+    # Use an *agent/API wallet* key, which cannot withdraw funds.
+    hl_agent_private_key: SecretStr | None = None
+    hl_account_address: str | None = None
+    hl_testnet: bool = True
+    # Hyperliquid's terms bar US persons; the operator must assert eligibility.
+    hl_operator_not_restricted_person: bool = False
+
+    # --- optional data providers -------------------------------------------
+    finnhub_api_key: SecretStr | None = None
+    # SEC EDGAR requires a descriptive User-Agent with contact info.
+    sec_user_agent: str = "hive-research-bot contact@example.com"
+
+    @field_validator("hive_data_dir", "hive_state_dir", "hive_reports_dir", "hive_config_dir")
+    @classmethod
+    def _absolute(cls, v: Path) -> Path:
+        return v if v.is_absolute() else (REPO_ROOT / v).resolve()
+
+    # --- derived -------------------------------------------------------------
+    @property
+    def is_live(self) -> bool:
+        return self.hive_mode == "live"
+
+    def assert_live_allowed(self) -> None:
+        """Refuse to run live unless the operator typed the confirmation phrase."""
+        if self.is_live and self.hive_live_confirm != LIVE_CONFIRMATION_PHRASE:
+            raise RuntimeError(
+                "HIVE_MODE=live but HIVE_LIVE_CONFIRM does not equal the confirmation "
+                f"phrase {LIVE_CONFIRMATION_PHRASE!r}. Refusing to trade real money."
+            )
+
+    def kill_switch_engaged(self) -> bool:
+        return self.hive_kill_switch_file.exists()
+
+
+# ---------------------------------------------------------------------------
+# Strategy configuration (pre-registered, committed)
+# ---------------------------------------------------------------------------
+
+
+class TrendRules(BaseModel):
+    """"ROC reset above a rising 200DMA" — one rule set per asset class.
+
+    Three speeds: long-term trend template, a recent strong impulse, a quiet
+    pullback that has decayed the short ROC to ~0, then a breakout trigger.
+    All ROC measures are volatility-normalised (``zROC = ln-return / (sigma_d*sqrt(N))``)
+    so one threshold works across stocks and coins.
+    """
+
+    bars_per_year: int = 252
+
+    # --- trend template (all required) ---------------------------------------
+    ma_long: int = 200
+    ma_mid: int = 50
+    ma_slope_lookbacks: list[int] = Field(default_factory=lambda: [21, 63])
+    high_lookback: int = 252
+    min_pct_of_high: float = 0.75
+    mom_period: int = 252
+    mom_skip: int = 21
+    require_long_momentum: bool = True
+
+    # --- setup: "was higher, then reset" -------------------------------------
+    sigma_period: int = 63
+    impulse_period: int = 63
+    impulse_window: int = 63
+    impulse_skip: int = 10
+    impulse_min_z: float = 1.5
+    reset_period: int = 21
+    reset_z_min: float = -1.0
+    reset_z_max: float = 0.3
+    atr_period: int = 20
+    pullback_high_lookback: int = 63
+    pullback_min_atr: float = 2.0
+    pullback_max_atr: float = 6.0
+    volume_short: int = 10
+    volume_long: int = 50
+    volume_max_ratio: float = 0.9
+    require_volume: bool = True
+
+    # --- trigger --------------------------------------------------------------
+    setup_valid_bars: int = 10
+    trigger_ema: int = 10
+    trigger_roc: int = 5
+
+    # --- stops & exits --------------------------------------------------------
+    stop_swing_low_bars: int = 10
+    stop_swing_low_atr_pad: float = 0.5
+    stop_initial_atr: float = 3.0
+    trail_atr: float = 4.0
+    trail_atr_late: float = 3.0
+    trail_tighten_after_bars: int = 63
+    exit_closes_below_mid: int = 2
+    exit_closes_below_long: int = 1
+    failure_stop_bars: int = 15
+    failure_stop_min_r: float = 0.5
+    review_bars: int = 63
+    max_hold_bars: int = 126
+    earnings_blackout_bars: int = 5
+
+    @classmethod
+    def crypto(cls) -> TrendRules:
+        return cls(
+            bars_per_year=365, ma_slope_lookbacks=[30], high_lookback=365, min_pct_of_high=0.6,
+            mom_period=180, mom_skip=7, impulse_period=90, impulse_window=90, impulse_skip=7,
+            reset_period=30, atr_period=14, pullback_high_lookback=90, pullback_max_atr=7.0,
+            volume_short=7, volume_long=30, trigger_roc=3, failure_stop_bars=20,
+            review_bars=90, max_hold_bars=180, earnings_blackout_bars=0,
+        )
+
+
+class RegimeRules(BaseModel):
+    """Benchmark regime: GREEN (normal), YELLOW (half risk), RED (no new longs)."""
+
+    ma_long: int = 200
+    slope_lookback: int = 21
+    yellow_risk_multiplier: float = 0.5
+    vix_yellow_threshold: float | None = 30.0
+    # Crash guard (Daniel-Moskowitz "panic" state): no new momentum entries.
+    crash_long_return_bars: int = 504
+    crash_vol_bars: int = 21
+    crash_vol_ann_threshold: float = 0.30
+    crash_very_long_return_bars: int = 756
+
+
+class RiskLimits(BaseModel):
+    """Hard limits enforced in code. The LLM layer can only make these tighter."""
+
+    max_positions: int = 6
+    max_new_entries_per_day: int = 2
+    max_position_pct_stock: float = 0.20
+    max_position_pct_etf: float = 0.30
+    max_position_pct_crypto: float = 0.30
+    max_gross_exposure: float = 1.0
+    max_leverage: float = 1.0
+    risk_per_trade_pct: float = 0.01
+    max_open_risk_pct: float = 0.06
+    target_annual_vol: float = 0.20
+    portfolio_vol_lookback: int = 20
+    max_daily_loss_pct: float = 0.04
+    max_drawdown_halt_pct: float = 0.25
+    min_order_notional_usd: float = 1.0
+    # Crypto sleeve
+    crypto_sleeve_pct: float = 0.40
+    crypto_max_positions: int = 3
+    crypto_max_leverage: float = 1.5
+    # Aggressive sleeve (memecoins etc.) is off unless explicitly enabled.
+    aggressive_sleeve_pct: float = 0.0
+
+    def max_position_pct(self, asset_class: str) -> float:
+        return {
+            "stock": self.max_position_pct_stock,
+            "etf": self.max_position_pct_etf,
+            "crypto": self.max_position_pct_crypto,
+        }.get(asset_class, self.max_position_pct_stock)
+
+
+class Tier(BaseModel):
+    name: str
+    min_equity_usd: float
+    max_children: int = 0
+    min_net_positive_days: int = 0
+    requires_human_approval: bool = False
+    risk_multiplier: float = 1.0
+    close_only: bool = False
+    daily_ai_budget_pct: float = 0.0005
+
+
+class SurvivalRules(BaseModel):
+    """The bankroll is the AI's life. AI costs are paid from it.
+
+    Death is decided by code at a floor *above* zero (fees and minimum order
+    sizes make trading impossible below ~$20). Limits tighten as equity falls;
+    there is no "Hail Mary" tier.
+    """
+
+    starting_bankroll_usd: float = 100.0
+    death_floor_usd: float = 25.0
+    death_drawdown_pct: float = 0.75
+    daily_ai_budget_min_usd: float = 0.02
+    daily_ai_budget_max_usd: float = 2.0
+    tier_hysteresis_pct: float = 0.15
+    max_children: int = 3
+    child_shadow_days: int = 14
+    tiers: list[Tier] = Field(
+        default_factory=lambda: [
+            Tier(name="hospice", min_equity_usd=0.0, close_only=True, risk_multiplier=0.0,
+                 daily_ai_budget_pct=0.0002),
+            Tier(name="survival", min_equity_usd=40.0, risk_multiplier=0.5,
+                 daily_ai_budget_pct=0.0005),
+            Tier(name="base", min_equity_usd=90.0, risk_multiplier=1.0,
+                 daily_ai_budget_pct=0.0005),
+            Tier(name="growth", min_equity_usd=250.0, max_children=1, min_net_positive_days=30,
+                 risk_multiplier=1.0, daily_ai_budget_pct=0.0008),
+            Tier(name="hive", min_equity_usd=1000.0, max_children=3, min_net_positive_days=60,
+                 requires_human_approval=True, risk_multiplier=1.0, daily_ai_budget_pct=0.001),
+        ]
+    )
+
+
+class UniverseConfig(BaseModel):
+    stock_universe: Literal["sp500", "etfs", "custom"] = "sp500"
+    custom_symbols: list[str] = Field(default_factory=list)
+    etf_symbols: list[str] = Field(
+        default_factory=lambda: [
+            "SPY", "QQQ", "IWM", "DIA", "GLD", "SLV", "TLT", "IEF", "XLK", "XLE", "XLF", "XLV",
+            "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE", "XLC", "SMH", "XBI", "EEM", "EFA", "VNQ",
+        ]
+    )
+    crypto_symbols: list[str] = Field(default_factory=lambda: ["BTC", "ETH", "SOL"])
+    regime_stock_symbol: str = "SPY"
+    regime_crypto_symbol: str = "BTC"
+    min_price_usd: float = 5.0
+    min_history_bars: int = 300
+    max_candidates_for_llm: int = 8
+
+
+class StrategyConfig(BaseModel):
+    name: str = "trend-reset-v1"
+    version: str = "1.0.0"
+    stocks: TrendRules = Field(default_factory=TrendRules)
+    crypto: TrendRules = Field(default_factory=TrendRules.crypto)
+    regime: RegimeRules = Field(default_factory=RegimeRules)
+    risk: RiskLimits = Field(default_factory=RiskLimits)
+    survival: SurvivalRules = Field(default_factory=SurvivalRules)
+    universe: UniverseConfig = Field(default_factory=UniverseConfig)
+
+    def rules_for(self, asset_class: str) -> TrendRules:
+        return self.crypto if asset_class == "crypto" else self.stocks
+
+    @classmethod
+    def load(cls, path: Path | None = None) -> StrategyConfig:
+        path = path or (REPO_ROOT / "config" / "strategy.toml")
+        if not path.exists():
+            return cls()
+        with path.open("rb") as fh:
+            return cls.model_validate(tomllib.load(fh))
+
+
+def get_settings() -> Settings:
+    return Settings()
