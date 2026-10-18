@@ -14,6 +14,16 @@ only the cache; paper/live runs refresh it from the network first.
 | CBOE VIX daily CSV | VIX close | 1990 → | Used only by the regime filter's YELLOW state. |
 | US market 1885+ (SPY-like total-return proxy) | monthly-then-daily index proxy | 1885 → 2025 | Crude; only for long-horizon regime sanity checks, never for returns. |
 
+`scripts/bootstrap_data.sh` fetches all of these (the history only with
+`--history`) and seeds the parquet cache; the GitHub Actions workflows call it
+on a cold cache:
+
+* Qlib US daily — `github.com/SunsetWolf/qlib_dataset/releases/download/v0/qlib_data_us_1d_latest.zip` (≈ 450 MB)
+* S&P 500 point-in-time membership — `github.com/fja05680/sp500` (`S&P 500 Historical Components & Changes (08-01-2025).csv`), fallback `github.com/hanshof/sp500_constituents`
+* Current constituents with company names (for anonymisation) — `github.com/datasets/s-and-p-500-companies`
+* VIX — `github.com/datasets/finance-vix`
+* BTC/ETH — `raw.githubusercontent.com/coinmetrics/data/master/csv/{btc,eth}.csv`
+
 ## Network sources (paper/live)
 
 | Need | Source | Notes |

@@ -24,14 +24,23 @@ Put keys in `.env` (copy `.env.example`). Never commit it.
 1. Push this repository to GitHub (public makes the study auditable).
 2. Settings → Secrets and variables → Actions: add `ANTHROPIC_API_KEY`,
    `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`, optionally `FINNHUB_API_KEY`; add
-   `HIVE_MODE=paper` as a secret (change to `live` only at go-live).
+   `HIVE_MODE=paper` as a secret (change to `live` and add `HIVE_LIVE_CONFIRM`
+   only at go-live).
 3. Settings → Pages → Source: **GitHub Actions**. `.github/workflows/pages.yml`
    publishes `reports/dashboard/` after every daily run.
-4. `.github/workflows/daily.yml` runs after the US close on weekdays:
-   `hive data refresh` → `hive run` → `hive ui build` → commit `state/` and
-   `reports/`. The git history **is** the public record.
-5. Weekly, by hand or a second cron: `hive review` (auditor) and `hive operate`
-   (the iteration loop).
+4. Actions → **seed-data-cache** → *Run workflow* once (≈ 10 minutes). It
+   downloads the reference files and the 2000–2020 history and stores them
+   in the Actions cache. Optional: the daily run bootstraps itself from a
+   cold cache with ~2.5 years of bars, and the weekly run fetches the full
+   history when it needs it. Price data never goes into git.
+5. `.github/workflows/daily.yml` runs after the US close on weekdays:
+   restore cache → `hive data refresh` → `hive run` → `hive ui build` →
+   commit `state/` and `reports/`. The git history **is** the public record.
+6. `.github/workflows/weekly.yml` runs on Sundays: `hive review` (auditor)
+   then `hive operate` (the iteration loop). New shadow children and every
+   verdict land in `state/hive.json` and on the dashboard.
+7. Caches unused for 7 days are evicted by GitHub; the next run simply
+   rebuilds (step 4 happens again, automatically).
 
 **Option B — your own machine / VPS.** `uv venv && uv pip install -e .`, a
 cron entry for the same three commands, and `hive ui serve` for the dashboard
@@ -42,14 +51,15 @@ allow these hosts in the environment's network settings: `query1.finance.yahoo.c
 `query2.finance.yahoo.com`, `paper-api.alpaca.markets`, `api.alpaca.markets`,
 `data.alpaca.markets`, `api.hyperliquid.xyz`, `api.hyperliquid-testnet.xyz`,
 `finnhub.io`, `news.google.com`, `data.sec.gov`, `api.dexscreener.com`,
-`api.rugcheck.xyz`, `api.anthropic.com`, `raw.githubusercontent.com`.
+`api.rugcheck.xyz`, `api.anthropic.com`, `raw.githubusercontent.com`,
+`github.com`, `objects.githubusercontent.com`, `release-assets.githubusercontent.com`.
 
 ## 3. First run
 
 ```bash
 cp .env.example .env            # fill keys
 uv venv --python 3.13 && uv pip install -e ".[dev]" && pytest -q
-hive data seed --qlib-root <unzipped Qlib US dir>   # offline history (DATA.md)
+bash scripts/bootstrap_data.sh --history            # reference files + 2000-2020 history (DATA.md)
 hive data refresh                                   # bring the cache to today
 hive run                                            # first paper cycle (primary + rules-only shadow)
 hive ui build && hive ui serve                      # the dashboard
@@ -62,8 +72,8 @@ hive status
 |---|---|---|
 | every weekday after the close | `hive run` | regime → signals → LLM filter (if key) → risk → orders → ledger → report; children trade their paper books |
 | every weekday | `hive ui build` | dashboard rebuilt from state |
-| weekly | `hive review` | the auditor reads the journals and proposes changes (never applies them) |
-| weekly | `hive operate` | the operator proposes ≤ 3 config variants inside `config/bounds.toml`, code backtests them in/out of sample, winners become shadow children if the tier allows |
+| weekly (Sunday, `weekly.yml`) | `hive review` | the auditor reads the journals and proposes changes (never applies them) |
+| weekly (Sunday, `weekly.yml`) | `hive operate` | the operator proposes ≤ 3 config variants inside `config/bounds.toml`, code backtests them in/out of sample, winners become shadow children if the tier allows |
 | when a child has earned it | `hive hive promote <id> --approve` | **a human** promotes; then apply its overrides to `config/strategy.toml` in a commit |
 
 ## 5. How the hive grows (and what it is not allowed to do)

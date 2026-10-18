@@ -1,0 +1,27 @@
+name: seed-data-cache
+
+# One-off, manual: warm the data cache (reference files + the 2000-2020 Qlib
+# history) before the first scheduled run, so day one already has full
+# history. The daily and weekly workflows do the same on demand; this just
+# front-loads the ~10 minute download.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv --python 3.13 && uv pip install -e .
+      - uses: actions/cache@v4
+        with:
+          path: data
+          key: hive-data-${{ github.run_id }}
+          restore-keys: hive-data-
+      - run: bash scripts/bootstrap_data.sh --history
+      - run: .venv/bin/hive data status

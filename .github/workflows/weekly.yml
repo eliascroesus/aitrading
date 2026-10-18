@@ -1,0 +1,54 @@
+name: weekly-review-and-operate
+
+# Sundays: the auditor reads the week's journals (proposals only) and the
+# operator runs one iteration — propose ≤ 3 variants inside config/bounds.toml,
+# backtest them in- and out-of-sample against the parent, spawn the winners as
+# shadow children if the survival tier allows. Promotion to the live config
+# stays a human command (hive hive promote <id> --approve).
+on:
+  schedule:
+    - cron: "23 14 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hive-state
+  cancel-in-progress: false
+
+jobs:
+  iterate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      HIVE_MODE: ${{ secrets.HIVE_MODE || 'paper' }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      HIVE_LLM_MODEL: ${{ vars.HIVE_LLM_MODEL || 'claude-opus-5-5' }}
+      HIVE_LLM_CHEAP_MODEL: ${{ vars.HIVE_LLM_CHEAP_MODEL || 'claude-haiku-5-5' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv --python 3.13 && uv pip install -e .
+      - name: Restore the data cache
+        uses: actions/cache@v4
+        with:
+          path: data
+          key: hive-data-${{ github.run_id }}
+          restore-keys: hive-data-
+      - name: Reference files + 2000-2020 history for the operator's backtests
+        run: bash scripts/bootstrap_data.sh --history
+      - name: Weekly auditor (findings and proposals, never applied)
+        run: .venv/bin/hive review --days 7 || echo "review skipped"
+      - name: Operator iteration
+        run: .venv/bin/hive operate
+      - name: Rebuild the dashboard
+        run: .venv/bin/hive ui build
+      - name: Commit state and reports
+        run: |
+          git config user.name "hive-bot"
+          git config user.email "hive-bot@users.noreply.github.com"
+          git add state reports
+          git diff --cached --quiet || git commit -m "weekly review + operator iteration $(date -u +%F)"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push
