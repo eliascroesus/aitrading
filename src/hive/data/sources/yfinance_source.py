@@ -42,7 +42,13 @@ def fetch_daily(symbols: Iterable[str], start: str = "2000-01-01") -> dict[str, 
     return out
 
 
+# Yahoo disambiguates a few tickers with a CoinGecko id suffix.
+YAHOO_CRYPTO_OVERRIDES = {"PEPE": "PEPE24478-USD"}
+
+
 def yahoo_crypto_symbol(coin: str) -> str:
-    """``BTC`` -> ``BTC-USD``."""
+    """``BTC`` -> ``BTC-USD`` (``PEPE`` -> ``PEPE24478-USD``)."""
     coin = coin.upper()
+    if coin in YAHOO_CRYPTO_OVERRIDES:
+        return YAHOO_CRYPTO_OVERRIDES[coin]
     return coin if coin.endswith("-USD") else f"{coin}-USD"

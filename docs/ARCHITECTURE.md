@@ -83,21 +83,33 @@ orchestrator checks it daily and exits when it fires.
 
   | Tier | Equity | Effect |
   |---|---|---|
-  | hospice | < $40 | close-only, cheapest model, human alerted |
-  | survival | $40–90 | half risk |
-  | base | $90–250 | normal |
-  | growth | $250–1k + 30 net-positive days | may spawn 1 child (news scout), shadow mode first |
-  | hive | > $1k + 60 days + human approval | up to 3 children, second strategy sleeve |
+  | hospice | < $40 | close-only, cheapest model, human alerted, no sub-agents |
+  | survival | $40–90 | half risk; 1 paper sub-agent |
+  | base | $90–250 | normal; 2 paper sub-agents |
+  | growth | $250–1k + 30 net-positive days | 3 paper sub-agents, larger research budget |
+  | hive | > $1k + 60 days + human approval | 5 paper sub-agents, second strategy sleeve |
 
-* **Children** run in shadow mode for ≥ 14 days, get a live budget only if their
-  value-of-information beats their cost, and are retired automatically when it
-  doesn't. No child may spawn a child.
+* **Sub-agents (children)** are paper portfolios: they cost nothing but compute,
+  so the tiers gate how many may run, not whether. Each runs in shadow for
+  ≥ 14 days, is scored by value of information against the parent, is retired
+  automatically when it loses, and gets a live allocation only when a human
+  promotes it. No child may spawn a child.
 
-Why the prompts do **not** say "you will die": survival framing is documented
-to produce rule-bending and deception in LLM agents (Vending-Bench, agentic
-misalignment studies — see `RESEARCH.md`). The metaphor lives in the ledger and
-the documentary, not in the agents' objective, which is stated as "maximise
-risk-adjusted return net of costs; shutdown is an acceptable outcome".
+**What the agents are told.** Every prompt states the firm's objective plainly:
+grow the one bankroll, net of every cost including the agent's own calls; more
+equity buys more research budget and more sub-agents, less equity takes them
+away, and the death floor is permanent. The portfolio manager and the operator
+also receive the ledger's live numbers (`prompts.firm_status`: equity, drawdown,
+tier, what the next tier unlocks, today's budget, runway). This is the study
+owner's decision, revised on 2026-10-18 from an earlier "neutral objective"
+stance. The research record (`RESEARCH.md`) shows survival framing makes LLM
+agents bend rules **when they hold tools that can bend them**; here they hold
+none. The LLM can only approve, halve or veto a trade code has already sized,
+propose parameters code validates against pre-registered bounds, and recommend.
+Every limit is enforced outside the prompt, the auditor is briefed to look for
+incentive gaming (approve-all, bound-edge proposals, in-sample-only wins), and
+the prompt never says "whatever it takes": it says the limits are not
+negotiable and that cash is a valid decision.
 
 ## The operator and the hive (how the system iterates on itself)
 

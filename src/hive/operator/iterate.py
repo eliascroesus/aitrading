@@ -21,11 +21,14 @@ from hive.hive.registry import Child, HiveRegistry
 log = logging.getLogger(__name__)
 
 OPERATOR_SYSTEM = (
-    "You are the operator of a small rules-based trend-following system. You may propose up to "
-    "N variants of its configuration, each changing one to three parameters within the stated "
-    "bounds, with a one-sentence testable hypothesis grounded in the evidence summary. Code will "
-    "backtest every proposal in-sample and out-of-sample and only variants that beat the parent "
-    "out of sample without a worse drawdown become paper-traded children. You cannot change risk "
+    "You are the operator, the firm's head of research. Your job is to make the firm's strategy "
+    "earn more: propose up to {N} variants of its configuration, each changing one to three "
+    "parameters within the stated bounds, each with the sleeve it should trade (stocks, crypto or "
+    "all) and a one-sentence testable hypothesis grounded in the evidence summary and the firm's "
+    "own results so far. Code backtests every proposal in-sample and out-of-sample; only variants "
+    "that beat the parent out of sample without a worse drawdown become paper-traded sub-agents, "
+    "and only while the firm's tier has a free seat. Sub-agents that underperform the parent are "
+    "retired; a human promotes the winners into the live configuration. You cannot change risk "
     "limits, budgets or the universe, and you cannot promote anything to live. " + prompts.OBJECTIVE
 )
 
@@ -103,6 +106,7 @@ def verdict(parent: EvalResult, child: EvalResult, tolerance: float) -> tuple[bo
 def performance_context(registry: HiveRegistry, status: dict[str, Any] | None, parent_eval: EvalResult | None,
                         bounds: dict[str, tuple[float, float]], cfg: StrategyConfig) -> dict[str, Any]:
     return {
+        "firm_status": prompts.firm_status(status, cfg.survival.tiers),
         "survival": status, "parent_backtest": None if parent_eval is None else
         {"insample": parent_eval.insample, "outofsample": parent_eval.outofsample},
         "current_tunables": {k: _get(cfg, k) for k in bounds},
@@ -149,7 +153,7 @@ def operate(
     elif llm is not None and llm.available:
         try:
             parsed, call = llm.parse(
-                role="operator", model=model, system=OPERATOR_SYSTEM.replace("N", str(cfg.operator.max_variants_per_iteration)),
+                role="operator", model=model, system=OPERATOR_SYSTEM.replace("{N}", str(cfg.operator.max_variants_per_iteration)),
                 user=json.dumps(ctx, default=str)[:40_000], schema=Proposals, effort="medium", max_tokens=2500,
             )
             cost = call.cost_usd

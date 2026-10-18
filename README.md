@@ -2,8 +2,10 @@
 
 A public study. An AI trading system starts with **$100**. Its own LLM and
 data costs are paid out of that bankroll; if the bankroll reaches the death
-floor it shuts down permanently; if it grows it unlocks sub-agents (more
-research, more news coverage, a second strategy) — a hive.
+floor it shuts down permanently; if it grows it unlocks more research budget
+and more sub-agents (strategy variants and sleeves it proposes, backtests and
+paper-trades itself) — a hive. The agents are told exactly that; every limit
+that keeps it honest is enforced in code, outside the prompt.
 
 One design rule, taken from every live LLM-trading experiment we could find
 (see `docs/RESEARCH.md`): **deterministic code finds, sizes and protects every
@@ -23,7 +25,7 @@ trade; LLM agents may only research, debate and veto.**
 | Risk | `hive.risk` | Hard gates in code: stops required, position/heat/exposure caps, daily-loss and drawdown halts, kill switch; the LLM can only `approve / reduce_half / veto` |
 | Agents | `hive.agents` | Quarantined news reader (anonymised, bounded outputs), fundamental/technical/sentiment analysts, one-round bull-vs-bear, portfolio manager, weekly auditor; every call cost-accounted; fail closed |
 | Execution | `hive.execution` | `PaperBroker`, `AlpacaBroker` (paper by default), `HyperliquidBroker` (agent wallet, testnet by default, eligibility flag) — no transfer tool exists |
-| Survival | `hive.survival` | Hash-chained ledger; equity net of AI costs; daily AI budget; death floor; tiers with hysteresis; children start in shadow mode |
+| Survival | `hive.survival` | Hash-chained ledger; equity net of AI costs; daily AI budget; death floor; tiers with hysteresis gate how many paper sub-agents may run (1 from the survival tier, 2 at base, up to 5); live allocation is a human decision |
 | Orchestrator | `hive.orchestrator` | The daily cycle, position book, hash-chained journal, rules-only shadow portfolio, daily markdown/JSON reports |
 | Hive & operator | `hive.hive`, `hive.operator` | Children (strategy variants / scouts per sleeve) as paper portfolios with value-of-information scoring; the bounded iteration loop that proposes, backtests and spawns them; human-only promotion |
 | Meme scout | `hive.meme` | DexScreener/RugCheck scanner with the research's hard filters and caps; paper-only (live Jupiter execution is an explicit guard) |

@@ -105,8 +105,11 @@ budget ≈ 0.05% of equity; GitHub Actions cron with state committed.
   is precisely the wrong incentive for a trader.
 * At $100, $1/day of AI spend is a +3,678%/yr hurdle; $0.05/day is +20%/yr.
 
-**Decisions:** neutral objective in prompts (the "life" metaphor stays in the
-ledger and the show); death floor at $25 / 75% drawdown decided by code; risk
+**Decisions:** the agents are told the stakes outright (one bankroll, costs
+deducted from it, growth buys budget and sub-agents, the death floor is final),
+a 2026-10-18 revision of the original "neutral objective" stance, made safe by
+the architecture rather than the prompt: the LLM holds no tool that can bend a
+rule (see `ARCHITECTURE.md`, "What the agents are told"); death floor at $25 / 75% drawdown decided by code; risk
 tightens as equity falls; no transfer tool anywhere; quarantined news reader
 with bounded outputs; memory with provenance; kill switch + dead-man's switch;
 hash-chained ledger; tiers with hysteresis; children in shadow mode first;

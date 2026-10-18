@@ -15,6 +15,7 @@ from typing import Any
 
 import pandas as pd
 
+from hive.agents import prompts
 from hive.agents.llm import LLMClient
 from hive.agents.pipeline import CandidateContext, CandidatePipeline, features_payload
 from hive.config import StrategyConfig
@@ -62,6 +63,23 @@ class RunSummary:
     ai_cost_usd: float = 0.0
     notes: list[str] = field(default_factory=list)
     positions: list[dict[str, Any]] = field(default_factory=list)
+
+
+class BankrollMismatchError(RuntimeError):
+    """The broker's equity is not the study's bankroll (an un-reset paper account, usually)."""
+
+
+def check_bankroll(equity: float, basis: float, marks: list[float], *, broker: str = "broker") -> None:
+    """Refuse to size on money the study does not have.
+
+    A paper account left at its $100,000 default would otherwise trade a thousand
+    times the bankroll. Genuine growth shows up in earlier equity marks, so only an
+    unexplained jump above twice the capital basis trips this.
+    """
+    if basis > 0 and equity > 2 * basis and (not marks or equity > 2 * max(marks)):
+        raise BankrollMismatchError(
+            f"{broker} reports ${equity:,.2f} but the study bankroll is ${basis:,.2f}: reset the paper account "
+            f"to ${basis:,.0f} (then regenerate its keys) or record a capital_in ledger entry. See docs/SETUP.md.")
 
 
 class DailyRun:
@@ -180,6 +198,9 @@ class DailyRun:
                 self.journal.write("stop_fill", {"qty": r.filled_qty, "price": r.fill_price})
 
         equity = float(self.broker.equity())
+        if self.ledger is not None:
+            check_bankroll(equity, self.cfg.survival.starting_bankroll_usd + self.ledger.capital_in_total(),
+                           [m for _, m in self.ledger.equity_marks()], broker=getattr(self.broker, "name", "broker"))
         summary = RunSummary(rd, self.label, equity, equity, "n/a", {})
         self.journal.write("run_start", {"label": self.label, "date": rd, "equity": equity})
 
@@ -302,7 +323,9 @@ class DailyRun:
                         headlines=headlines, company_names=self.company_names.get(sym, []),
                     ))
                 evals = pipe.evaluate(ctxs, {"equity": equity, "cash": cash, "n_positions": len(self.book),
-                                             "regime_risk_multiplier": float(reg["risk_multiplier"])})
+                                             "regime_risk_multiplier": float(reg["risk_multiplier"])},
+                                      firm_status=prompts.firm_status(
+                                          status.__dict__ if status is not None else None, self.cfg.survival.tiers))
                 for ev in evals:
                     actions[ev.symbol] = (ev.decision.action, ev.decision.invalidation_condition)
                     summary.decisions.append({"symbol": ev.symbol, "action": ev.decision.action,
@@ -332,13 +355,19 @@ class DailyRun:
             if action == "veto":
                 continue
             ac = self.asset_classes.get(sym, "stock")
+            if hasattr(self.broker, "supports") and not self.broker.supports(sym, ac):
+                self.journal.write("untradable", {"symbol": sym, "asset_class": ac,
+                                                  "broker": getattr(self.broker, "name", "")})
+                continue
             rules = self.cfg.rules_for(ac)
             k = self._k(r)
             price = float(r["raw_close"])
             stop = initial_stop(price, pd.Series({"atr": float(r["atr"]) * k, "swing_low": float(r["swing_low"]) * k}),
                                 rules)
+            cap = self.cfg.risk.max_position_pct_crypto_alt if sym in self.cfg.universe.crypto_alt_symbols else None
             d = size_position(equity=equity, price=price, stop_price=stop, risk=self.cfg.risk,
-                              asset_class=ac, risk_multiplier=mult.get(ac, 0.0), portfolio_vol_ann=port_vol)
+                              asset_class=ac, risk_multiplier=mult.get(ac, 0.0), portfolio_vol_ann=port_vol,
+                              cap_pct=cap)
             if d.notional <= 0:
                 continue
             it = OrderIntent(sym, ac, "buy", d.notional, d.qty, price, stop,

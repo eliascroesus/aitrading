@@ -7,9 +7,14 @@
 #   1.1.0  2026-10-18  stocks: SMA50 trend-break exit disabled, chandelier trail 5 ATR.
 #                      The only lever that improved both walk-forward windows; adopted
 #                      as "less bad", not as evidence of edge (docs/BACKTEST_RESULTS.md).
+#   1.2.0  2026-10-18  universe: large-cap memecoins DOGE/SHIB/PEPE join the crypto sleeve
+#                      under the same trend rules with a 10% position cap; paper sub-agents
+#                      allowed from the survival tier (1) and base tier (2) instead of
+#                      only from growth, since they cost nothing but compute. No change
+#                      to entries, exits, sizing or limits.
 
 name = "trend-reset-v1"
-version = "1.1.0"
+version = "1.2.0"
 
 [stocks]
 bars_per_year = 252
@@ -113,6 +118,7 @@ max_new_entries_per_day = 2
 max_position_pct_stock = 0.20
 max_position_pct_etf = 0.30
 max_position_pct_crypto = 0.30
+max_position_pct_crypto_alt = 0.10
 max_gross_exposure = 1.0
 max_leverage = 1.0
 risk_per_trade_pct = 0.01
@@ -135,7 +141,7 @@ death_drawdown_pct = 0.75
 daily_ai_budget_min_usd = 0.02
 daily_ai_budget_max_usd = 2.0
 tier_hysteresis_pct = 0.15
-max_children = 3
+max_children = 5
 child_shadow_days = 14
 
 [[survival.tiers]]
@@ -151,7 +157,7 @@ daily_ai_budget_pct = 0.0002
 [[survival.tiers]]
 name = "survival"
 min_equity_usd = 40.0
-max_children = 0
+max_children = 1
 min_net_positive_days = 0
 requires_human_approval = false
 risk_multiplier = 0.5
@@ -161,7 +167,7 @@ daily_ai_budget_pct = 0.0005
 [[survival.tiers]]
 name = "base"
 min_equity_usd = 90.0
-max_children = 0
+max_children = 2
 min_net_positive_days = 0
 requires_human_approval = false
 risk_multiplier = 1.0
@@ -171,7 +177,7 @@ daily_ai_budget_pct = 0.0005
 [[survival.tiers]]
 name = "growth"
 min_equity_usd = 250.0
-max_children = 1
+max_children = 3
 min_net_positive_days = 30
 requires_human_approval = false
 risk_multiplier = 1.0
@@ -181,7 +187,7 @@ daily_ai_budget_pct = 0.0008
 [[survival.tiers]]
 name = "hive"
 min_equity_usd = 1000.0
-max_children = 3
+max_children = 5
 min_net_positive_days = 60
 requires_human_approval = true
 risk_multiplier = 1.0
@@ -192,7 +198,8 @@ daily_ai_budget_pct = 0.001
 stock_universe = "sp500"
 custom_symbols = []
 etf_symbols = ["SPY", "QQQ", "IWM", "DIA", "GLD", "SLV", "TLT", "IEF", "XLK", "XLE", "XLF", "XLV", "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE", "XLC", "SMH", "XBI", "EEM", "EFA", "VNQ"]
-crypto_symbols = ["BTC", "ETH", "SOL"]
+crypto_symbols = ["BTC", "ETH", "SOL", "DOGE", "SHIB", "PEPE"]
+crypto_alt_symbols = ["DOGE", "SHIB", "PEPE"]
 regime_stock_symbol = "SPY"
 regime_crypto_symbol = "BTC"
 min_price_usd = 5.0

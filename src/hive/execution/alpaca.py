@@ -25,8 +25,20 @@ class AlpacaBroker:
         self.paper = paper
         self.client = TradingClient(api_key, secret_key, paper=paper)
         self.name = "alpaca-paper" if paper else "alpaca-live"
+        self._tradable: dict[tuple[str, str], bool] = {}
 
     # -- queries ---------------------------------------------------------------
+    def supports(self, symbol: str, asset_class: str = "stock") -> bool:
+        """Whether Alpaca lists the asset as tradable; unknown or unlisted means no order."""
+        key = (symbol.upper(), asset_class)
+        if key not in self._tradable:
+            try:
+                asset = self.client.get_asset(alpaca_symbol(symbol, asset_class))
+                self._tradable[key] = bool(getattr(asset, "tradable", False))
+            except Exception:
+                self._tradable[key] = False
+        return self._tradable[key]
+
     def equity(self) -> float:
         return float(self.client.get_account().equity)
 

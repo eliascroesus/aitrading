@@ -33,6 +33,7 @@ def size_position(
     portfolio_vol_ann: float | None = None,
     fractional: bool = True,
     lot_size: float = 1.0,
+    cap_pct: float | None = None,
 ) -> SizeDecision:
     if equity <= 0 or price <= 0:
         return SizeDecision(0.0, 0.0, 0.0, 0.0, "no equity or bad price")
@@ -50,7 +51,8 @@ def size_position(
     # The regime/tier multiplier scales the position cap too, so "half risk"
     # is half risk even when the cap (not the stop) is what binds.
     caps = {"risk": qty * price,
-            "position_cap": equity * risk.max_position_pct(asset_class) * min(risk_multiplier, 1.0)}
+            "position_cap": equity * (risk.max_position_pct(asset_class) if cap_pct is None else cap_pct)
+            * min(risk_multiplier, 1.0)}
     binding = min(caps, key=caps.get)
     notional = caps[binding]
     qty = notional / price

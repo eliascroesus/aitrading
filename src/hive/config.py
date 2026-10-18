@@ -204,6 +204,8 @@ class RiskLimits(BaseModel):
     max_position_pct_stock: float = 0.20
     max_position_pct_etf: float = 0.30
     max_position_pct_crypto: float = 0.30
+    # Large-cap memecoins (universe.crypto_alt_symbols) get a smaller cap.
+    max_position_pct_crypto_alt: float = 0.10
     max_gross_exposure: float = 1.0
     max_leverage: float = 1.0
     risk_per_trade_pct: float = 0.01
@@ -256,19 +258,21 @@ class SurvivalRules(BaseModel):
     daily_ai_budget_min_usd: float = 0.02
     daily_ai_budget_max_usd: float = 2.0
     tier_hysteresis_pct: float = 0.15
-    max_children: int = 3
+    # Paper sub-agents cost nothing but compute, so the tiers gate how many may run,
+    # not whether; a live allocation to any of them is always a human decision.
+    max_children: int = 5
     child_shadow_days: int = 14
     tiers: list[Tier] = Field(
         default_factory=lambda: [
             Tier(name="hospice", min_equity_usd=0.0, close_only=True, risk_multiplier=0.0,
                  daily_ai_budget_pct=0.0002),
-            Tier(name="survival", min_equity_usd=40.0, risk_multiplier=0.5,
+            Tier(name="survival", min_equity_usd=40.0, max_children=1, risk_multiplier=0.5,
                  daily_ai_budget_pct=0.0005),
-            Tier(name="base", min_equity_usd=90.0, risk_multiplier=1.0,
+            Tier(name="base", min_equity_usd=90.0, max_children=2, risk_multiplier=1.0,
                  daily_ai_budget_pct=0.0005),
-            Tier(name="growth", min_equity_usd=250.0, max_children=1, min_net_positive_days=30,
+            Tier(name="growth", min_equity_usd=250.0, max_children=3, min_net_positive_days=30,
                  risk_multiplier=1.0, daily_ai_budget_pct=0.0008),
-            Tier(name="hive", min_equity_usd=1000.0, max_children=3, min_net_positive_days=60,
+            Tier(name="hive", min_equity_usd=1000.0, max_children=5, min_net_positive_days=60,
                  requires_human_approval=True, risk_multiplier=1.0, daily_ai_budget_pct=0.001),
         ]
     )
@@ -324,7 +328,10 @@ class UniverseConfig(BaseModel):
             "XLI", "XLY", "XLP", "XLU", "XLB", "XLRE", "XLC", "SMH", "XBI", "EEM", "EFA", "VNQ",
         ]
     )
-    crypto_symbols: list[str] = Field(default_factory=lambda: ["BTC", "ETH", "SOL"])
+    crypto_symbols: list[str] = Field(default_factory=lambda: ["BTC", "ETH", "SOL", "DOGE", "SHIB", "PEPE"])
+    # Large-cap memecoins traded on the same spot venue under the same trend rules,
+    # with the smaller position cap (risk.max_position_pct_crypto_alt).
+    crypto_alt_symbols: list[str] = Field(default_factory=lambda: ["DOGE", "SHIB", "PEPE"])
     regime_stock_symbol: str = "SPY"
     regime_crypto_symbol: str = "BTC"
     min_price_usd: float = 5.0
@@ -334,7 +341,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "1.1.0"
+    version: str = "1.2.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     regime: RegimeRules = Field(default_factory=RegimeRules)

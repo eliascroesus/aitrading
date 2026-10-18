@@ -316,6 +316,7 @@ class Backtester:
                         equity=equity, price=price, stop_price=stop, risk=cfg.risk, asset_class=ac,
                         risk_multiplier=mult.get(ac, 0.0), portfolio_vol_ann=port_vol,
                         fractional=self.fractional,
+                        cap_pct=cfg.risk.max_position_pct_crypto_alt if sym in cfg.universe.crypto_alt_symbols else None,
                     )
                     if d.notional <= 0:
                         continue

@@ -8,8 +8,9 @@
 * Growth unlocks tiers (with hysteresis) that may spawn sub-agents; children
   start in shadow mode and must earn a budget.
 
-Design note: the "life" framing is for the documentary. The agents' prompts
-state a neutral objective (risk-adjusted return net of costs, shutdown is an
-acceptable outcome) because survival pressure is documented to produce
-rule-bending in LLMs (see docs/RESEARCH.md).
+Design note: the agents are told the stakes (docs/ARCHITECTURE.md, "What the
+agents are told"). Survival pressure is documented to produce rule-bending in
+LLMs that hold tools able to bend rules (docs/RESEARCH.md); here every limit is
+enforced in code and the LLM can only veto, halve, propose within bounds and
+recommend, so the framing changes decisions, not what is possible.
 """

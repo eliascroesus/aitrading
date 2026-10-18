@@ -7,6 +7,9 @@ Contract (see docs/ARCHITECTURE.md):
 * Outputs are pydantic-validated. An invalid, refused or missing reply is a
   veto (fail closed), never an approve.
 * Every call's tokens and dollar cost are returned and booked to the ledger.
-* The objective in every prompt is neutral: risk-adjusted return net of
-  costs, and shutdown is an acceptable outcome.
+* Every prompt states the firm's objective plainly (grow the one bankroll net
+  of every cost, including the agent's own; growth buys budget and sub-agents,
+  the death floor is permanent) and that the limits in code are not negotiable.
+  The PM and the operator also receive the ledger's live numbers
+  (``prompts.firm_status``).
 """

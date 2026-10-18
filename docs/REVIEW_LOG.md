@@ -28,5 +28,21 @@ just the fixes.
 ### Medium / low (all addressed unless noted)
 Regime multipliers shared between backtester and live run (ETFs may enter in RED; crypto gated by the BTC regime); `reduce_half` applied after sizing; multipliers also scale the position cap; portfolio-vol scaling live; six invalidation conditions monitored (news-driven exits for open positions remain a TODO); two-way book/broker reconciliation and Alpaca `BTCUSD` mapping; quality truncation never applied to open positions; replays of past dates never fetch news; one journal per date, verified in `hive status`; death persisted with a post-mortem; kill-switch runs still mark equity; hospice budget floor removed; stale-cache warning; NaN scores filled. Prompt caching is not claimed any more: the system prompts are below the cacheable minimum, and the volatile JSON is in the user turn by design.
 
+### Decision record — 2026-10-18, incentive framing (config 1.2.0)
+The study owner asked for the agents to be told the stakes: one bankroll, every
+cost deducted from it, growth buys budget and sub-agents, the death floor is
+final. The earlier build kept a neutral objective because survival framing is
+documented to produce rule-bending in LLM agents. The two positions were
+reconciled on the architecture rather than the prompt: the LLM holds no tool
+that can bend a rule (enum actions that only shrink, proposals validated
+against pre-registered bounds, no order, transfer or config write path), so the
+framing is now explicit (`prompts.OBJECTIVE`, `prompts.firm_status`), the
+auditor is briefed to look for incentive gaming, and the limits are stated as
+non-negotiable in the same breath. Also in 1.2.0: paper sub-agents allowed from
+the survival tier, large-cap memecoins in the crypto sleeve at a 10% cap, a
+bankroll guard that refuses to size on an un-reset paper account, a broker
+tradability check, and a fix for the operator prompt's `N` placeholder, which
+had been rewriting every capital N in the prompt (including "JSON").
+
 ### Done well (reviewer's words)
 Point-in-time features with a no-lookahead test; internally consistent backtest accounting; fail-closed LLM layer with enum-only actions; sound ledger hash chain; layered live-mode gating and no withdraw path anywhere.

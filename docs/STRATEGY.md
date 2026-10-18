@@ -29,7 +29,13 @@ ATR     = Wilder ATR (20 bars stocks, 14 crypto); close-to-close fallback for cl
   (`universe.etf_symbols`).
 * **Crypto:** BTC, ETH, SOL (spot preferred; perps only at ≤ 1.5× and only for
   eligible operators — see `DATA.md` on Hyperliquid's terms).
-* **No memecoins in the core.** The optional aggressive sleeve is off (0%).
+* **Memecoin majors (since 1.2.0):** DOGE, SHIB, PEPE trade in the same crypto
+  sleeve under the same trend template and BTC regime gate, with a 10% position
+  cap instead of 30% (`universe.crypto_alt_symbols`,
+  `risk.max_position_pct_crypto_alt`). They rarely hold a rising 200-day MA, so
+  entries are rare by construction; that is the point of keeping the rules.
+* **No on-chain memecoins in the core.** The DexScreener scout (`hive.meme`) is
+  a paper-only sub-agent and the aggressive sleeve is off (0%).
 
 ## 2. Trend template (all required)
 

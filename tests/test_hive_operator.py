@@ -16,13 +16,16 @@ def _tier(cfg, name):
 def test_registry_respects_tier_limits_and_human_promotion(tmp_path):
     cfg = StrategyConfig()
     reg = HiveRegistry(tmp_path / "hive.json", cfg.survival)
-    with pytest.raises(PermissionError):
-        reg.spawn(Child(id="", name="x", kind="variant", sleeve="stocks"), _tier(cfg, "base"))
+    with pytest.raises(PermissionError):   # hospice: no sub-agents at all
+        reg.spawn(Child(id="", name="x", kind="variant", sleeve="stocks"), _tier(cfg, "hospice"))
     c = reg.spawn(Child(id="", name="Wide Trail", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 6}),
-                  _tier(cfg, "growth"))
+                  _tier(cfg, "survival"))
     assert c.id == "wide-trail" and c.status == "shadow"
+    with pytest.raises(PermissionError):   # survival allows one
+        reg.spawn(Child(id="", name="second", kind="variant", sleeve="stocks"), _tier(cfg, "survival"))
+    reg.spawn(Child(id="", name="second", kind="variant", sleeve="stocks"), _tier(cfg, "base"))  # base allows two
     with pytest.raises(PermissionError):
-        reg.spawn(Child(id="", name="second", kind="variant", sleeve="stocks"), _tier(cfg, "growth"))
+        reg.spawn(Child(id="", name="third", kind="variant", sleeve="stocks"), _tier(cfg, "base"))
     with pytest.raises(PromotionNeedsHumanError):
         reg.promote(c.id, approved_by_human=False)
     for i in range(cfg.survival.child_shadow_days):
@@ -129,4 +132,4 @@ def test_jupiter_is_a_guard():
 
 
 def test_survival_rules_children_defaults():
-    assert SurvivalRules().max_children == 3
+    assert SurvivalRules().max_children == 5

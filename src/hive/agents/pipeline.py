@@ -135,7 +135,8 @@ class CandidatePipeline:
         return parsed, call.cost_usd
 
     # -- orchestration ---------------------------------------------------------------
-    def evaluate(self, contexts: list[CandidateContext], risk_snapshot: dict) -> list[CandidateEvaluation]:
+    def evaluate(self, contexts: list[CandidateContext], risk_snapshot: dict,
+                 firm_status: str = "") -> list[CandidateEvaluation]:
         evals: list[CandidateEvaluation] = []
         if not self.llm.available:
             return [CandidateEvaluation(c.symbol, _veto(c.symbol, "LLM disabled: rules-only run"),
@@ -188,7 +189,8 @@ class CandidatePipeline:
         try:
             pm, call = self.llm.parse(
                 role="portfolio_manager", model=self.decision_model, system=prompts.PM_SYSTEM,
-                user=f"Risk snapshot: {_fmt(_numeric_only(risk_snapshot))}\n"
+                user=(f"{firm_status}\n" if firm_status else "")
+                     + f"Risk snapshot: {_fmt(_numeric_only(risk_snapshot))}\n"
                      f"Candidates: {json.dumps(packets, default=str)}",
                 schema=PMDecision, effort=self.pm_effort, max_tokens=3000,
             )
