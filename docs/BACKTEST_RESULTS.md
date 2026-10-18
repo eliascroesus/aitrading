@@ -149,9 +149,12 @@ data means intraday stops are approximated at the close.
 Adopted change, recorded in `config/strategy.toml` and `STRATEGY.md`: the
 SMA50 trend-break exit is disabled (SMA200 break only) and the chandelier
 trail is 5 ATR. Rationale: the only lever that improved both windows and the
-only one with a mechanical explanation. Expected performance from history:
-**roughly 2–4% a year with a −20% to −30% drawdown**, i.e. a low-volatility
-proxy for the index with no demonstrated alpha. The entry rule is kept as the
+only one with a mechanical explanation. Full period 2001–2020 with v1.1:
+**CAGR 2.6%, Sharpe 0.31, max drawdown −23.0%, 730 trades, 25-day average
+hold, no drawdown halts** (`reports/backtest-stocks-v1.1/`) — versus 0.9% /
+0.14 / −31.7% for the spec and 7.2% / 0.45 / −55% for SPY. Expected
+performance from history: **roughly 2–4% a year with a −20% to −30%
+drawdown**, i.e. a low-volatility proxy for the index with no demonstrated alpha. The entry rule is kept as the
 trader's brief specifies it, with the explicit note that it has not beaten
 random entries and is a candidate for replacement after the live phase.
 
