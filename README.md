@@ -64,6 +64,7 @@ hive review                  # weekly auditor: proposals only, never applied
 
 # The dashboard and the hive
 hive ui build && hive ui serve          # http://127.0.0.1:8787 (GitHub Pages publishes the same page)
+#   a pre-built example (32 replayed days of 2020): docs/examples/dashboard-replay-2020/index.html
 hive operate                            # the operator proposes variants, code backtests, spawns shadow children
 hive hive list | spawn | retire | promote <id> --approve   # promotion is always a human decision
 ```

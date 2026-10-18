@@ -132,6 +132,7 @@ indexed to 100, drawdown, cumulative AI spend, positions with stop status,
 the latest run's decisions, the tier ladder, children and operator iterations,
 backtests and every experiment cell, LLM call costs by role, recent activity.
 No server: GitHub Pages serves it; `hive ui serve` runs it locally.
+A pre-built example from a 32-day 2020 replay is in `docs/examples/dashboard-replay-2020/`.
 
 ## Safety baseline
 

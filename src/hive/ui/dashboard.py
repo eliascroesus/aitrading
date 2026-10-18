@@ -103,7 +103,8 @@ function lineChart(el, series, opts={}) {
   const ys = series.flatMap(s=>s.points.map(p=>p[1])).filter(v=>v!=null && isFinite(v));
   if(!xs.length||!ys.length){ el.innerHTML='<div class="muted small">no data yet</div>'; return; }
   let y0=Math.min(...ys), y1=Math.max(...ys); if(opts.zero) y0=Math.min(0,y0); if(y1===y0){y1=y0+1}
-  const pad=(y1-y0)*0.06; y0-=pad; y1+=pad;
+  const pad=(y1-y0)*0.06, allPos=Math.min(...ys)>=0, allNeg=!allPos&&Math.max(...ys)<=0; y0-=pad; y1+=pad;
+  if(allPos) y0=Math.max(0,y0); if(allNeg) y1=Math.min(0,y1);  // never pad an axis across zero
   const X = i => m.l + (xs.length>1? i/(xs.length-1):0.5)*(W-m.l-m.r);
   const Y = v => m.t + (1-(v-y0)/(y1-y0))*(H-m.t-m.b);
   const ns='http://www.w3.org/2000/svg'; const svg=document.createElementNS(ns,'svg'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
@@ -158,7 +159,7 @@ function render(){
    <div class="tile"><div class="label">Tier</div><div class="value">${esc(st.tier||'—')}</div><div class="delta">${statusPill('runway '+(st.runway_days==null?'∞':Math.round(st.runway_days)+' d'), tierCol)}</div></div>
    <div class="tile"><div class="label">AI budget today</div><div class="value">${fmt$(st.budget_today)}</div><div class="delta">spent ${fmt$(st.ai_cost_today)} · hurdle ${hurdle==null?'—':pct(hurdle)}/yr</div></div>
    <div class="tile"><div class="label">Regime</div><div class="value" style="text-transform:capitalize">${esc(regime)}</div><div class="delta">${statusPill(((P.regime||{}).crash_guard?'crash guard ON':'crash guard off'), regCol)}</div></div>
-   <div class="tile"><div class="label">Integrity</div><div class="value">${S.chain_ok&&!(D.journal.broken_chains||[]).length?'✓':'✗'}</div><div class="delta">ledger ${S.chain_ok?'ok':'BROKEN'} · journals ${(D.journal.broken_chains||[]).length?'BROKEN':'ok'} · ${D.journal.anomalies_30d} data anomalies/30d</div></div>
+   <div class="tile"><div class="label">Integrity</div><div class="value">${S.chain_ok&&!(D.journal.broken_chains||[]).length?'✓':'✗'}</div><div class="delta">ledger ${S.chain_ok?'ok':'BROKEN'} · journals ${(D.journal.broken_chains||[]).length?'BROKEN':'ok'} · ${D.journal.anomalies_30d} names skipped by the data-quality guard (30d)</div></div>
   </div>`;
   // equity chart (indexed to start)
   const idx=(arr)=>arr.map((v,i)=>[E.dates[i], v==null?null:v/start*100]);
