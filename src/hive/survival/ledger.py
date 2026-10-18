@@ -202,6 +202,25 @@ class SurvivalLedger:
         floor = self.rules.daily_ai_budget_min_usd if tier.risk_multiplier > 0 else 0.0
         return float(min(max(raw, floor), self.rules.daily_ai_budget_max_usd))
 
+    def research_budget(self, equity_net: float, tier: Tier, on: date, days: int = 7) -> float:
+        """What the weekly auditor and operator may spend.
+
+        Unspent daily budget over the last ``days`` days accrues into a research pot
+        (capped at ``days`` × today's budget), minus research already booked in the
+        window. Research calls book their cost under ``<date>-research`` so they never
+        draw down the day's decision budget, and the day's decisions never starve
+        the weekly research.
+        """
+        per_day = self.budget_today(equity_net, tier)
+        window = [(on - timedelta(days=i)).isoformat() for i in range(days)]
+        pot = 0.0
+        for d in window:
+            spent = sum(e.amount_usd for e in self.entries if e.kind == "ai_cost" and e.day == d)
+            pot += max(per_day - spent, 0.0)
+        research = sum(e.amount_usd for e in self.entries
+                       if e.kind == "ai_cost" and str(e.day).endswith("-research") and str(e.day)[:10] in window)
+        return max(min(pot, days * per_day) - research, 0.0)
+
     def death_recorded(self) -> LedgerEntry | None:
         for e in reversed(self.entries):
             if e.kind == "death":
@@ -228,7 +247,8 @@ class SurvivalLedger:
         """(equity - death floor) / trailing average daily all-in burn."""
         today = on or datetime.now(UTC).date()
         costs = [e for e in self.entries if e.kind in ("ai_cost", "data_cost", "infra_cost")]
-        recent = [e.amount_usd for e in costs if 0 <= (today - date.fromisoformat(e.day)).days < lookback_days]
+        # research entries carry a "<date>-research" key: the first ten characters are the day
+        recent = [e.amount_usd for e in costs if 0 <= (today - date.fromisoformat(str(e.day)[:10])).days < lookback_days]
         burn = sum(recent) / lookback_days
         if burn <= 0:
             return None

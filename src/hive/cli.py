@@ -217,14 +217,16 @@ def review(days: int = typer.Option(7)) -> None:
     cfg = StrategyConfig.load()
     ledger = SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival)
     last = ledger.last_equity_mark() or cfg.survival.starting_bankroll_usd
-    # The weekly review is paid from the bankroll like every other call.
-    budget = ledger.status(last).budget_remaining
-    llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(), budget_usd=max(budget, 0.0))
     today = __import__("datetime").date.today()
+    st = ledger.status(last, on=today)
+    # The weekly review is paid from the bankroll like every other call, out of the
+    # research pot that unspent daily budget accrues into (ledger.research_budget).
+    budget = ledger.research_budget(st.equity_net, ledger.tier(st.equity_net), today)
+    llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(), budget_usd=max(budget, 0.0))
     out = s.hive_reports_dir / "reviews" / f"review-{today.isoformat()}.json"
     rep = run_review(llm, s.hive_llm_model, inputs, out)
     if llm.spent_usd > 0:
-        ledger.append("ai_cost", llm.spent_usd, {"label": "review", "date": today.isoformat()})
+        ledger.append("ai_cost", llm.spent_usd, {"label": "review", "date": f"{today.isoformat()}-research"})
     rprint(rep.model_dump() if rep else "review failed (fail closed)")
     rprint(f"wrote {out}")
 
@@ -307,19 +309,22 @@ def operate(dry_run: bool = typer.Option(False, help="Propose and evaluate witho
         return
     ledger = SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival)
     last = ledger.last_equity_mark() or cfg.survival.starting_bankroll_usd
-    st = ledger.status(last)
+    today = __import__("datetime").date.today()
+    st = ledger.status(last, on=today)
     tier = ledger.tier(st.equity_net)
     llm = None
     if s.anthropic_api_key is not None:
-        llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(), budget_usd=st.budget_remaining)
+        llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(),
+                        budget_usd=ledger.research_budget(st.equity_net, tier, today))
     reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
     if dry_run:
         reg.path = s.hive_state_dir / "hive.dryrun.json"
-    rprint(f"operator: tier {tier.name}, budget ${st.budget_remaining:.4f}, llm={'on' if llm and llm.available else 'off'}")
+    rprint(f"operator: tier {tier.name}, research pot ${(llm.budget_usd if llm else 0.0):.4f}, "
+           f"llm={'on' if llm and llm.available else 'off'}")
     recs = _operate(cfg=cfg, registry=reg, tier=tier, status=st.__dict__, llm=llm, model=s.hive_llm_model,
                     inputs=default_inputs(s, cfg))
     if llm is not None and llm.spent_usd > 0:
-        ledger.append("ai_cost", llm.spent_usd, {"label": "operator", "date": __import__("datetime").date.today().isoformat()})
+        ledger.append("ai_cost", llm.spent_usd, {"label": "operator", "date": f"{today.isoformat()}-research"})
     for r in recs:
         rprint(r)
 

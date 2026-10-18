@@ -52,7 +52,13 @@ into the features; decision journals are committed with the state; `exit`
 journal entries carry asset class and P&L; a news desk reads headlines for open
 positions and exits on a material negative event; and a weekly, bounded capital
 allocator moves the crypto sleeve toward the desk that earned
-(`docs/research/05-incentives.md`).
+(`docs/research/05-incentives.md`). The first hand-triggered weekly run showed
+two more defects: the operator's empty reply left no trace (it now records a
+"no proposals" iteration with the model's note or the rejection reason, and is
+told to propose at least one experiment whenever a seat is free), and the
+weekly jobs drew on the same per-day budget as the next day's trading
+decisions (they now draw on a seven-day research pot booked under
+`<date>-research`).
 
 ### Done well (reviewer's words)
 Point-in-time features with a no-lookahead test; internally consistent backtest accounting; fail-closed LLM layer with enum-only actions; sound ledger hash chain; layered live-mode gating and no withdraw path anywhere.

@@ -80,7 +80,7 @@ hive status
 | every day 00:37 UTC | `hive run` | regime → news desk on open positions → signals → LLM filter (if key) → risk → orders → ledger → report; children trade their paper books; weekends: crypto only |
 | every day | `hive ui build` | dashboard rebuilt from state |
 | weekly (Sunday, `weekly.yml`) | `hive allocate` | the crypto sleeve's share of equity moves ±5 points toward the desk that earned, within 20–60%, from realised P&L; no LLM |
-| weekly (Sunday, `weekly.yml`) | `hive review` | the auditor reads the journals and proposes changes (never applies them) |
+| weekly (Sunday, `weekly.yml`) | `hive review` | the auditor reads the journals and proposes changes (never applies them); paid, like `hive operate`, from the research pot that unspent daily budget accrues into |
 | weekly (Sunday, `weekly.yml`) | `hive operate` | the operator proposes ≤ 3 config variants inside `config/bounds.toml`, code backtests them in/out of sample, winners become shadow children if the tier allows |
 | when a child has earned it | `hive hive promote <id> --approve` | **a human** promotes; then apply its overrides to `config/strategy.toml` in a commit |
 

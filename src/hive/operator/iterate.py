@@ -28,8 +28,11 @@ OPERATOR_SYSTEM = (
     "own results so far. Code backtests every proposal in-sample and out-of-sample; only variants "
     "that beat the parent out of sample without a worse drawdown become paper-traded sub-agents, "
     "and only while the firm's tier has a free seat. Sub-agents that underperform the parent are "
-    "retired; a human promotes the winners into the live configuration. You cannot change risk "
-    "limits, budgets or the universe, and you cannot promote anything to live. " + prompts.OBJECTIVE
+    "retired; a human promotes the winners into the live configuration. Whenever a seat is free, "
+    "propose at least one variant: if you think nothing deserves a seat, say why in the note and "
+    "still propose the single most informative experiment, because an untested idea earns nothing. "
+    "You cannot change risk limits, budgets or the universe, and you cannot promote anything to "
+    "live. " + prompts.OBJECTIVE
 )
 
 
@@ -158,6 +161,13 @@ def operate(
             )
             cost = call.cost_usd
             proposals = parsed.proposals[: cfg.operator.max_variants_per_iteration] if parsed else []
+            if not proposals:
+                why = (f"model reply rejected: {call.error or call.stop_reason}" if parsed is None
+                       else f"model proposed nothing: {parsed.note or 'no note'}")
+                registry.record_iteration({"date": on.isoformat(), "proposal": "", "hypothesis": "",
+                                           "overrides": {}, "sleeve": "", "cost_usd": cost,
+                                           "verdict": f"no proposals ({why})"})
+                return registry.iterations[-1:]
         except BudgetExceededError as exc:
             registry.record_iteration({"date": on.isoformat(), "proposal": "", "verdict": f"skipped: {exc}"})
             return registry.iterations[-1:]

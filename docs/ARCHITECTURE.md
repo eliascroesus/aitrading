@@ -89,6 +89,10 @@ orchestrator checks it daily and exits when it fires.
   | growth | $250–1k + 30 net-positive days | 3 paper sub-agents, larger research budget |
   | hive | > $1k + 60 days + human approval | 5 paper sub-agents, second strategy sleeve |
 
+* **Research pot.** Unspent daily budget accrues for seven days into a pot the
+  Sunday jobs draw on (`SurvivalLedger.research_budget`); their costs are booked
+  under `<date>-research`, so the operator and the auditor never take the day's
+  decision budget and the day's decisions never starve the weekly research.
 * **Capital follows results.** Every Sunday `hive allocate` reads the realised
   P&L of each desk (asset class) from the decision journals over the last 42
   days and moves the crypto sleeve's share of equity one step (5 points) toward

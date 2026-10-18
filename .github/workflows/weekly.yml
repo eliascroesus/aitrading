@@ -40,10 +40,10 @@ jobs:
           restore-keys: hive-data-
       - name: Reference files + 2000-2020 history for the operator's backtests
         run: bash scripts/bootstrap_data.sh --history
-      - name: Weekly auditor (findings and proposals, never applied)
-        run: .venv/bin/hive review --days 7 || echo "review skipped"
       - name: Operator iteration
         run: .venv/bin/hive operate
+      - name: Weekly auditor (findings and proposals, never applied)
+        run: .venv/bin/hive review --days 7 || echo "review skipped"
       - name: Capital allocation between desks (bounded, from realised results)
         run: .venv/bin/hive allocate
       - name: Rebuild the dashboard
