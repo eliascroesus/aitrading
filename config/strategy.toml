@@ -1,9 +1,15 @@
 # Pre-registered strategy configuration for the HIVE public study.
 # Every change to this file is a change to the study and is recorded in git.
 # Defaults mirror hive.config.StrategyConfig; tests assert they stay in sync.
+#
+# Changelog
+#   1.0.0  2026-10-18  as briefed (docs/STRATEGY.md)
+#   1.1.0  2026-10-18  stocks: SMA50 trend-break exit disabled, chandelier trail 5 ATR.
+#                      The only lever that improved both walk-forward windows; adopted
+#                      as "less bad", not as evidence of edge (docs/BACKTEST_RESULTS.md).
 
 name = "trend-reset-v1"
-version = "1.0.0"
+version = "1.1.0"
 
 [stocks]
 bars_per_year = 252
@@ -37,10 +43,10 @@ trigger_roc = 5
 stop_swing_low_bars = 10
 stop_swing_low_atr_pad = 0.5
 stop_initial_atr = 3.0
-trail_atr = 4.0
+trail_atr = 5.0
 trail_atr_late = 3.0
 trail_tighten_after_bars = 63
-exit_closes_below_mid = 2
+exit_closes_below_mid = 1000   # disabled in v1.1 (see changelog)
 exit_closes_below_long = 1
 failure_stop_bars = 15
 failure_stop_min_r = 0.5

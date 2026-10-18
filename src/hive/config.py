@@ -156,10 +156,12 @@ class TrendRules(BaseModel):
     stop_swing_low_bars: int = 10
     stop_swing_low_atr_pad: float = 0.5
     stop_initial_atr: float = 3.0
-    trail_atr: float = 4.0
+    trail_atr: float = 5.0
     trail_atr_late: float = 3.0
     trail_tighten_after_bars: int = 63
-    exit_closes_below_mid: int = 2
+    # v1.1: the SMA50 trend-break exit is disabled (a very large streak never
+    # fires) because it whipsawed pullback entries in both walk-forward windows.
+    exit_closes_below_mid: int = 1000
     exit_closes_below_long: int = 1
     failure_stop_bars: int = 15
     failure_stop_min_r: float = 0.5
@@ -175,6 +177,8 @@ class TrendRules(BaseModel):
             reset_period=30, atr_period=14, pullback_high_lookback=90, pullback_max_atr=7.0,
             volume_short=7, volume_long=30, trigger_roc=3, failure_stop_bars=20,
             review_bars=90, max_hold_bars=180, earnings_blackout_bars=0,
+            # Crypto exits were not part of the walk-forward; keep the original spec.
+            trail_atr=4.0, exit_closes_below_mid=2,
         )
 
 
@@ -289,7 +293,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "1.0.0"
+    version: str = "1.1.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     regime: RegimeRules = Field(default_factory=RegimeRules)

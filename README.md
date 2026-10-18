@@ -28,7 +28,16 @@ trade; LLM agents may only research, debate and veto.**
 
 Documentation: `docs/ARCHITECTURE.md`, `docs/STRATEGY.md`, `docs/DATA.md`,
 `docs/RESEARCH.md` (+ the four source reports in `docs/research/`),
-`docs/BACKTEST_RESULTS.md`.
+`docs/BACKTEST_RESULTS.md`, `docs/REVIEW_LOG.md`, `docs/OPERATIONS.md`.
+
+## What the evidence says (read before expecting anything)
+
+On 2001–2020 US data the pre-registered rules made ~1% a year with a −32%
+drawdown versus SPY's 7.2% / −55%; the walk-forward-validated v1.1 makes
+roughly 2–4% with −20% to −30%; the entry rule does not beat random entries
+inside its own trend template. The system is a drawdown-controlled, low-return
+trend follower, not a money machine — and that is the honest starting point
+for measuring whether an AI layer adds anything net of its own cost.
 
 ## Quick start
 

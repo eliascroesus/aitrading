@@ -70,8 +70,8 @@ close > max(high[t−1], high[t−2]) **and** close > EMA10 **and** ROC_5 > 0
 
 ## 6. Exits (first one that fires)
 
-1. **Chandelier stop:** max(previous stop, highest close since entry − 4·ATR); 3·ATR after 63 bars. Checked against the day's low.
-2. **Trend break:** 2 consecutive closes below SMA50, or 1 close below SMA200 → exit next open.
+1. **Chandelier stop:** max(previous stop, highest close since entry − 5·ATR); 3·ATR after 63 bars. Checked against the day's low. *(v1.0 used 4·ATR.)*
+2. **Trend break:** 1 close below SMA200 → exit next open. *(v1.0 also exited on 2 closes below SMA50; disabled in v1.1 because a pullback entry sits near the 50-day MA by construction and the rule whipsawed in both walk-forward windows — see `BACKTEST_RESULTS.md` §3–4. Crypto keeps the v1.0 exits, which were not part of the walk-forward.)*
 3. **Failure stop:** on bar 15 (20 crypto), exit if close < entry + 0.5R.
 4. **Review:** from bar 63 (90 crypto), exit if the trend template no longer passes.
 5. **Hard max hold:** 126 bars (180 crypto).
@@ -105,10 +105,14 @@ winners; capping them destroys the edge.
 
 Good long-only trend/momentum systems in the literature make roughly 10–30%
 a year with 20–40% maximum drawdowns, before the decay that follows
-publication. There is no evidence-based way to turn $100 into $1,000 quickly
-without a matching probability of ruin (a fair game aimed at 10× before −90%
-succeeds ~9% of the time). The configuration above is tuned for survival
-first; the aggressive sleeve stays at 0% until the core has a live track record.
+publication. **This rule set did not reach that on 2001–2020 data:** the
+pre-registered spec made ~1% a year, v1.1 makes roughly 2–4% with a −20% to
+−30% drawdown, and the entry rule has not beaten random entries inside its
+own template (`BACKTEST_RESULTS.md`). There is no evidence-based way to turn
+$100 into $1,000 quickly without a matching probability of ruin (a fair game
+aimed at 10× before −90% succeeds ~9% of the time). The configuration above
+is tuned for survival first; the aggressive sleeve stays at 0% until the core
+has a live track record.
 
 ## 10. Validation protocol (required before live)
 
