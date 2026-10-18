@@ -12,6 +12,17 @@
     "pnl_by_class": {},
     "trades_by_class": {}
    }
+  },
+  {
+   "date": "2026-10-18",
+   "from": 0.4,
+   "to": 0.4,
+   "why": "hold: only 0 closed trades in 42 days",
+   "scorecard": {
+    "window_days": 42,
+    "pnl_by_class": {},
+    "trades_by_class": {}
+   }
   }
  ]
 }

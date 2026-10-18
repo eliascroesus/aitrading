@@ -19,5 +19,24 @@
       "metrics": {}
     }
   ],
-  "iterations": []
+  "iterations": [
+    {
+      "date": "2026-10-18",
+      "proposal": "wider trails, longer holds",
+      "hypothesis": "Widening stocks.trail_atr 5->6.5 and trail_atr_late 3->4 with max_hold_bars 126->189 lowers turnover and lets winners run, lifting OOS profit factor above 1.24 and CAGR above 2.8% without exceeding the -22.9% drawdown.",
+      "overrides": {},
+      "sleeve": "stocks",
+      "cost_usd": 0.0146725,
+      "verdict": "rejected: no overrides"
+    },
+    {
+      "date": "2026-10-18",
+      "proposal": "drop early time exits",
+      "hypothesis": "Disabling the failure stop (failure_stop_bars 15->1000) and moving review_bars 63->126 cuts premature exits and fees, raising OOS Sharpe above 0.33 at no worse max drawdown than -22.9%.",
+      "overrides": {},
+      "sleeve": "stocks",
+      "cost_usd": 0.0146725,
+      "verdict": "rejected: no overrides"
+    }
+  ]
 }
