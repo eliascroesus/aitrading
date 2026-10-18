@@ -1,0 +1,42 @@
+{
+  "positions": {
+    "TRV": {
+      "symbol": "TRV",
+      "asset_class": "stock",
+      "qty": 0.044231656882589586,
+      "entry_price": 389.5400085449219,
+      "entry_date": "2026-10-16",
+      "r_per_share": 22.607322480258347,
+      "stop_price": 366.9326860646635,
+      "highest_close": 389.5400085449219,
+      "bars_held": 0,
+      "invalidation_condition": "none",
+      "source": "shadow-rules",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "shadow-rules-2026-10-16-TRV"
+      }
+    },
+    "CVX": {
+      "symbol": "CVX",
+      "asset_class": "stock",
+      "qty": 0.07462553709084706,
+      "entry_price": 224.99000549316406,
+      "entry_date": "2026-10-16",
+      "r_per_share": 13.397831572674562,
+      "stop_price": 211.5921739204895,
+      "highest_close": 224.99000549316406,
+      "bars_held": 0,
+      "invalidation_condition": "none",
+      "source": "shadow-rules",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "shadow-rules-2026-10-16-CVX"
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "cash": 100.0,
+  "positions": {},
+  "stops": {},
+  "pending": [
+    {
+      "id": "shadow-rules-2026-10-16-TRV",
+      "symbol": "TRV",
+      "side": "buy",
+      "qty": null,
+      "notional": 17.23,
+      "asset_class": "stock"
+    },
+    {
+      "id": "shadow-rules-2026-10-16-CVX",
+      "symbol": "CVX",
+      "side": "buy",
+      "qty": null,
+      "notional": 16.79,
+      "asset_class": "stock"
+    }
+  ],
+  "fills": [],
+  "saved_at": "2026-10-18T22:39:54+00:00"
+}
