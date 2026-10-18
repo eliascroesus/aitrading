@@ -44,7 +44,9 @@ main{max-width:1240px;margin:0 auto;padding:0 16px 48px;display:grid;gap:16px;gr
 .status .dot{width:8px;height:8px;border-radius:50%}
 .banner{grid-column:span 12;background:var(--surface);border:2px solid var(--crit);border-radius:10px;padding:14px 16px}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--grid);vertical-align:top}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--grid);vertical-align:top;overflow-wrap:anywhere}
+.card{min-width:0;overflow:hidden}
+code.ov{font-size:11px;color:var(--ink2)}
 th{color:var(--ink2);font-weight:600;font-size:12px}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
@@ -81,6 +83,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 24px;color:var(--muted);fon
 const D = JSON.parse(document.getElementById('data').textContent);
 const $ = (s, el=document) => el.querySelector(s);
 const fmt$ = v => v==null?'—':('$'+Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}));
+const fmtK = v => v==null?'—':(Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e4?'$'+(v/1e3).toFixed(1)+'k':'$'+Math.round(v));
 const pct = v => v==null?'—':((v*100).toFixed(1)+'%');
 const num = (v,d=2) => v==null?'—':Number(v).toFixed(d);
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -93,7 +96,8 @@ $('#theme').onclick = () => { const r=document.documentElement; const cur=r.getA
 function lineChart(el, series, opts={}) {
   // series: [{name, color, points:[[x(date str), y]]}]
   el.innerHTML='';
-  const W = Math.max(320, el.clientWidth||800), H = opts.height||260, m={t:12,r:72,b:28,l:52};
+  const longest = Math.max(8, ...series.map(s=>s.name.length));
+  const W = Math.max(320, el.clientWidth||800), H = opts.height||260, m={t:12,r:Math.min(170, 14+longest*6.4),b:28,l:52};
   const xs = [...new Set(series.flatMap(s=>s.points.map(p=>p[0])))].sort();
   const xi = new Map(xs.map((x,i)=>[x,i]));
   const ys = series.flatMap(s=>s.points.map(p=>p[1])).filter(v=>v!=null && isFinite(v));
@@ -110,12 +114,16 @@ function lineChart(el, series, opts={}) {
   svg.appendChild(g('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,stroke:css('--axis'),'stroke-width':1}));
   // x labels (first, middle, last)
   [0,Math.floor((xs.length-1)/2),xs.length-1].forEach((i,k)=>{ const t=g('text',{x:X(i),y:H-8,'text-anchor':k===0?'start':k===2?'end':'middle','font-size':11,fill:css('--muted')}); t.textContent=xs[i]; svg.appendChild(t);});
-  // series
+  // series (direct end labels are de-collided: sorted by y, pushed >= 13px apart)
+  const labels=[];
   series.forEach(s=>{ const pts=s.points.filter(p=>p[1]!=null && isFinite(p[1])); if(!pts.length) return;
     if(s.area){ const d=pts.map((p,i)=>(i?'L':'M')+X(xi.get(p[0]))+','+Y(p[1])).join(' ')+` L${X(xi.get(pts[pts.length-1][0]))},${Y(0)} L${X(xi.get(pts[0][0]))},${Y(0)} Z`; svg.appendChild(g('path',{d,fill:s.color,opacity:.18})); }
     const d=pts.map((p,i)=>(i?'L':'M')+X(xi.get(p[0]))+','+Y(p[1])).join(' ');
     svg.appendChild(g('path',{d,fill:'none',stroke:s.color,'stroke-width':2,'stroke-linejoin':'round'}));
-    const last=pts[pts.length-1]; const t=g('text',{x:X(xi.get(last[0]))+6,y:Y(last[1])+4,'font-size':11,fill:css('--ink2')}); t.textContent=s.name; svg.appendChild(t); });
+    const last=pts[pts.length-1]; labels.push({x:X(xi.get(last[0]))+6,y:Y(last[1])+4,name:s.name,color:s.color}); });
+  labels.sort((a,b)=>a.y-b.y); for(let i=1;i<labels.length;i++){ if(labels[i].y-labels[i-1].y<13) labels[i].y=labels[i-1].y+13; }
+  labels.forEach(l=>{ const t=g('text',{x:l.x,y:l.y,'font-size':11,fill:css('--ink2')}); t.textContent=l.name; svg.appendChild(t);
+    const sw=g('rect',{x:l.x-5,y:l.y-5,width:3,height:3,fill:l.color}); svg.appendChild(sw); });
   // crosshair + tooltip
   const cross=g('line',{x1:0,x2:0,y1:m.t,y2:H-m.b,stroke:css('--axis'),'stroke-width':1,visibility:'hidden'}); svg.appendChild(cross);
   const tip=document.createElement('div'); tip.className='tt'; el.appendChild(svg); el.appendChild(tip);
@@ -175,9 +183,10 @@ function render(){
   const exits=(P.exits||[]).map(x=>`<li><b>${esc(x.symbol)}</b> ${esc(x.reason)} ${x.ok?'':'(FAILED)'}</li>`).join('');
   html+=card(`Latest run — ${esc(P.run_date||'—')}`,'c8',`<div class="small muted" style="margin-bottom:6px">${(P.notes||[]).map(esc).join(' · ')||'no notes'}</div><table><thead><tr><th>candidate</th><th>action</th><th>invalidation</th><th class="num">conf.</th><th>rationale</th><th class="num">cost</th></tr></thead><tbody>${decRows||'<tr><td colspan="6" class="muted">no candidates</td></tr>'}</tbody></table><div class="row" style="margin-top:8px"><div style="flex:1"><b class="small">Orders</b><ul class="small">${orders||'<li class="muted">none</li>'}</ul></div><div style="flex:1"><b class="small">Exits</b><ul class="small">${exits||'<li class="muted">none</li>'}</ul></div></div>`);
   // hive children / iterations
-  const ch=(H.children||[]); const chRows=ch.map(c=>`<tr><td><b>${esc(c.name)}</b><br><span class="muted small">${esc(c.id)}</span></td><td><span class="pill">${esc(c.sleeve)}</span></td><td>${esc(c.status)}</td><td>${esc(c.born)}</td><td class="num">${fmt$(c.equity)}</td><td class="num">${c.voi==null?'—':num(c.voi,3)}</td><td class="muted small">${esc(JSON.stringify(c.overrides||{}))}</td></tr>`).join('');
-  const it=(H.iterations||[]).slice(-12).reverse().map(i=>`<tr><td>${esc(i.date)}</td><td>${esc(i.proposal||'')}</td><td class="num">${i.is_cagr==null?'—':pct(i.is_cagr)}</td><td class="num">${i.oos_cagr==null?'—':pct(i.oos_cagr)}</td><td>${esc(i.verdict||'')}</td></tr>`).join('');
-  html+=card(`Hive — children ${ch.length} (tier allows ${(tiers.find(t=>t.name===st.tier)||{}).max_children??'—'})`,'c4',`<table><thead><tr><th>child</th><th>sleeve</th><th>status</th><th>born</th><th class="num">equity</th><th class="num">VOI</th><th>overrides</th></tr></thead><tbody>${chRows||'<tr><td colspan="7" class="muted">no children yet — spawned by the operator when the tier allows and shadow results earn it</td></tr>'}</tbody></table><h2 style="margin-top:12px">Operator iterations</h2><table><thead><tr><th>date</th><th>proposal</th><th class="num">IS</th><th class="num">OOS</th><th>verdict</th></tr></thead><tbody>${it||'<tr><td colspan="5" class="muted">none yet</td></tr>'}</tbody></table>`);
+  const ch=(H.children||[]); const ovs=o=>Object.entries(o||{}).map(([k,v])=>`${k.replace(/^stocks\./,'')}=${v}`).join(', ');
+  const chRows=ch.map(c=>`<tr><td><b>${esc(c.name)}</b> <span class="pill">${esc(c.sleeve)}</span><br><code class="ov">${esc(ovs(c.overrides)||'parent config')}</code></td><td>${esc(c.status)}<br><span class="muted small">${c.shadow_days} d</span></td><td class="num">${fmt$(c.equity)}<br><span class="small ${c.voi>0?'':'muted'}">VOI ${c.voi==null?'—':(c.voi>=0?'+':'')+pct(c.voi)}</span></td></tr>`).join('');
+  const it=(H.iterations||[]).slice(-12).reverse().map(i=>`<li style="margin:0 0 8px"><span class="muted small">${esc(i.date)}</span> <b>${esc(i.proposal||'')}</b> <code class="ov">${esc(ovs(i.overrides))}</code><br><span class="small">IS ${i.is_cagr==null?'—':pct(i.is_cagr)} · OOS ${i.oos_cagr==null?'—':pct(i.oos_cagr)}${i.parent_oos_cagr==null?'':' (parent '+pct(i.parent_oos_cagr)+')'} — ${esc(i.verdict||'')}</span></li>`).join('');
+  html+=card(`Hive — children ${ch.length} (tier allows ${(tiers.find(t=>t.name===st.tier)||{}).max_children??'—'})`,'c4',`<table><thead><tr><th>child</th><th>status</th><th class="num">equity</th></tr></thead><tbody>${chRows||'<tr><td colspan="3" class="muted">no children yet — spawned by the operator when the tier allows and shadow results earn it</td></tr>'}</tbody></table><h2 style="margin-top:12px">Operator iterations</h2><ul style="padding-left:16px;margin:0">${it||'<li class="muted">none yet</li>'}</ul>`);
   // backtests
   const bt=D.backtests||[]; const btRows=bt.map(b=>`<tr><td><b>${esc(b.name)}</b> <span class="pill">v${esc(b.config_version||'')}</span></td><td class="num">${pct(b.cagr)}</td><td class="num">${num(b.sharpe)}</td><td class="num">${pct(b.max_drawdown)}</td><td class="num">${b.n_trades}</td><td class="num">${pct(b.win_rate)}</td><td class="num">${num(b.profit_factor)}</td><td class="num">${num(b.avg_hold_days,0)}d</td><td class="num">${pct(b.avg_exposure)}</td><td class="num muted">${pct(b.benchmark.cagr)} / ${pct(b.benchmark.max_drawdown)}</td></tr>`).join('');
   html+=card('Backtests (cleaned data, next-open fills, costs) — benchmark = buy & hold','',`<table><thead><tr><th>run</th><th class="num">CAGR</th><th class="num">Sharpe</th><th class="num">max DD</th><th class="num">trades</th><th class="num">win</th><th class="num">PF</th><th class="num">hold</th><th class="num">exposure</th><th class="num">bench CAGR / DD</th></tr></thead><tbody>${btRows||'<tr><td colspan="10" class="muted">none</td></tr>'}</tbody></table>`);
@@ -198,7 +207,7 @@ function render(){
   tables.eq=lineChart($('#eq'),series,{fmt:v=>num(v,1)});
   tables.dd=lineChart($('#dd'),[{name:'drawdown',color:css('--s1'),points:dd,area:true}],{fmt:v=>pct(v),zero:true});
   tables.cost=lineChart($('#cost'),[{name:'AI + data cost',color:css('--s1'),points:E.dates.map((d,i)=>[d,E.cum_ai_cost[i]])}],{fmt:v=>fmt$(v),zero:true});
-  bt.filter(b=>b.curve&&b.curve.dates.length).slice(0,3).forEach((b,i)=>{ const lg=v=>Math.log10(v); tables['bt'+i]=lineChart($('#bt'+i),[{name:'strategy',color:css('--s1'),points:b.curve.dates.map((d,j)=>[d,lg(b.curve.equity[j])])},{name:'buy & hold',color:css('--s3'),points:b.curve.dates.map((d,j)=>[d,b.curve.benchmark[j]==null?null:lg(b.curve.benchmark[j])])}],{fmt:v=>'$'+Math.round(Math.pow(10,v))}); });
+  bt.filter(b=>b.curve&&b.curve.dates.length).slice(0,3).forEach((b,i)=>{ const lg=v=>Math.log10(v); tables['bt'+i]=lineChart($('#bt'+i),[{name:'strategy',color:css('--s1'),points:b.curve.dates.map((d,j)=>[d,lg(b.curve.equity[j])])},{name:'buy & hold',color:css('--s3'),points:b.curve.dates.map((d,j)=>[d,b.curve.benchmark[j]==null?null:lg(b.curve.benchmark[j])])}],{fmt:v=>fmtK(Math.pow(10,v))}); });
   document.querySelectorAll('button[data-table]').forEach(b=>b.onclick=()=>{const t=tables[b.dataset.table]; if(t) t.classList.toggle('show');});
 }
 render(); addEventListener('resize',()=>{clearTimeout(window.__r); window.__r=setTimeout(render,150);});

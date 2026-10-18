@@ -33,6 +33,15 @@ from hive.survival.ledger import SurvivalLedger
 
 log = logging.getLogger(__name__)
 
+# Process-wide feature cache shared by the primary, the shadow and every child
+# within one daily cycle: same symbol, same as-of date, same rule set -> same
+# features. ``clear_feature_cache()`` is called at the start of each cycle.
+_FEATURE_CACHE: dict[tuple, pd.DataFrame | None] = {}
+
+
+def clear_feature_cache() -> None:
+    _FEATURE_CACHE.clear()
+
 
 class SystemDeadError(RuntimeError):
     pass
@@ -120,12 +129,14 @@ class DailyRun:
     def _features(self, symbol: str, *, for_candidate: bool = True) -> pd.DataFrame | None:
         key = (symbol, for_candidate)
         if key not in self._features_cache:
-            b = self.bars(symbol, for_candidate=for_candidate)
-            if b is None or len(b) < self.cfg.universe.min_history_bars:
-                self._features_cache[key] = None
-            else:
-                self._features_cache[key] = compute_features(
-                    b, self.cfg.rules_for(self.asset_classes.get(symbol, "stock")))
+            ac = self.asset_classes.get(symbol, "stock")
+            rules = self.cfg.rules_for(ac)
+            gkey = (ac, symbol, self.run_date, for_candidate, rules.model_dump_json())
+            if gkey not in _FEATURE_CACHE:
+                b = self.bars(symbol, for_candidate=for_candidate)
+                _FEATURE_CACHE[gkey] = (None if b is None or len(b) < self.cfg.universe.min_history_bars
+                                        else compute_features(b, rules))
+            self._features_cache[key] = _FEATURE_CACHE[gkey]
         return self._features_cache[key]
 
     def raw_price(self, symbol: str, column: str = "close") -> float | None:

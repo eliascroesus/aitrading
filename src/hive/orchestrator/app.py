@@ -20,7 +20,7 @@ from hive.execution.paper import PaperBroker
 from hive.orchestrator.book import PositionBook
 from hive.orchestrator.journal import Journal
 from hive.orchestrator.report import write_daily_report
-from hive.orchestrator.run import DailyRun, RunSummary, SystemDeadError
+from hive.orchestrator.run import DailyRun, RunSummary, SystemDeadError, clear_feature_cache
 from hive.survival.ledger import SurvivalLedger
 
 log = logging.getLogger(__name__)
@@ -95,6 +95,7 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
             llm_enabled: bool | None = None) -> dict[str, Path]:
     ts = pd.Timestamp(run_date)
     rd = ts.date().isoformat()
+    clear_feature_cache()
     store = BarStore(settings.hive_data_dir / "cache")
     classes = asset_classes_from_store(store, cfg)
     pit = settings.hive_data_dir / "raw" / "sp500_pit_membership.csv"
