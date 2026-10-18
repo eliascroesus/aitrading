@@ -253,6 +253,11 @@ def experiment(
         df = run_grid(inputs, cfg, _parse_variations(params), out_csv=out, n_jobs=n_jobs, extra=extra)
         cols = list(df.columns)
     else:
+        from hive.backtest.experiments import _apply_overrides
+
+        # For the null test, --params gives single-value overrides of the config under test.
+        single = {k: v[0] for k, v in _parse_variations(params).items()} if params else {}
+        cfg = _apply_overrides(cfg, single)
         df = run_null_test(inputs, cfg, seeds=list(range(seeds)), out_csv=out, n_jobs=n_jobs)
         base = run_oat(inputs, cfg, {}, out_csv=out.with_suffix(".base.csv"), n_jobs=1)
         rprint(summarize_null(df, float(base["cagr"].iloc[0])))

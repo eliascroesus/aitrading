@@ -18,6 +18,7 @@ import pandas as pd
 
 from hive.config import StrategyConfig
 from hive.data.bars import normalize_bars
+from hive.data.quality import clean_universe
 from hive.data.sources import coinmetrics
 from hive.data.sources.qlib_bin import QlibDataset
 from hive.data.store import BarStore
@@ -147,4 +148,10 @@ def load_bars_for_backtest(
             bench = store.get("crypto", cfg.universe.regime_crypto_symbol)
     if bench is None:
         raise FileNotFoundError("benchmark bars missing from the store; run `hive data seed`")
+    # Truncate every series at its first implausible print (docs/DATA.md, "Data quality").
+    bars, anomalies = clean_universe(bars, min_bars=cfg.universe.min_history_bars, asset_classes=classes)
+    classes = {s: c for s, c in classes.items() if s in bars}
+    if anomalies:
+        log.warning("truncated %d series at corrupted prints: %s%s", len(anomalies),
+                    ", ".join(sorted(anomalies)[:12]), " ..." if len(anomalies) > 12 else "")
     return bars, classes, bench

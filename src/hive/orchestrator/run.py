@@ -14,6 +14,7 @@ from hive.agents.llm import LLMClient
 from hive.agents.pipeline import CandidateContext, CandidatePipeline, features_payload
 from hive.config import StrategyConfig
 from hive.data.bars import as_of
+from hive.data.quality import max_abs_return_for, truncate_at_first_anomaly
 from hive.data.store import BarStore
 from hive.data.universe import PointInTimeUniverse
 from hive.execution.base import Broker
@@ -95,7 +96,13 @@ class DailyRun:
         if symbol not in self._bars_cache:
             ac = self.asset_classes.get(symbol, "stock")
             b = self.store.get(ac, symbol)
-            self._bars_cache[symbol] = as_of(b, self.run_date) if b is not None else None
+            if b is not None:
+                b = as_of(b, self.run_date)
+                b, anomaly = truncate_at_first_anomaly(b, max_abs_return=max_abs_return_for(ac))
+                if anomaly is not None:
+                    self.journal.write("data_anomaly", {"symbol": symbol, "date": str(anomaly.date.date()),
+                                                        "kind": anomaly.kind, "value": anomaly.value})
+            self._bars_cache[symbol] = b
         return self._bars_cache[symbol]
 
     def _features(self, symbol: str) -> pd.DataFrame | None:
