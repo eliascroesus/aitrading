@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-19T01:10:32+00:00",
+ "generated_at": "2026-10-19T05:17:27+00:00",
  "strategy": {
   "name": "trend-reset-v1",
   "version": "1.3.0"
@@ -252,7 +252,7 @@
  "journal": {
   "recent": [],
   "llm_calls": [],
-  "anomalies_30d": 9,
+  "anomalies_30d": 18,
   "broken_chains": [],
   "n_files": 2
  },
@@ -271,7 +271,7 @@
     "start_equity": 3.0,
     "parent_start_equity": 100.0,
     "voi": 0.0,
-    "shadow_days": 1,
+    "shadow_days": 2,
     "hypothesis": "",
     "notes": [],
     "metrics": {}

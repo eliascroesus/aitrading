@@ -13,7 +13,7 @@
       "start_equity": 3.0,
       "parent_start_equity": 100.0,
       "voi": 0.0,
-      "shadow_days": 1,
+      "shadow_days": 2,
       "hypothesis": "",
       "notes": [],
       "metrics": {}
