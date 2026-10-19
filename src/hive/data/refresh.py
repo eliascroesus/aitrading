@@ -34,6 +34,23 @@ def complete_days(bars: pd.DataFrame) -> pd.DataFrame:
     return bars[idx.normalize() < today]
 
 
+US_CLOSE_UTC = (21, 5)   # 16:00 New York is 20:00 or 21:00 UTC; wait for the later one plus settle
+
+
+def complete_sessions(bars: pd.DataFrame, now: datetime | None = None) -> pd.DataFrame:
+    """Drop today's stock/ETF bar until the US session has closed: a run during the day
+    would otherwise compute signals on a bar that is still forming."""
+    if not len(bars):
+        return bars
+    now = now or datetime.now(UTC)
+    if (now.hour, now.minute) >= US_CLOSE_UTC:
+        return bars
+    idx = pd.DatetimeIndex(bars.index)
+    if idx.tz is not None:
+        idx = idx.tz_convert("UTC").tz_localize(None)
+    return bars[idx.normalize() < pd.Timestamp(now.date())]
+
+
 def refresh_all(store: BarStore, cfg: StrategyConfig, *, pit_csv: Path | None, days: int = 400,
                 hl_testnet: bool = False) -> dict[str, int]:
     start = (datetime.now(UTC) - timedelta(days=days)).date().isoformat()
@@ -55,8 +72,10 @@ def refresh_all(store: BarStore, cfg: StrategyConfig, *, pit_csv: Path | None, d
                 log.warning("yfinance chunk failed (%s...): %s", chunk[:3], exc)
                 continue
             for sym, bars in got.items():
-                store.upsert(ac, sym, bars, source="yfinance")
-                counts[ac] += 1
+                bars = complete_sessions(bars)
+                if len(bars):
+                    store.upsert(ac, sym, bars, source="yfinance")
+                    counts[ac] += 1
 
     for coin in cfg.universe.crypto_symbols:
         done = False
@@ -83,6 +102,9 @@ def refresh_all(store: BarStore, cfg: StrategyConfig, *, pit_csv: Path | None, d
     try:
         got = yfinance_source.fetch_daily(["^VIX"], start=start)
         for _, bars in got.items():
+            bars = complete_sessions(bars)
+            if not len(bars):
+                continue
             store.upsert("index", "VIX", bars, source="yfinance")
             counts["index"] += 1
     except Exception as exc:

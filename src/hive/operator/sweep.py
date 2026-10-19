@@ -59,16 +59,45 @@ def describe(sleeve: str, overrides: dict[str, Any]) -> str:
     return f"sweep {sleeve}: " + ", ".join(f"{k.split('.')[-1]}={v}" for k, v in overrides.items())
 
 
+def seat_waiting(registry: HiveRegistry, tier: Tier, on: date) -> list[dict[str, Any]]:
+    """Cells that passed the verdict while every seat was taken wait; seat them when one frees.
+    A cell that was ever seated (any status) is not seated twice."""
+    seated = {_key(c.sleeve, c.overrides or {}) for c in registry.children}
+    out: list[dict[str, Any]] = []
+    for it in list(registry.iterations):
+        if not str(it.get("verdict", "")).startswith("passed but not spawned") or not it.get("overrides"):
+            continue
+        key = _key(it.get("sleeve", ""), it["overrides"])
+        if key in seated:
+            continue
+        can, reason = registry.can_spawn(tier)
+        if not can:
+            break
+        child = registry.spawn(Child(id="", name=str(it.get("proposal", "waiting list"))[:40], kind="variant",
+                                     sleeve=it.get("sleeve", "stocks"), overrides=it["overrides"],
+                                     hypothesis=str(it.get("hypothesis", "")),
+                                     metrics={"is_cagr": it.get("is_cagr"), "oos_cagr": it.get("oos_cagr"),
+                                              "oos_dd": it.get("oos_dd")}), tier)
+        seated.add(key)
+        rec = {"date": on.isoformat(), "proposal": it.get("proposal"), "kind": "seated", "overrides": it["overrides"],
+               "sleeve": it.get("sleeve"), "cost_usd": 0.0, "oos_cagr": it.get("oos_cagr"),
+               "parent_oos_cagr": it.get("parent_oos_cagr"), "oos_dd": it.get("oos_dd"),
+               "verdict": f"seated from the waiting list as {child.id} (passed on {it.get('date')})"}
+        registry.record_iteration(rec)
+        out.append(rec)
+    return out
+
+
 def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier, *, n_cells: int = 3,
               on: date | None = None, inputs_by_sleeve: dict[str, dict] | None = None) -> list[dict[str, Any]]:
     from hive.operator.iterate import default_inputs
 
     on = on or date.today()
     bounds = load_bounds(REPO_ROOT / cfg.operator.bounds_file)
+    records: list[dict[str, Any]] = seat_waiting(registry, tier, on)
     cells = untested(registry, grid())[:n_cells]
     inputs = dict(inputs_by_sleeve or {})
     parents: dict[str, Any] = {}
-    records: list[dict[str, Any]] = []
     for sleeve, ov in cells:
         rec: dict[str, Any] = {"date": on.isoformat(), "proposal": describe(sleeve, ov), "kind": "sweep",
                                "hypothesis": "systematic sweep of the pre-registered strategy space",

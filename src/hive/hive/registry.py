@@ -68,7 +68,7 @@ class HiveRegistry:
         return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40] or "child"
 
     def can_spawn(self, tier: Tier) -> tuple[bool, str]:
-        n = len([c for c in self.active() if c.kind != "baseline"])   # the baseline takes no seat
+        n = len([c for c in self.active() if c.kind not in ("baseline", "scout")])   # paper-only, no LLM: no seat
         if n >= min(tier.max_children, self.rules.max_children):
             return False, f"tier {tier.name} allows {tier.max_children} children; {n} active"
         return True, ""

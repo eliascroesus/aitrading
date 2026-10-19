@@ -84,6 +84,9 @@ def promote_earned(settings: Settings, cfg: StrategyConfig, registry: HiveRegist
         base.start_equity = base.parent_start_equity = None   # the comparison restarts at every promotion
         base.shadow_days, base.voi = 0, None
         registry.save()
+        from hive.operator.sweep import seat_waiting
+
+        out += seat_waiting(registry, tier, on)   # a freed seat goes to the best cell still waiting
     return out
 
 
