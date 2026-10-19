@@ -17,7 +17,7 @@ def _tier(cfg, name):
 def test_waiting_list_is_seated_when_a_seat_frees(tmp_path):
     cfg = StrategyConfig()
     reg = HiveRegistry(tmp_path / "hive.json", cfg.survival)
-    tier = _tier(cfg, "base")   # two seats
+    tier = _tier(cfg, "survival")   # two seats (config 1.5.0: base has four)
     reg.spawn(Child(id="", name="scout", kind="scout", sleeve="meme"), tier)          # no seat
     a = reg.spawn(Child(id="", name="a", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 6}), tier)
     reg.spawn(Child(id="", name="b", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 7}), tier)

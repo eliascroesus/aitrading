@@ -1,6 +1,6 @@
 """Promotion and demotion by evidence, no person in the loop."""
 
-from datetime import date
+from datetime import date, timedelta
 
 from hive.config import Settings, StrategyConfig
 from hive.hive.governance import (
@@ -56,3 +56,24 @@ def test_no_promotion_below_the_evidence_bar(tmp_path):
     assert not (tmp_path / "promoted_overrides.json").exists()
     assert ensure_baseline(reg, tier, date(2026, 10, 19)).id == BASELINE_ID
     assert demote_if_baseline_wins(s, cfg, reg, date(2026, 10, 19)) is None
+
+
+def test_punishment_is_quick_drawdown_death_and_voi_retirement(tmp_path):
+    """Config 1.5.0: a child whose own paper book is down 15% dies at once; one behind the
+    parent by 3% after 10 days retires; the baseline is never retired."""
+    cfg = StrategyConfig()
+    reg = HiveRegistry(tmp_path / "hive.json", cfg.survival)
+    tier = _tier(cfg, "base")
+    dd = reg.spawn(Child(id="", name="dd", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 6.0}), tier)
+    lag = reg.spawn(Child(id="", name="lag", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 7.0}), tier)
+    base = reg.spawn(Child(id="", name="baseline", kind="baseline", sleeve="stocks"), tier, force=True)
+    reg.mark(dd.id, 100.0, 100.0, on=date(2026, 10, 1))
+    reg.mark(dd.id, 84.0, 101.0, on=date(2026, 10, 2))           # down 16% from its start after two days
+    for i in range(cfg.survival.child_retire_days):
+        reg.mark(lag.id, 100.0 - 0.5 * i, 100.0, on=date(2026, 10, 1) + timedelta(days=i))   # 4.5% behind
+        reg.mark(base.id, 80.0, 100.0, on=date(2026, 10, 1) + timedelta(days=i))
+    out = reg.auto_retire_losers(min_days=cfg.survival.child_retire_days, max_negative_voi=cfg.survival.child_retire_voi,
+                                 max_drawdown=cfg.survival.child_max_drawdown_pct, on=date(2026, 10, 11))
+    assert {c.id for c in out} == {dd.id, lag.id}
+    assert reg.get(dd.id).status == "retired" and "dead" in (reg.get(dd.id).notes or [""])[-1]
+    assert reg.get(base.id).status == "shadow"

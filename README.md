@@ -86,10 +86,11 @@ every run before any order.
 US close and the crypto UTC day close (weekends and holidays trade the crypto
 sleeve only), and commits `state/` and `reports/` back to the repo so the public
 record is the git history itself. `weekly.yml` runs the auditor, the operator and
-the capital allocator on Sundays. `watch.yml` runs every hour: the lab backtests
-the next cells of the strategy space (committed to `reports/lab/`), the heartbeat
-reads the broker, and the dashboard is rebuilt and published, so the page is
-never more than an hour old and the firm is never idle.
+the capital allocator on Sundays. `watch.yml` runs every hour for most of the
+hour: five rounds in which the lab backtests the next cells of the strategy
+space (committed to `reports/lab/`), the heartbeat reads the broker, and the
+dashboard is rebuilt and published, so the page moves every few minutes and the
+firm is never idle.
 
 ## Honesty rules for the study
 

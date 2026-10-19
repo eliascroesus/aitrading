@@ -201,3 +201,24 @@ def summary(ldir: Path, *, today: str | None = None) -> dict[str, Any]:
     return {"n_tests": len(cells), "n_passed": sum(1 for t in cells if t.get("passed")),
             "n_today": sum(1 for t in cells if (t.get("ts") or "")[:10] == today),
             "last_ts": tests[-1]["ts"] if tests else None}
+
+
+STATUS_FILE = "lab_run.json"
+
+
+def write_status(state_dir: Path, info: dict[str, Any]) -> Path:
+    """Where the hourly lab stands (round, started, finished, cells); shown on the dashboard, not committed."""
+    state_dir.mkdir(parents=True, exist_ok=True)
+    p = state_dir / STATUS_FILE
+    p.write_text(json.dumps(info, default=str))
+    return p
+
+
+def read_status(state_dir: Path) -> dict[str, Any]:
+    p = state_dir / STATUS_FILE
+    if not p.exists():
+        return {}
+    try:
+        return json.loads(p.read_text())
+    except (ValueError, OSError):
+        return {}

@@ -143,8 +143,8 @@ daily: children trade their own paper books (stocks / crypto / all / meme sleeve
         ▼  human: `hive hive promote <id> --approve` → overrides committed to strategy.toml
 ```
 
-Three things create sub-agents. The **lab** (`hive sweep`, every hour, no
-LLM) backtests the next cells of the pre-registered strategy space and seats
+Three things create sub-agents. The **lab** (`hive sweep`, most of every hour
+in rounds, no LLM) backtests the next cells of the pre-registered strategy space and seats
 the winners: first a fixed grid of entry families and exits, then refinements
 around the best cells found so far (one numeric knob at a time inside
 `config/bounds.toml`, coarse steps first and finer ones as they run out, only
@@ -163,7 +163,12 @@ become the primary's (`state/promoted_overrides.json`) and it frees its seat.
 A `baseline` sub-agent always runs the pre-registered rules on paper and
 takes no seat; if it beats the promoted configuration by
 `operator.demote_min_lag` over `operator.demote_after_days`, the promotion is
-reverted and the comparison restarts. Every promotion and reversal is a ledger
+reverted and the comparison restarts. Punishment is as automatic as reward
+(config 1.5.0): a sub-agent `survival.child_retire_voi` behind the parent after
+`survival.child_retire_days` retires, and one whose own paper book is down
+`survival.child_max_drawdown_pct` from its start dies the same day. Variants
+are rules-only paper books, so the tiers seat more of them (2/4/6/8) and the
+best waiting cell takes a freed seat. Every promotion and reversal is a ledger
 entry and an iteration record. The `promote-sub-agent` workflow remains as a
 human override. Every sub-agent that beats the parent also raises the firm's
 research pot by a quarter, up to double.

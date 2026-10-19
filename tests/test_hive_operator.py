@@ -21,16 +21,19 @@ def test_registry_respects_tier_limits_and_human_promotion(tmp_path):
     c = reg.spawn(Child(id="", name="Wide Trail", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 6}),
                   _tier(cfg, "survival"))
     assert c.id == "wide-trail" and c.status == "shadow"
-    with pytest.raises(PermissionError):   # survival allows one
-        reg.spawn(Child(id="", name="second", kind="variant", sleeve="stocks"), _tier(cfg, "survival"))
-    reg.spawn(Child(id="", name="second", kind="variant", sleeve="stocks"), _tier(cfg, "base"))  # base allows two
+    reg.spawn(Child(id="", name="second", kind="variant", sleeve="stocks"), _tier(cfg, "survival"))
+    with pytest.raises(PermissionError):   # survival allows two (config 1.5.0)
+        reg.spawn(Child(id="", name="third", kind="variant", sleeve="stocks"), _tier(cfg, "survival"))
+    reg.spawn(Child(id="", name="third", kind="variant", sleeve="stocks"), _tier(cfg, "base"))  # base allows four
+    reg.spawn(Child(id="", name="fourth", kind="variant", sleeve="stocks"), _tier(cfg, "base"))
     with pytest.raises(PermissionError):
-        reg.spawn(Child(id="", name="third", kind="variant", sleeve="stocks"), _tier(cfg, "base"))
+        reg.spawn(Child(id="", name="fifth", kind="variant", sleeve="stocks"), _tier(cfg, "base"))
     with pytest.raises(PromotionNeedsHumanError):
         reg.promote(c.id, approved_by_human=False)
-    for i in range(cfg.survival.child_shadow_days):
+    n = cfg.survival.child_shadow_days
+    for i in range(n):
         reg.mark(c.id, 100 + i, 100 + i * 0.5, on=date(2026, 1, 1) + timedelta(days=i))
-    assert reg.get(c.id).voi == pytest.approx((113 / 100 - 1) - (106.5 / 100 - 1))
+    assert reg.get(c.id).voi == pytest.approx(((100 + n - 1) / 100 - 1) - ((100 + (n - 1) * 0.5) / 100 - 1))
     assert [x.id for x in reg.ready_to_promote()] == [c.id]
     reg.promote(c.id, approved_by_human=True)
     again = HiveRegistry(tmp_path / "hive.json", cfg.survival)
@@ -134,7 +137,7 @@ def test_jupiter_is_a_guard():
 
 
 def test_survival_rules_children_defaults():
-    assert SurvivalRules().max_children == 5
+    assert SurvivalRules().max_children == 8 and SurvivalRules().child_retire_days == 10
 
 
 def test_proposal_schema_is_typed_and_bounded_to_tunables():

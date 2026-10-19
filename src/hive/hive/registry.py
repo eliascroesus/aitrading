@@ -140,12 +140,20 @@ class HiveRegistry:
         self.save()
         return c
 
-    def auto_retire_losers(self, min_days: int, max_negative_voi: float = -0.05, on: date | None = None) -> list[Child]:
+    def auto_retire_losers(self, min_days: int, max_negative_voi: float = -0.05, on: date | None = None,
+                           max_drawdown: float | None = None) -> list[Child]:
+        """Punishment is quick and automatic: a shadow sub-agent behind the parent by
+        ``max_negative_voi`` after ``min_days`` retires, and one whose own paper book is
+        down ``max_drawdown`` from its start dies the same day, whatever its age."""
         out = []
         for c in self.active():
-            if c.kind == "baseline":
+            if c.kind == "baseline" or c.status != "shadow":
                 continue
-            if c.status == "shadow" and c.shadow_days >= min_days and c.voi is not None and c.voi <= max_negative_voi:
+            if (max_drawdown is not None and c.equity is not None and c.start_equity
+                    and c.equity / c.start_equity - 1.0 <= -abs(max_drawdown)):
+                out.append(self.retire(c.id, f"dead: book down {c.equity / c.start_equity - 1.0:.1%} from its start", on))
+                continue
+            if c.shadow_days >= min_days and c.voi is not None and c.voi <= max_negative_voi:
                 out.append(self.retire(c.id, f"VOI {c.voi:+.1%} after {c.shadow_days} days", on))
         return out
 

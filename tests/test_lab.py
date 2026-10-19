@@ -201,9 +201,28 @@ def test_waiting_list_is_best_first_from_the_complete_record(tmp_path):
                           "verdict": "passed but not spawned: tier base allows 2 children; 2 active"})
     names = [w["proposal"] for w in waiting_list(reg, ldir)]
     assert names == ["lab best", "registry middle", "lab weaker"]
-    out = seat_waiting(reg, _tier(cfg, "survival"), date(2026, 10, 19), ldir)     # one seat
-    assert len(out) == 1 and "lab best" in out[0]["proposal"] and len(reg.active()) == 1
+    from hive.hive.registry import Child
+
+    reg.spawn(Child(id="", name="incumbent", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 9.0}),
+              _tier(cfg, "survival"))                                                # one of two seats taken
+    out = seat_waiting(reg, _tier(cfg, "survival"), date(2026, 10, 19), ldir)     # one seat free
+    assert len(out) == 1 and "lab best" in out[0]["proposal"] and len(reg.active()) == 2
     assert [w["proposal"] for w in waiting_list(reg, ldir)] == ["registry middle", "lab weaker"]
     assert any(t["by"] == "seat" for t in read_tests(ldir))
     assert summary(ldir)["n_tests"] == 2                                            # seat records are not tests
     assert seat_waiting(reg, _tier(cfg, "survival"), date(2026, 10, 19), ldir) == []  # no free seat: nothing
+
+
+def test_lab_status_file_reaches_the_dashboard(tmp_path):
+    from hive.config import Settings
+    from hive.operator.lab import read_status, write_status
+    from hive.ui.collect import collect
+
+    s = Settings(hive_mode="paper", hive_data_dir=tmp_path, hive_state_dir=tmp_path / "state",
+                 hive_reports_dir=tmp_path / "reports", _env_file=None)
+    assert read_status(tmp_path / "state") == {}
+    write_status(tmp_path / "state", {"state": "done", "round": 2, "rounds": 5, "cells": 9, "queued": 120,
+                                      "started": "2026-10-19T23:07:00+00:00", "finished": "2026-10-19T23:15:30+00:00"})
+    st = read_status(tmp_path / "state")
+    assert st["round"] == 2 and st["cells"] == 9
+    assert collect(s, StrategyConfig())["lab"]["status"]["queued"] == 120

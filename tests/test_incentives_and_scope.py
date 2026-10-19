@@ -37,7 +37,7 @@ def test_firm_status_states_the_live_incentive():
          "budget_remaining": 0.02, "ai_cost_total": 1.5, "runway_days": None, "in_halt_cooldown": False}
     txt = prompts.firm_status(s, cfg.survival.tiers)
     assert "net equity $120.00" in txt and "-7.7%" in txt
-    assert "allows 2 sub-agents" in txt and "'growth' at $250" in txt and "unlocks 3 sub-agents" in txt
+    assert "allows 4 sub-agents" in txt and "'growth' at $250" in txt and "unlocks 6 sub-agents" in txt
     assert prompts.firm_status(None).startswith("Firm status")
     assert "grow that bankroll" in prompts.OBJECTIVE and "not yours to change" in prompts.OBJECTIVE
 

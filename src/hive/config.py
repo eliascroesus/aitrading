@@ -274,19 +274,25 @@ class SurvivalRules(BaseModel):
     tier_hysteresis_pct: float = 0.15
     # Paper sub-agents cost nothing but compute, so the tiers gate how many may run,
     # not whether; a live allocation to any of them is always a human decision.
-    max_children: int = 5
-    child_shadow_days: int = 14
+    max_children: int = 8
+    # A sub-agent earns promotion after this many shadow days ahead of the parent ...
+    child_shadow_days: int = 10
+    # ... and dies after child_retire_days behind it by child_retire_voi, or at once when its
+    # own paper book is down child_max_drawdown_pct from where it started (config 1.5.0).
+    child_retire_days: int = 10
+    child_retire_voi: float = -0.03
+    child_max_drawdown_pct: float = 0.15
     tiers: list[Tier] = Field(
         default_factory=lambda: [
             Tier(name="hospice", min_equity_usd=0.0, close_only=True, risk_multiplier=0.0,
                  daily_ai_budget_pct=0.0002),
-            Tier(name="survival", min_equity_usd=40.0, max_children=1, risk_multiplier=0.5,
+            Tier(name="survival", min_equity_usd=40.0, max_children=2, risk_multiplier=0.5,
                  daily_ai_budget_pct=0.0005),
-            Tier(name="base", min_equity_usd=90.0, max_children=2, risk_multiplier=1.0,
+            Tier(name="base", min_equity_usd=90.0, max_children=4, risk_multiplier=1.0,
                  daily_ai_budget_pct=0.0005),
-            Tier(name="growth", min_equity_usd=250.0, max_children=3, min_net_positive_days=30,
+            Tier(name="growth", min_equity_usd=250.0, max_children=6, min_net_positive_days=30,
                  risk_multiplier=1.0, daily_ai_budget_pct=0.0008),
-            Tier(name="hive", min_equity_usd=1000.0, max_children=5, min_net_positive_days=60,
+            Tier(name="hive", min_equity_usd=1000.0, max_children=8, min_net_positive_days=60,
                  requires_human_approval=True, risk_multiplier=1.0, daily_ai_budget_pct=0.001),
         ]
     )
@@ -312,7 +318,7 @@ class OperatorRules(BaseModel):
     # promote workflow remains as an override, never a requirement.
     auto_promote: bool = True
     promote_min_voi: float = 0.01
-    demote_after_days: int = 28
+    demote_after_days: int = 21
     demote_min_lag: float = 0.02
     bounds_file: str = "config/bounds.toml"
     # A news-channel monitor sub-agent expires after this many days unless re-proposed.
@@ -364,7 +370,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "1.4.0"
+    version: str = "1.5.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     regime: RegimeRules = Field(default_factory=RegimeRules)

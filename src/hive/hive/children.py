@@ -76,7 +76,8 @@ def run_children(
         except Exception as exc:  # a child must never take the primary down
             log.exception("child %s failed", child.id)
             journal.write("child_error", {"error": str(exc)[:300]})
-    registry.auto_retire_losers(min_days=cfg.survival.child_shadow_days * 2, on=run_date)
+    registry.auto_retire_losers(min_days=cfg.survival.child_retire_days, max_negative_voi=cfg.survival.child_retire_voi,
+                                max_drawdown=cfg.survival.child_max_drawdown_pct, on=run_date)
     registry.retire_expired_monitors(cfg.operator.monitor_ttl_days, on=run_date)
     # governance by evidence: promote what earned it, revert what the baseline beats
     from hive.hive.governance import demote_if_baseline_wins, promote_earned

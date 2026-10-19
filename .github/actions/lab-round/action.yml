@@ -1,0 +1,47 @@
+name: lab-round
+description: >-
+  One round of the hourly lab: backtest cells for a few minutes, refresh the
+  heartbeat, rebuild the dashboard, publish it to Pages and commit the lab's
+  records, so the page and the record move every few minutes while the job runs.
+inputs:
+  minutes:
+    description: Minutes of backtesting in this round
+    required: true
+  round:
+    description: This round's number
+    required: true
+  rounds:
+    description: Rounds in the session
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: The lab (round ${{ inputs.round }} of ${{ inputs.rounds }})
+      shell: bash
+      run: .venv/bin/hive sweep --minutes ${{ inputs.minutes }} --round ${{ inputs.round }} --rounds ${{ inputs.rounds }} || echo "lab round skipped"
+    - name: Heartbeat
+      shell: bash
+      run: .venv/bin/hive watch || echo "heartbeat skipped"
+    - name: Rebuild the dashboard
+      shell: bash
+      run: .venv/bin/hive ui build
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: reports/dashboard
+        name: lab-round-${{ inputs.round }}
+    - name: Publish this round's dashboard
+      uses: actions/deploy-pages@v4
+      continue-on-error: true
+      with:
+        artifact_name: lab-round-${{ inputs.round }}
+    - name: Commit the lab's records
+      shell: bash
+      run: |
+        git config user.name "hive-bot"
+        git config user.email "hive-bot@users.noreply.github.com"
+        git add state/hive.json state/research_log.jsonl reports/lab
+        git diff --cached --quiet || git commit -m "lab $(date -u +%FT%H:%MZ) (round ${{ inputs.round }}/${{ inputs.rounds }})"
+        # the rebuilt dashboard, the heartbeat and the session file are not part of the record
+        git checkout -- .
+        git pull --rebase origin "$GITHUB_REF_NAME"
+        git push

@@ -374,14 +374,17 @@ def watch() -> None:
 @app.command()
 def sweep(cells: int = typer.Option(3, help="Untested cells to backtest this run (ignored with --minutes)"),
           minutes: float | None = typer.Option(None, help="Backtest cells until this many minutes have passed"),
-          refine: bool = typer.Option(True, help="After the grid, refine around the best cells so far")) -> None:
+          refine: bool = typer.Option(True, help="After the grid, refine around the best cells so far"),
+          round_: int = typer.Option(1, "--round", help="This round's number within the hourly run"),
+          rounds: int = typer.Option(1, help="Rounds in the hourly run (for the dashboard's status line)")) -> None:
     """The lab: backtest the next cells of the strategy space against the parent (no LLM).
     Every cell is kept in reports/lab/ with its curves and shown on the dashboard."""
+    from datetime import UTC, datetime
     from datetime import date as _date
 
     from hive.hive.registry import HiveRegistry
     from hive.operator.iterate import load_bounds
-    from hive.operator.lab import lab_dir, summary
+    from hive.operator.lab import lab_dir, summary, write_status
     from hive.operator.sweep import queue, run_sweep
     from hive.survival.ledger import SurvivalLedger
 
@@ -392,12 +395,18 @@ def sweep(cells: int = typer.Option(3, help="Untested cells to backtest this run
     last = ledger.last_equity_mark() or cfg.survival.starting_bankroll_usd
     tier = ledger.tier(ledger.status(last).equity_net)
     reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+    started = datetime.now(UTC).isoformat(timespec="seconds")
+    write_status(s.hive_state_dir, {"state": "running", "started": started, "round": round_, "rounds": rounds,
+                                    "minutes": minutes})
     recs = run_sweep(s, cfg, reg, tier, n_cells=cells, on=_date.today(), with_refine=refine,
                      budget_s=None if minutes is None else minutes * 60.0)
     for r in recs:
         rprint(f"{r['proposal']}: {r['verdict']}")
     sm = summary(lab_dir(s))
     left = len(queue(reg, cfg, load_bounds(REPO_ROOT / cfg.operator.bounds_file), lab_dir(s), with_refine=refine))
+    write_status(s.hive_state_dir, {"state": "done", "started": started, "round": round_, "rounds": rounds,
+                                    "minutes": minutes, "finished": datetime.now(UTC).isoformat(timespec="seconds"),
+                                    "cells": len(recs), "queued": left})
     rprint(f"lab: {len(recs)} cells this run, {sm['n_tests']} tests on record ({sm['n_passed']} beat the parent), "
            f"{left} queued")
 
@@ -411,6 +420,24 @@ def _research_bonus(cfg: StrategyConfig, state_dir: Path) -> float:
     except Exception:
         n = 0
     return min(1.0 + 0.25 * n, 2.0)
+
+
+@app.command("capital-in")
+def capital_in(amount: float = typer.Option(..., help="USD added to the bankroll (e.g. a venue deposit)"),
+               note: str = typer.Option("", help="Where it went (e.g. 'Alpaca crypto deposit')")) -> None:
+    """Record money added to the bankroll. The study's basis grows by exactly this amount, publicly."""
+    from datetime import date as _date
+
+    from hive.survival.ledger import SurvivalLedger
+
+    s = get_settings()
+    cfg = StrategyConfig.load()
+    if amount <= 0:
+        raise typer.BadParameter("amount must be positive")
+    ledger = SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival)
+    ledger.append("capital_in", float(amount), {"why": note or "capital added", "date": _date.today().isoformat()})
+    rprint(f"capital_in ${amount:,.2f} recorded ({note or 'no note'}); the bankroll basis is now "
+           f"${cfg.survival.starting_bankroll_usd + ledger.capital_in_total():,.2f}")
 
 
 @app.command()

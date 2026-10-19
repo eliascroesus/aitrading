@@ -108,3 +108,18 @@ record rather than the registry's last 200 iterations. The parent reference is
 cached per data snapshot so an hourly run spends its minutes on new cells. The
 verdict, the seat rule and the bounds are unchanged; nothing here widens the
 risk envelope.
+
+### Config 1.5.0: the firm is never idle, and punishment is as quick as reward
+The hourly job now works for most of every hour in five rounds; after each
+round the dashboard is published and the lab's records are committed, so the
+page moves every few minutes (and refreshes itself in place, in the viewer's
+time zone). Variant sub-agents are rules-only paper books, so the tiers seat
+more of them (survival 2, base 4, growth 6, hive 8) and the best waiting cell
+is seated first. The shadow period is 10 days; a sub-agent 3% behind the
+parent after 10 days retires; one whose own book is down 15% dies the same
+day; a promotion is reverted by the baseline after 21 days. `hive capital-in`
+records money added to the bankroll as a public ledger entry. The owner asked
+for Hyperliquid and DEX memecoins to trade and for leverage in the search;
+the Hyperliquid adapter exists but routing a second venue, and any widening of
+`risk.*`, are recorded here as the owner's decisions (SETUP §6b lists the
+exact steps); the risk envelope is unchanged.

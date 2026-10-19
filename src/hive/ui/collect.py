@@ -319,13 +319,15 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
                     "date": w["date"]} for w in waiting_list(reg, ldir)[:10]]
     except Exception:
         pass
+    from hive.operator.lab import read_status
+
     cells = [t for t in tests if t.get("by") not in ("parent", "seat")]
     tl = [{"ts": (t.get("ts") or "")[:16].replace("T", " "), "who": "lab", "kind": t.get("by") or "test",
            "text": f"{t.get('name')}: " + (f"OOS {t['oos_cagr']:.1%}" if t.get("oos_cagr") is not None else "no result")
                    + (f" vs parent {t['parent_oos_cagr']:.1%}" if t.get("parent_oos_cagr") is not None else "")
                    + f" — {(t.get('verdict') or '')[:90]}"} for t in cells[-12:]]
     return {"tests": rows[::-1][:600], "curves": curves, "parents": parents, "queue": queue, "n_queued": n_queued,
-            "waiting": waiting,
+            "waiting": waiting, "status": read_status(state),
             "grid_size": grid_size, "n_tests": len(cells), "n_passed": sum(1 for t in cells if t.get("passed")),
             "n_today": sum(1 for t in cells if (t.get("ts") or "")[:10] == today),
             "last_ts": tests[-1].get("ts") if tests else None, "timeline": tl}

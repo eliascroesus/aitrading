@@ -25,7 +25,7 @@
 #                      Monitors (news-channel sub-agents) and the daily sweep.
 
 name = "trend-reset-v1"
-version = "1.4.0"
+version = "1.5.0"
 
 [stocks]
 entry_mode = "reset_breakout"
@@ -160,8 +160,11 @@ death_drawdown_pct = 0.75
 daily_ai_budget_min_usd = 0.02
 daily_ai_budget_max_usd = 2.0
 tier_hysteresis_pct = 0.15
-max_children = 5
-child_shadow_days = 14
+max_children = 8
+child_shadow_days = 10
+child_retire_days = 10
+child_retire_voi = -0.03
+child_max_drawdown_pct = 0.15
 
 [[survival.tiers]]
 name = "hospice"
@@ -176,7 +179,7 @@ daily_ai_budget_pct = 0.0002
 [[survival.tiers]]
 name = "survival"
 min_equity_usd = 40.0
-max_children = 1
+max_children = 2
 min_net_positive_days = 0
 requires_human_approval = false
 risk_multiplier = 0.5
@@ -186,7 +189,7 @@ daily_ai_budget_pct = 0.0005
 [[survival.tiers]]
 name = "base"
 min_equity_usd = 90.0
-max_children = 2
+max_children = 4
 min_net_positive_days = 0
 requires_human_approval = false
 risk_multiplier = 1.0
@@ -196,7 +199,7 @@ daily_ai_budget_pct = 0.0005
 [[survival.tiers]]
 name = "growth"
 min_equity_usd = 250.0
-max_children = 3
+max_children = 6
 min_net_positive_days = 30
 requires_human_approval = false
 risk_multiplier = 1.0
@@ -206,7 +209,7 @@ daily_ai_budget_pct = 0.0008
 [[survival.tiers]]
 name = "hive"
 min_equity_usd = 1000.0
-max_children = 5
+max_children = 8
 min_net_positive_days = 60
 requires_human_approval = true
 risk_multiplier = 1.0
@@ -234,7 +237,7 @@ outofsample_start = "2013-01-01"
 max_drawdown_tolerance = 1.10
 auto_promote = true
 promote_min_voi = 0.01
-demote_after_days = 28
+demote_after_days = 21
 demote_min_lag = 0.02
 bounds_file = "config/bounds.toml"
 monitor_ttl_days = 28
