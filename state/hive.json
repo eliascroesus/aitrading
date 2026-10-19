@@ -85,6 +85,59 @@
         "oos_dd": -0.13488807185990948
       },
       "watch": []
+    },
+    {
+      "id": "refine-crypto-entry-mode-high-breakout",
+      "name": "refine crypto: entry_mode=high_breakout,",
+      "kind": "variant",
+      "sleeve": "crypto",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 14,
+        "crypto.exit_closes_below_mid": 168
+      },
+      "status": "shadow",
+      "born": "2026-10-19",
+      "retired": null,
+      "equity": null,
+      "start_equity": null,
+      "parent_start_equity": null,
+      "voi": null,
+      "shadow_days": 0,
+      "hypothesis": "refinement around the best cells found so far",
+      "notes": [],
+      "metrics": {
+        "is_cagr": 0.2380648794788658,
+        "oos_cagr": 0.22987635850556365,
+        "oos_dd": -0.2669575044640544
+      },
+      "watch": []
+    },
+    {
+      "id": "refine-crypto-entry-mode-high-breakout-2",
+      "name": "refine crypto: entry_mode=high_breakout,",
+      "kind": "variant",
+      "sleeve": "crypto",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 14
+      },
+      "status": "shadow",
+      "born": "2026-10-19",
+      "retired": null,
+      "equity": null,
+      "start_equity": null,
+      "parent_start_equity": null,
+      "voi": null,
+      "shadow_days": 0,
+      "hypothesis": "refinement around the best cells found so far",
+      "notes": [],
+      "metrics": {
+        "is_cagr": 0.2380648794788658,
+        "oos_cagr": 0.22742164622554006,
+        "oos_dd": -0.2669575044640544
+      },
+      "watch": []
     }
   ],
   "iterations": [
@@ -1332,6 +1385,179 @@
       "oos_cagr": 0.08592411896694463,
       "is_dd": -0.31227420775007475,
       "oos_dd": -0.20125035730725227,
+      "parent_oos_cagr": 0.028306880049109306,
+      "verdict": "rejected: negative in-sample return"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "refine crypto: entry_mode=high_breakout, breakout_lookback=14, exit_closes_below_mid=168",
+      "kind": "seated",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 14,
+        "crypto.exit_closes_below_mid": 168
+      },
+      "sleeve": "crypto",
+      "cost_usd": 0.0,
+      "oos_cagr": 0.22987635850556365,
+      "parent_oos_cagr": 0.14929967685462509,
+      "oos_dd": -0.2669575044640544,
+      "verdict": "seated from the waiting list as refine-crypto-entry-mode-high-breakout (passed on 2026-10-19)"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "refine crypto: entry_mode=high_breakout, breakout_lookback=14",
+      "kind": "seated",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 14
+      },
+      "sleeve": "crypto",
+      "cost_usd": 0.0,
+      "oos_cagr": 0.22742164622554006,
+      "parent_oos_cagr": 0.14929967685462509,
+      "oos_dd": -0.2669575044640544,
+      "verdict": "seated from the waiting list as refine-crypto-entry-mode-high-breakout-2 (passed on 2026-10-19)"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "refine stocks: entry_mode=template_cross, trail_atr=3.833, failure_stop_bars=180, exit_closes_below_mid=834",
+      "kind": "sweep",
+      "stage": "refine",
+      "hypothesis": "refinement around the best cells found so far",
+      "overrides": {
+        "stocks.entry_mode": "template_cross",
+        "stocks.trail_atr": 3.833,
+        "stocks.failure_stop_bars": 180,
+        "stocks.exit_closes_below_mid": 834
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": -0.004981677007985685,
+      "oos_cagr": 0.12055989057885341,
+      "is_dd": -0.23864505646122014,
+      "oos_dd": -0.1804246410353355,
+      "parent_oos_cagr": 0.028306880049109306,
+      "verdict": "rejected: negative in-sample return"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "refine crypto: entry_mode=high_breakout, breakout_lookback=32, exit_closes_below_mid=168",
+      "kind": "sweep",
+      "stage": "refine",
+      "hypothesis": "refinement around the best cells found so far",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 32,
+        "crypto.exit_closes_below_mid": 168
+      },
+      "sleeve": "crypto",
+      "cost_usd": 0.0,
+      "is_cagr": 0.20647582655420638,
+      "oos_cagr": 0.22240581426410344,
+      "is_dd": -0.14901094156584982,
+      "oos_dd": -0.26686152602851254,
+      "parent_oos_cagr": 0.14929967685462509,
+      "verdict": "passed but not spawned: tier base allows 4 children; 4 active"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "refine stocks: entry_mode=template_cross, trail_atr=3.833, failure_stop_bars=15",
+      "kind": "sweep",
+      "stage": "refine",
+      "hypothesis": "refinement around the best cells found so far",
+      "overrides": {
+        "stocks.entry_mode": "template_cross",
+        "stocks.trail_atr": 3.833,
+        "stocks.failure_stop_bars": 15
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": -0.015069402034647905,
+      "oos_cagr": 0.10333972639839684,
+      "is_dd": -0.280628544509543,
+      "oos_dd": -0.16153617629742245,
+      "parent_oos_cagr": 0.028306880049109306,
+      "verdict": "rejected: negative in-sample return"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "refine crypto: entry_mode=high_breakout, breakout_lookback=14, exit_closes_below_mid=2",
+      "kind": "sweep",
+      "stage": "refine",
+      "hypothesis": "refinement around the best cells found so far",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 14,
+        "crypto.exit_closes_below_mid": 2
+      },
+      "sleeve": "crypto",
+      "cost_usd": 0.0,
+      "is_cagr": 0.2380648794788658,
+      "oos_cagr": 0.22742164622554006,
+      "is_dd": -0.1563903300694306,
+      "oos_dd": -0.2669575044640544,
+      "parent_oos_cagr": 0.14929967685462509,
+      "verdict": "passed but not spawned: tier base allows 4 children; 4 active"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "refine stocks: entry_mode=template_cross, trail_atr=3.833, failure_stop_bars=345",
+      "kind": "sweep",
+      "stage": "refine",
+      "hypothesis": "refinement around the best cells found so far",
+      "overrides": {
+        "stocks.entry_mode": "template_cross",
+        "stocks.trail_atr": 3.833,
+        "stocks.failure_stop_bars": 345
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": -0.004981677007985685,
+      "oos_cagr": 0.12055989057885341,
+      "is_dd": -0.23864505646122014,
+      "oos_dd": -0.1804246410353355,
+      "parent_oos_cagr": 0.028306880049109306,
+      "verdict": "rejected: negative in-sample return"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "refine crypto: entry_mode=high_breakout, breakout_lookback=14, exit_closes_below_mid=334",
+      "kind": "sweep",
+      "stage": "refine",
+      "hypothesis": "refinement around the best cells found so far",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 14,
+        "crypto.exit_closes_below_mid": 334
+      },
+      "sleeve": "crypto",
+      "cost_usd": 0.0,
+      "is_cagr": 0.2380648794788658,
+      "oos_cagr": 0.22987635850556365,
+      "is_dd": -0.1563903300694306,
+      "oos_dd": -0.2669575044640544,
+      "parent_oos_cagr": 0.14929967685462509,
+      "verdict": "passed but not spawned: tier base allows 4 children; 4 active"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "refine stocks: entry_mode=template_cross, trail_atr=3.833, failure_stop_bars=180, max_hold_bars=63",
+      "kind": "sweep",
+      "stage": "refine",
+      "hypothesis": "refinement around the best cells found so far",
+      "overrides": {
+        "stocks.entry_mode": "template_cross",
+        "stocks.trail_atr": 3.833,
+        "stocks.failure_stop_bars": 180,
+        "stocks.max_hold_bars": 63
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": -0.011217517760715445,
+      "oos_cagr": 0.1126905393959361,
+      "is_dd": -0.28579044760713457,
+      "oos_dd": -0.1837367644466038,
       "parent_oos_cagr": 0.028306880049109306,
       "verdict": "rejected: negative in-sample return"
     }
