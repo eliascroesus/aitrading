@@ -71,7 +71,7 @@ hive operate                            # the operator proposes variants, code b
 hive hive list | spawn | retire | promote <id> --approve   # promotion is always a human decision
 hive allocate                           # weekly: capital moves toward the desk that earned (bounded, no LLM)
 hive watch                              # hourly heartbeat: live positions and prices into the dashboard
-hive sweep --cells 3                    # daily: backtest untested cells of the strategy space (no LLM)
+hive sweep --minutes 6                  # hourly: the lab backtests the next cells of the strategy space (no LLM)
 ```
 
 Full setup (accounts, keys, hosts, costs, go-live checklist): `docs/SETUP.md`.
@@ -86,7 +86,10 @@ every run before any order.
 US close and the crypto UTC day close (weekends and holidays trade the crypto
 sleeve only), and commits `state/` and `reports/` back to the repo so the public
 record is the git history itself. `weekly.yml` runs the auditor, the operator and
-the capital allocator on Sundays.
+the capital allocator on Sundays. `watch.yml` runs every hour: the lab backtests
+the next cells of the strategy space (committed to `reports/lab/`), the heartbeat
+reads the broker, and the dashboard is rebuilt and published, so the page is
+never more than an hour old and the firm is never idle.
 
 ## Honesty rules for the study
 

@@ -87,6 +87,28 @@ def test_dashboard_renders_with_every_kind_of_sub_agent(tmp_path):
     (tmp_path / "reports" / "reviews" / "review-2026-10-19.json").write_text(json.dumps({"report": {
         "findings": [{"severity": "info", "area": "cost", "finding": "fine", "proposed_change": "none"}],
         "llm_added_value_assessment": "not yet"}}))
+    # the lab: a parent reference, a cell that beat the parent (seated) and a rejected one, with curves
+    from hive.backtest.costs import ALPACA_STOCKS
+    from hive.operator.iterate import evaluate
+    from hive.operator.lab import lab_dir, lab_record, parent_eval, record_test
+    from tests.test_features import bars_from_path, textbook_setup
+
+    close, volume = textbook_setup(n_after=400)
+    bars = bars_from_path(close, volume, start="2010-01-01")
+    lcfg = StrategyConfig()
+    lcfg.operator.insample_start, lcfg.operator.insample_end = "2010-01-01", "2011-12-31"
+    lcfg.operator.outofsample_start = "2012-01-01"
+    inputs = {"bars": {"AAA": bars}, "classes": {"AAA": "stock"}, "bench": bars, "cost": ALPACA_STOCKS}
+    parent = parent_eval(lcfg, "stocks", inputs, lab_dir(s), on="2026-10-19")
+    ev = evaluate(lcfg, {"stocks.entry_mode": "template_cross"}, inputs, keep_curves=True)
+    record_test(lab_dir(s), lab_record(by="sweep", sleeve="stocks", name="sweep stocks: entry_mode=template_cross",
+                                        overrides={"stocks.entry_mode": "template_cross"}, ev=ev, parent=parent,
+                                        verdict=f"spawned shadow child {v.id}: beats parent", on="2026-10-19",
+                                        child_id=v.id, cfg=lcfg, elapsed_s=1.0))
+    record_test(lab_dir(s), lab_record(by="refine", sleeve="crypto", name="refine crypto: trail_atr=4.5",
+                                        overrides={"crypto.trail_atr": 4.5}, ev=ev, parent=parent,
+                                        verdict="rejected: OOS CAGR 1.0% does not beat parent 2.8%", on="2026-10-19",
+                                        cfg=lcfg, elapsed_s=0.5))
     out = build(s, cfg, tmp_path / "dash")
     with playwright.sync_playwright() as p:
         browser = _launch(p)
@@ -97,8 +119,24 @@ def test_dashboard_renders_with_every_kind_of_sub_agent(tmp_path):
         page.goto(out["html"].resolve().as_uri())
         page.wait_for_timeout(500)
         text = page.inner_text("body")
+        n_dots = page.locator("#labmap circle").count()
+        n_diamonds = page.locator("#labmap path").count()
+        curve_before = page.inner_text("#labtitle")                  # the newest test is selected by default
+        page.locator("tr.labrow", has_text="template_cross").first.click()
+        page.wait_for_timeout(100)
+        curve_after = page.inner_text("#labtitle")
+        page.locator("button[data-win=insample]").click()
+        page.wait_for_timeout(100)
+        curve_is = page.inner_text("#labtitle")
+        page.fill("#labfilter", "crypto")
+        page.wait_for_timeout(100)
+        visible = page.locator("tr.labrow:visible").count()
         browser.close()
     assert errors == [], errors
     for needle in ("Sub-agents", "fed watch", "meme scout", "template_cross", "Operator's notes", "Auditor",
-                   "Live book", "Firm activity", "staying selective"):
+                   "Live book", "Firm activity", "staying selective", "Strategy lab", "Lab map", "Lab curve",
+                   "Lab log", "Backtests in the lab", "Next in the queue", "refine crypto"):
         assert needle in text, needle
+    assert n_dots == 2 and n_diamonds >= 1                             # two tests, one parent diamond
+    assert "refine crypto" in curve_before and "template_cross" in curve_after and "in-sample" in curve_is
+    assert visible == 1

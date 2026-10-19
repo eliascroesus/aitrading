@@ -91,3 +91,20 @@ The levers the operator may promote are still only those in
 
 ### Done well (reviewer's words)
 Point-in-time features with a no-lookahead test; internally consistent backtest accounting; fail-closed LLM layer with enum-only actions; sound ledger hash chain; layered live-mode gating and no withdraw path anywhere.
+
+### The lab (every backtest visible, the search never idle)
+At the owner's request to see every backtest the firm runs and to have it
+working constantly: the sweep became an hourly **lab** (`watch.yml`). Every
+evaluation — each cell's and the parent's on each data snapshot — is an
+append-only record in `reports/lab/` with its in- and out-of-sample metrics
+and downsampled equity curves; the dashboard draws the whole map (return vs
+drawdown, every test), the curve of any test against the parent and buy &
+hold, the full log and the queue, and reloads itself when a newer build is
+published. The search has a second stage: refinements around the best cells
+so far, one numeric knob at a time inside `config/bounds.toml`, finer steps as
+coarse ones run out, only knobs the cell's entry family uses, and pairwise
+merges of winners with disjoint knobs. Dedup now uses the lab's complete
+record rather than the registry's last 200 iterations. The parent reference is
+cached per data snapshot so an hourly run spends its minutes on new cells. The
+verdict, the seat rule and the bounds are unchanged; nothing here widens the
+risk envelope.

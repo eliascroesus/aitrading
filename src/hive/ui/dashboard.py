@@ -72,6 +72,10 @@ button:hover{color:var(--ink)}
 .agent{border:1px solid var(--border);border-radius:8px;padding:10px 12px;min-width:0;overflow-wrap:anywhere}
 .agent .head{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
 .spark{width:100%;height:36px;display:block;margin:6px 0}
+td.nw,th.nw{white-space:nowrap}tr.labrow{cursor:pointer}tr.labrow.sel td{background:rgba(42,120,214,.12)}tr.labrow:hover td{background:rgba(42,120,214,.06)}
+.live{display:inline-flex;align-items:center;gap:6px}.live .dot{width:8px;height:8px;border-radius:50%;background:var(--good);animation:pulse 2s infinite}
+@keyframes pulse{0%{opacity:1}50%{opacity:.35}100%{opacity:1}}
+input.filter{font:inherit;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--ink);margin-bottom:8px;width:280px;max-width:100%}
 footer{max-width:1240px;margin:0 auto;padding:0 16px 24px;color:var(--muted);font-size:12px}
 </style>
 </head>
@@ -148,13 +152,44 @@ function legend(series){ return `<div class="legend">${series.map(s=>`<span><i s
 function card(title, cls, inner, id){ return `<section class="card ${cls||''}"><div class="row"><h2>${esc(title)}</h2><div class="tools">${id?`<button data-table="${id}">table</button>`:''}</div></div>${inner}</section>`; }
 function statusPill(txt, col){ return `<span class="status"><span class="dot" style="background:${col}"></span>${esc(txt)}</span>`; }
 
+// ---------- SVG scatter (one mark per test; hover tooltip; click selects) ----------
+function scatterChart(el, pts, opts={}){
+  el.innerHTML='';
+  const W=Math.max(320, el.clientWidth||600), H=opts.height||260, m={t:14,r:16,b:30,l:52};
+  const vals=pts.filter(p=>p.x!=null&&p.y!=null&&isFinite(p.x)&&isFinite(p.y));
+  if(!vals.length){ el.innerHTML='<div class="muted small">no tests yet</div>'; return; }
+  let x0=Math.min(0,...vals.map(p=>p.x)), x1=Math.max(0,...vals.map(p=>p.x)), y0=Math.min(0,...vals.map(p=>p.y)), y1=Math.max(0,...vals.map(p=>p.y));
+  if(x1===x0) x1=x0+0.1; if(y1===y0) y1=y0+0.1;
+  const px=(x1-x0)*0.08, py=(y1-y0)*0.1; x0-=px; x1+=px; y0-=py; y1+=py;
+  const X=v=>m.l+(v-x0)/(x1-x0)*(W-m.l-m.r), Y=v=>m.t+(1-(v-y0)/(y1-y0))*(H-m.t-m.b);
+  const ns='http://www.w3.org/2000/svg'; const svg=document.createElementNS(ns,'svg'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const g=(tag,a)=>{const e=document.createElementNS(ns,tag); for(const k in a) e.setAttribute(k,a[k]); return e;};
+  const ticks=4;
+  for(let i=0;i<=ticks;i++){ const v=y0+(y1-y0)*i/ticks; svg.appendChild(g('line',{x1:m.l,x2:W-m.r,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':1})); const t=g('text',{x:m.l-6,y:Y(v)+4,'text-anchor':'end','font-size':11,fill:css('--muted')}); t.textContent=pct(v); svg.appendChild(t); }
+  for(let i=0;i<=ticks;i++){ const v=x0+(x1-x0)*i/ticks; const t=g('text',{x:X(v),y:H-8,'text-anchor':i===0?'start':i===ticks?'end':'middle','font-size':11,fill:css('--muted')}); t.textContent=pct(v); svg.appendChild(t); }
+  if(y0<0&&y1>0) svg.appendChild(g('line',{x1:m.l,x2:W-m.r,y1:Y(0),y2:Y(0),stroke:css('--axis'),'stroke-width':1}));
+  svg.appendChild(g('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,stroke:css('--axis'),'stroke-width':1}));
+  const xl=g('text',{x:W-m.r,y:H-m.b-6,'text-anchor':'end','font-size':11,fill:css('--ink2')}); xl.textContent=opts.xlabel||''; svg.appendChild(xl);
+  const yl=g('text',{x:m.l+6,y:m.t+10,'font-size':11,fill:css('--ink2')}); yl.textContent=opts.ylabel||''; svg.appendChild(yl);
+  const tip=document.createElement('div'); tip.className='tt';
+  vals.forEach(p=>{ let mk; const cx=X(p.x), cy=Y(p.y);
+    if(p.shape==='diamond'){ const r=7; mk=g('path',{d:`M${cx},${cy-r} L${cx+r},${cy} L${cx},${cy+r} L${cx-r},${cy} Z`,fill:p.color,stroke:css('--surface'),'stroke-width':2}); }
+    else { mk=g('circle',{cx,cy,r:p.selected?6.5:4.5,fill:p.filled?p.color:css('--surface'),stroke:p.selected?css('--ink'):p.color,'stroke-width':2}); }
+    mk.style.cursor=p.onclick?'pointer':'default';
+    mk.addEventListener('mousemove',ev=>{ const r=svg.getBoundingClientRect(); tip.innerHTML=p.tip||''; tip.style.display='block'; tip.style.left=Math.max(0,Math.min(ev.clientX-r.left+12, r.width-240))+'px'; tip.style.top=(ev.clientY-r.top-10)+'px'; });
+    mk.addEventListener('mouseleave',()=>{tip.style.display='none';});
+    if(p.onclick) mk.addEventListener('click',p.onclick);
+    svg.appendChild(mk); });
+  el.appendChild(svg); el.appendChild(tip);
+}
+
 function render(){
   const S=D.survival, st=S.status||{}, E=D.equity, L=D.latest||{}, P=(L.primary||{}), H=D.hive||{};
   const ovs=o=>Object.entries(o||{}).map(([k,v])=>`${k.replace(/^stocks\./,'')}=${v}`).join(', ');
   const start=S.starting_bankroll, net=st.equity_net, gross=st.equity_gross;
   const days=E.dates.length, retTot = (net!=null&&start)? net/start-1 : null;
   const burn = S.ai_cost_total||0, hurdle = (days>0&&net)? Math.pow(1+ (burn/days)/net,365)-1 : null;
-  $('#subtitle').textContent=`${D.strategy.name} v${D.strategy.version} · ${days} run days · last run ${S.last_date||'—'} · generated ${D.generated_at}`;
+  $('#subtitle').innerHTML=`${esc(D.strategy.name)} v${esc(D.strategy.version)} · ${days} run days · last run ${esc(S.last_date||'—')} · <span class="live"><span class="dot"></span><span id="built">built ${ago()}</span></span> · the lab and the heartbeat run every hour; this page reloads itself when a newer build is published`;
   let html='';
   if(S.death){ html+=`<div class="banner"><b>☠ The system died on ${esc(S.death.date)}</b> — ${esc(S.death.reason)}. Final equity ${fmt$(S.death.equity)}. No resurrection.</div>`; }
   const regime=(P.regime||{}).state||'—'; const regCol={green:css('--good'),yellow:css('--warn'),red:css('--crit')}[regime]||css('--muted');
@@ -164,6 +199,7 @@ function render(){
    <div class="tile"><div class="label">Gross equity</div><div class="value">${fmt$(gross)}</div><div class="delta">AI costs paid ${fmt$(burn)}</div></div>
    <div class="tile"><div class="label">Tier</div><div class="value">${esc(st.tier||'—')}</div><div class="delta">${statusPill('runway '+(st.runway_days==null?'∞':Math.round(st.runway_days)+' d'), tierCol)}</div></div>
    <div class="tile"><div class="label">AI budget today</div><div class="value">${fmt$(st.budget_today)}</div><div class="delta">spent ${fmt$(st.ai_cost_today)} · hurdle ${hurdle==null?'—':pct(hurdle)}/yr</div></div>
+   <div class="tile"><div class="label">Backtests in the lab</div><div class="value">${(D.lab||{}).n_tests||0}</div><div class="delta">${(D.lab||{}).n_today||0} today · ${(D.lab||{}).n_passed||0} beat the parent · ${(D.lab||{}).n_queued||0} queued</div></div>
    <div class="tile"><div class="label">Regime</div><div class="value" style="text-transform:capitalize">${esc(regime)}</div><div class="delta">${statusPill(((P.regime||{}).crash_guard?'crash guard ON':'crash guard off'), regCol)}</div></div>
    <div class="tile"><div class="label">Integrity</div><div class="value">${S.chain_ok&&!(D.journal.broken_chains||[]).length?'✓':'✗'}</div><div class="delta">ledger ${S.chain_ok?'ok':'BROKEN'} · journals ${(D.journal.broken_chains||[]).length?'BROKEN':'ok'} · ${D.journal.anomalies_30d} names skipped by the data-quality guard (30d)</div></div>
   </div>`;
@@ -212,6 +248,18 @@ function render(){
     else { const k=(d.today&&d.today.kinds)||{}; const acts=['decisions','order','exit','fill_confirmed','stop_ratchet'].filter(x=>k[x]).map(x=>`${k[x]} ${x.replace('_',' ')}`).join(' · '); body=`${spark(d.marks)}<div class="small">equity ${fmt$(c.equity)} · VOI ${c.voi==null?'—':(c.voi>=0?'+':'')+pct(c.voi)} · open ${(d.positions||[]).length}</div><code class="ov">${esc(ovs(c.overrides)||'parent config')}</code>${c.hypothesis?`<div class="small muted">${esc(c.hypothesis)}</div>`:''}${d.today?`<div class="small muted">${esc(d.today.date)}: ${acts||'quiet day'}</div>`:''}`; }
     const last=(c.notes||[]).slice(-1)[0]; return `<div class="agent">${head}${body}${last?`<div class="small muted" style="margin-top:4px">${esc(last)}</div>`:''}</div>`; }).join('');
   html+=card(`Sub-agents — ${activeAgents.length} active (tier allows ${(tiers.find(t=>t.name===st.tier)||{}).max_children??'—'}) · ${(H.children||[]).length-activeAgents.length} retired or promoted`,'',`<div class="agents">${agentCards||'<div class="muted small">none yet — the sweep and the operator spawn variants that beat the parent out of sample; monitors when a theme matters</div>'}</div>`);
+  // the lab: every backtest the firm has run, newest first
+  const LB=D.lab||{tests:[],curves:{},parents:{},queue:[]}; const LT=LB.tests||[]; const C=D.config||{}; const OP=C.operator||{};
+  if(!window.__labSel||!LT.some(t=>t.id===window.__labSel)) window.__labSel=(LT.find(t=>t.by!=='parent'&&LB.curves[t.id])||{}).id||null;
+  window.__labWin=window.__labWin||'outofsample';
+  const byCol={stocks:css('--s1'),crypto:css('--s2')};
+  const stPill=t=>t.by==='parent'?'<span class="pill">reference</span>':t.passed?`<span class="pill good">${t.child_id?('seated · '+esc(t.child_status||'shadow')):'beat the parent'}</span>`:(t.verdict||'').startsWith('rejected: backtest failed')?'<span class="pill warn">failed</span>':'<span class="pill">rejected</span>';
+  const labRows=LT.map(t=>`<tr class="labrow ${t.id===window.__labSel?'sel':''}" data-id="${esc(t.id)}"><td class="muted small nw">${esc((t.ts||'').slice(0,16).replace('T',' '))}</td><td class="nw">${esc(t.by)}</td><td class="nw">${esc(t.sleeve)}</td><td><code class="ov">${esc(ovs(t.overrides)||t.name||'')}</code></td><td class="num">${t.is_cagr==null?'—':pct(t.is_cagr)}</td><td class="num">${t.oos_cagr==null?'—':(t.parent_oos_cagr!=null&&t.oos_cagr>t.parent_oos_cagr?'<b>'+pct(t.oos_cagr)+'</b>':pct(t.oos_cagr))}</td><td class="num">${t.oos_dd==null?'—':pct(t.oos_dd)}</td><td class="num">${num((t.oos||{}).sharpe)}</td><td class="num">${(t.oos||{}).n_trades==null?'—':Math.round(t.oos.n_trades)}</td><td>${stPill(t)} <span class="small muted">${esc((t.verdict||'').replace(/^rejected: /,''))}</span></td></tr>`).join('');
+  const lq=LB.queue||[];
+  html+=card(`Strategy lab — ${LB.n_tests||0} backtests on record · ${LB.n_passed||0} beat the parent · ${LB.n_today||0} today · ${LB.n_queued||0} queued`,'',`<div class="small muted" style="margin-bottom:6px">Every hour the lab backtests the next cells of the pre-registered strategy space — the grid of entry families and exits first, then refinements around the best cells so far — in-sample ${esc(OP.insample_start||'')} to ${esc(OP.insample_end||'')} and out-of-sample from ${esc(OP.outofsample_start||'')}, against the parent on the same data with the same costs. A cell that beats the parent out of sample within the drawdown tolerance takes a paper seat as a sub-agent. No LLM is involved; it costs the firm nothing.${LB.last_ts?` Last test ${esc(LB.last_ts.slice(0,16).replace('T',' '))} UTC.`:''}</div><div class="small"><b>Next in the queue:</b> ${lq.length?lq.map(esc).join(' · '):'nothing — the space is exhausted until new results move the refinement'}${LB.n_queued>lq.length?` · … ${LB.n_queued-lq.length} more`:''}</div>`);
+  html+=card('Lab map — every test: out-of-sample return vs drawdown (filled = beat the parent, hollow = rejected, ◆ = parent)','c6',legend([{name:'stocks',color:css('--s1')},{name:'crypto',color:css('--s2')},{name:'parent',color:css('--s3')}])+'<div class="chart" id="labmap"></div>');
+  html+=card('Lab curve — selected test vs parent and buy & hold (log scale)','c6',`<div class="row" style="margin-bottom:6px"><span class="small" id="labtitle"></span><div class="tools"><button data-win="insample">in-sample</button><button data-win="outofsample">out-of-sample</button></div></div><div class="chart" id="labcurve"></div>`,'labcurve');
+  html+=card('Lab log — every backtest, newest first (click a row for its curve)','',`<input class="filter" id="labfilter" placeholder="filter: sleeve, knob, verdict, date…"><div style="max-height:420px;overflow:auto"><table id="labtable"><thead><tr><th class="nw">when (UTC)</th><th class="nw">by</th><th class="nw">sleeve</th><th>cell</th><th class="num nw">IS CAGR</th><th class="num nw">OOS CAGR</th><th class="num nw">OOS max DD</th><th class="num nw">OOS Sharpe</th><th class="num nw">trades</th><th>result</th></tr></thead><tbody>${labRows||'<tr><td colspan="10" class="muted">no backtests yet — the lab runs every hour</td></tr>'}</tbody></table></div>`);
   // what the operator thinks, what the auditor found
   const RL=D.research_log||[]; const rlRows=RL.slice(-6).reverse().map(r=>`<li style="margin:0 0 6px"><span class="muted small">${esc(r.date)}</span> ${esc(r.note||'(no note)')} <span class="muted small">· ${(r.proposals||[]).length} tested, parent OOS ${r.parent_oos_cagr==null?'—':pct(r.parent_oos_cagr)}</span></li>`).join('');
   html+=card("Operator's notes (what it learned, newest first)",'c6',`<ul class="small" style="padding-left:16px;margin:0">${rlRows||'<li class="muted">none yet</li>'}</ul>`);
@@ -244,8 +292,40 @@ function render(){
   tables.dd=lineChart($('#dd'),[{name:'drawdown',color:css('--s1'),points:dd,area:true}],{fmt:v=>pct(v),zero:true});
   tables.cost=lineChart($('#cost'),[{name:'AI + data cost',color:css('--s1'),points:E.dates.map((d,i)=>[d,E.cum_ai_cost[i]])}],{fmt:v=>fmt$(v),zero:true});
   bt.filter(b=>b.curve&&b.curve.dates.length).slice(0,3).forEach((b,i)=>{ const lg=v=>Math.log10(v); tables['bt'+i]=lineChart($('#bt'+i),[{name:'strategy',color:css('--s1'),points:b.curve.dates.map((d,j)=>[d,lg(b.curve.equity[j])])},{name:'buy & hold',color:css('--s3'),points:b.curve.dates.map((d,j)=>[d,b.curve.benchmark[j]==null?null:lg(b.curve.benchmark[j])])}],{fmt:v=>fmtK(Math.pow(10,v))}); });
+  // the lab's map and curve
+  function drawLab(){
+    const sel=LT.find(t=>t.id===window.__labSel)||null; const win=window.__labWin||'outofsample';
+    const pts=[];
+    LT.slice().reverse().forEach(t=>{ if(t.by==='parent'||t.oos_cagr==null) return;
+      pts.push({x:t.oos_dd,y:t.oos_cagr,color:byCol[t.sleeve]||css('--s4'),filled:!!t.passed,selected:t.id===window.__labSel,
+        tip:`<div><b>${esc(t.name)}</b></div><div class="muted">${esc(t.by)} · ${esc(t.sleeve)} · ${esc((t.ts||'').slice(0,10))}</div><div>IS ${pct(t.is_cagr)} · OOS ${pct(t.oos_cagr)} · DD ${pct(t.oos_dd)}</div><div class="muted">${esc((t.verdict||'').slice(0,90))}</div>`,
+        onclick:()=>{ window.__labSel=t.id; drawLab(); markRow(); }}); });
+    Object.entries(LB.parents||{}).forEach(([sl,p])=>{ const o=p.outofsample||{}; if(o.cagr==null) return; pts.push({x:o.max_drawdown,y:o.cagr,color:css('--s3'),shape:'diamond',tip:`<div><b>parent · ${esc(sl)}</b></div><div>OOS ${pct(o.cagr)} · DD ${pct(o.max_drawdown)}</div>`}); });
+    scatterChart($('#labmap'),pts,{xlabel:'OOS max drawdown →',ylabel:'OOS CAGR'});
+    const el=$('#labcurve'), title=$('#labtitle');
+    document.querySelectorAll('button[data-win]').forEach(b=>b.style.color=b.dataset.win===win?css('--ink'):'');
+    if(!sel){ el.innerHTML='<div class="muted small">no test selected yet</div>'; title.textContent=''; return; }
+    const cv=(LB.curves[sel.id]||{})[win]; const par=((LB.parents[sel.sleeve]||{}).curves||{})[win];
+    title.innerHTML=`<b>${esc(sel.name)}</b> · ${win==='insample'?'in-sample':'out-of-sample'} · ${esc(sel.sleeve)}${sel.oos_cagr!=null?` · OOS ${pct(sel.oos_cagr)} vs parent ${pct(sel.parent_oos_cagr)}`:''}`;
+    if(!cv||!cv.dates||!cv.dates.length){ el.innerHTML='<div class="muted small">no curve kept for this test (the newest tests and the winners keep theirs)</div>'; return; }
+    const lg=v=>(v!=null&&v>0)?Math.log10(v):null;
+    const ser=[{name:'this cell',color:css('--s1'),points:cv.dates.map((d,i)=>[d,lg(cv.equity[i])])}];
+    if(par&&par.dates&&par.dates.length) ser.push({name:'parent',color:css('--s2'),points:par.dates.map((d,i)=>[d,lg(par.equity[i])])});
+    if(cv.benchmark&&cv.benchmark.length) ser.push({name:'buy & hold',color:css('--s3'),points:cv.dates.map((d,i)=>[d,cv.benchmark[i]==null?null:lg(cv.benchmark[i])])});
+    tables.labcurve=lineChart(el,ser,{fmt:v=>fmtK(Math.pow(10,v))});
+  }
+  function markRow(){ document.querySelectorAll('tr.labrow').forEach(r=>r.classList.toggle('sel', r.dataset.id===window.__labSel)); }
+  document.querySelectorAll('tr.labrow').forEach(r=>r.onclick=()=>{ window.__labSel=r.dataset.id; drawLab(); markRow(); });
+  document.querySelectorAll('button[data-win]').forEach(b=>b.onclick=()=>{ window.__labWin=b.dataset.win; drawLab(); });
+  const lf=$('#labfilter'); if(lf) lf.oninput=()=>{ const q=lf.value.toLowerCase(); document.querySelectorAll('tr.labrow').forEach(r=>{ r.style.display=!q||r.textContent.toLowerCase().includes(q)?'':'none'; }); };
+  drawLab();
   document.querySelectorAll('button[data-table]').forEach(b=>b.onclick=()=>{const t=tables[b.dataset.table]; if(t) t.classList.toggle('show');});
 }
+// ---------- live: say how old this build is; reload when a newer one is published ----------
+const builtAt=Date.parse(D.generated_at)||Date.now();
+function ago(){ const mn=Math.max(0,Math.round((Date.now()-builtAt)/60000)); return mn<1?'just now':mn<60?mn+' min ago':(mn/60).toFixed(1)+' h ago'; }
+setInterval(()=>{ const el=$('#built'); if(el) el.textContent='built '+ago(); }, 30000);
+setInterval(()=>{ fetch('data.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{ if(d&&d.generated_at&&d.generated_at!==D.generated_at) location.reload(); }).catch(()=>{}); }, 5*60*1000);
 render(); addEventListener('resize',()=>{clearTimeout(window.__r); window.__r=setTimeout(render,150);});
 </script>
 </body>

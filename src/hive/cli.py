@@ -8,7 +8,7 @@ from pathlib import Path
 import typer
 from rich import print as rprint
 
-from hive.config import StrategyConfig, get_settings
+from hive.config import REPO_ROOT, StrategyConfig, get_settings
 from hive.log import setup_logging
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="HIVE trading system")
@@ -329,8 +329,10 @@ def operate(dry_run: bool = typer.Option(False, help="Propose and evaluate witho
         reg.path = s.hive_state_dir / "hive.dryrun.json"
     rprint(f"operator: tier {tier.name}, research pot ${(llm.budget_usd if llm else 0.0):.4f}, "
            f"llm={'on' if llm and llm.available else 'off'}")
+    from hive.operator.lab import lab_dir
+
     recs = _operate(cfg=cfg, registry=reg, tier=tier, status=st.__dict__, llm=llm, model=s.hive_llm_model,
-                    inputs=default_inputs(s, cfg))
+                    inputs=default_inputs(s, cfg), lab_dir=None if dry_run else lab_dir(s))
     if llm is not None and llm.spent_usd > 0:
         ledger.append("ai_cost", llm.spent_usd, {"label": "operator", "date": f"{today.isoformat()}-research"})
     for r in recs:
@@ -370,12 +372,17 @@ def watch() -> None:
 
 
 @app.command()
-def sweep(cells: int = typer.Option(3, help="Untested grid cells to backtest this run")) -> None:
-    """Constant strategy search: backtest untested cells of the pre-registered space (no LLM)."""
+def sweep(cells: int = typer.Option(3, help="Untested cells to backtest this run (ignored with --minutes)"),
+          minutes: float | None = typer.Option(None, help="Backtest cells until this many minutes have passed"),
+          refine: bool = typer.Option(True, help="After the grid, refine around the best cells so far")) -> None:
+    """The lab: backtest the next cells of the strategy space against the parent (no LLM).
+    Every cell is kept in reports/lab/ with its curves and shown on the dashboard."""
     from datetime import date as _date
 
     from hive.hive.registry import HiveRegistry
-    from hive.operator.sweep import run_sweep
+    from hive.operator.iterate import load_bounds
+    from hive.operator.lab import lab_dir, summary
+    from hive.operator.sweep import queue, run_sweep
     from hive.survival.ledger import SurvivalLedger
 
     s = get_settings()
@@ -385,8 +392,14 @@ def sweep(cells: int = typer.Option(3, help="Untested grid cells to backtest thi
     last = ledger.last_equity_mark() or cfg.survival.starting_bankroll_usd
     tier = ledger.tier(ledger.status(last).equity_net)
     reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
-    for r in run_sweep(s, cfg, reg, tier, n_cells=cells, on=_date.today()):
+    recs = run_sweep(s, cfg, reg, tier, n_cells=cells, on=_date.today(), with_refine=refine,
+                     budget_s=None if minutes is None else minutes * 60.0)
+    for r in recs:
         rprint(f"{r['proposal']}: {r['verdict']}")
+    sm = summary(lab_dir(s))
+    left = len(queue(reg, cfg, load_bounds(REPO_ROOT / cfg.operator.bounds_file), lab_dir(s), with_refine=refine))
+    rprint(f"lab: {len(recs)} cells this run, {sm['n_tests']} tests on record ({sm['n_passed']} beat the parent), "
+           f"{left} queued")
 
 
 def _research_bonus(cfg: StrategyConfig, state_dir: Path) -> float:

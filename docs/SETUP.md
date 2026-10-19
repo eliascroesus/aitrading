@@ -82,16 +82,26 @@ hive status
 | weekly (Sunday, `weekly.yml`) | `hive allocate` | the crypto sleeve's share of equity moves ±5 points toward the desk that earned, within 20–60%, from realised P&L; no LLM |
 | weekly (Sunday, `weekly.yml`) | `hive review` | the auditor reads the journals and proposes changes (never applies them); paid, like `hive operate`, from the research pot that unspent daily budget accrues into |
 | weekly (Sunday, `weekly.yml`) | `hive operate` | the operator proposes ≤ 3 config variants inside `config/bounds.toml`, code backtests them in/out of sample, winners become shadow children if the tier allows |
-| every day after the cycle | `hive sweep --cells 3` | backtests three untested cells of the strategy space (entry families, exits) in- and out-of-sample; winners take a paper seat; no LLM |
+| every hour (`watch.yml`) | `hive sweep --minutes 6` | **the lab**: backtests the next cells of the strategy space for six minutes — the grid of entry families and exits first, then refinements around the best cells so far (one knob at a time, finer steps as the coarse ones run out, pairs of winners merged) — in- and out-of-sample against the parent; winners take a paper seat; every cell is kept in `reports/lab/` with its equity curves and committed; no LLM |
+| every hour (`watch.yml`) | `hive watch` + `hive ui build` | heartbeat (live positions and prices) and a fresh dashboard, published to Pages; the page reloads itself when a newer build is up |
+| every day after the cycle | `hive sweep --cells 3` | three more lab cells after the daily cycle |
 | automatic, any day | promotion by evidence | a sub-agent that beat the parent for 14 shadow days by ≥ 1% is promoted by the operator into the primary (`state/promoted_overrides.json`); a baseline sub-agent on the pre-registered rules reverts it if it wins back by ≥ 2% over 28 days. Actions → **promote-sub-agent** stays as a human override |
 
 ## 4b. Watching it work
 
-* **Dashboard** (GitHub Pages): the *Live book* card is refreshed every hour
-  by `hourly-heartbeat` with the broker's positions and prices; *The desks*
+* **Dashboard** (GitHub Pages): rebuilt and published every hour by
+  `hourly-lab-and-heartbeat`, and the open page reloads itself when a newer
+  build is up (the header shows how old the build is). The *Strategy lab*
+  cards show every backtest the firm has ever run: a map of out-of-sample
+  return against drawdown (filled dots beat the parent, hollow ones were
+  rejected, the diamond is the parent), the equity curve of any test you click
+  (in-sample or out-of-sample, against the parent and buy & hold), the full
+  log with a filter box, and what is next in the queue. The *Live book* card
+  carries the broker's positions and prices from the heartbeat; *The desks*
   card shows what every employee said about every candidate on the last run
   (news desk, numbers desk, sentiment desk, debate, portfolio manager), the
-  news watch on open positions, and the memecoin scout's latest scan.
+  news watch on open positions, and the memecoin scout's latest scan; the
+  *Firm activity* table interleaves the lab's tests with the desks' events.
 * **Journals** (`state/journal/<date>.jsonl`, hash-chained, committed daily):
   every headline digest, analyst view, decision, order, exit and cost.
 * **Daily report** (`reports/daily/<date>.md`) and the **research log**

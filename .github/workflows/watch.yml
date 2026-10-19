@@ -1,50 +1,84 @@
-name: hourly-heartbeat
+name: hourly-lab-and-heartbeat
 
-# Every hour: read the broker's live positions and prices, rebuild the dashboard
-# with them and publish it. No orders, no LLM calls, no commit (the heartbeat is
-# not part of the record; the daily run's state is).
+# Every hour: the lab backtests the next cells of the strategy space (grid, then
+# refinements around the best cells; no LLM, so it costs the firm nothing), the
+# heartbeat reads the broker's live positions and prices, and the dashboard is
+# rebuilt and published. The lab's records (reports/lab/, state/hive.json,
+# state/research_log.jsonl) are committed so the search continues where it
+# stopped; the heartbeat itself is not part of the record. Odd minute to dodge
+# top-of-hour queueing; the daily run owns :37 past midnight.
 on:
   schedule:
     - cron: "7 * * * *"
   workflow_dispatch:
+    inputs:
+      minutes:
+        description: "Minutes of backtesting for the lab this run"
+        default: "6"
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: hive-state          # shared with daily.yml and weekly.yml: never two commits to state/ at once
+  cancel-in-progress: false
 
 jobs:
-  heartbeat:
+  lab:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       HIVE_MODE: ${{ secrets.HIVE_MODE || 'paper' }}
       ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
       ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
           cache-dependency-glob: pyproject.toml
       - run: uv venv --python 3.13 && uv pip install -e .
-      - name: Restore the data cache (read-only)
+      - name: Restore the data cache (read-only; the daily run refreshes and saves it)
         uses: actions/cache/restore@v4
         with:
           path: data
           key: hive-data-
           restore-keys: hive-data-
-      - run: .venv/bin/hive watch
-      - run: .venv/bin/hive ui build
+      - name: Reference files + 2000-2020 history if the cache is cold
+        run: bash scripts/bootstrap_data.sh --history || echo "bootstrap failed; the lab will use what is cached"
+      - name: Heartbeat (live positions and prices for the dashboard)
+        run: .venv/bin/hive watch || echo "heartbeat skipped"
+      - name: The lab (backtest the next cells of the strategy space; no LLM)
+        run: .venv/bin/hive sweep --minutes ${{ github.event.inputs.minutes || '6' }} || echo "lab skipped"
+      - name: Rebuild the dashboard
+        run: .venv/bin/hive ui build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: reports/dashboard
+      - name: Commit the lab's records
+        run: |
+          git config user.name "hive-bot"
+          git config user.email "hive-bot@users.noreply.github.com"
+          git add state/hive.json state/research_log.jsonl reports/lab
+          git diff --cached --quiet || git commit -m "lab $(date -u +%FT%H:%MZ)"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push
+
+  # Commits made with GITHUB_TOKEN do not trigger other workflows, so pages.yml
+  # would never see the bot's push: publish the dashboard from here instead.
+  pages:
+    needs: lab
+    if: ${{ always() && needs.lab.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v4

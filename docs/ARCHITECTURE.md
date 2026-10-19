@@ -143,9 +143,17 @@ daily: children trade their own paper books (stocks / crypto / all / meme sleeve
         ▼  human: `hive hive promote <id> --approve` → overrides committed to strategy.toml
 ```
 
-Three things create sub-agents. The **sweep** (`hive sweep`, daily, no LLM)
-backtests untested cells of the pre-registered strategy space and seats the
-winners. The **operator** (Sundays) proposes variants from the evidence and
+Three things create sub-agents. The **lab** (`hive sweep`, every hour, no
+LLM) backtests the next cells of the pre-registered strategy space and seats
+the winners: first a fixed grid of entry families and exits, then refinements
+around the best cells found so far (one numeric knob at a time inside
+`config/bounds.toml`, coarse steps first and finer ones as they run out, only
+knobs the cell's entry family uses, plus pairwise merges of winners with
+disjoint knobs), the sleeves interleaved. Every evaluation — each cell's and
+the parent's on each data snapshot — is an append-only record in
+`reports/lab/` with its in- and out-of-sample metrics and downsampled equity
+curves, so the dashboard shows the whole map of what was tested and the search
+never retests a cell. The parent reference is cached per data snapshot. The **operator** (Sundays) proposes variants from the evidence and
 **monitors**: news-channel sub-agents watching up to five topics or symbols
 whose bounded daily reports reach the portfolio manager as "desk reports".
 **Promotion is governed by evidence, not by a person** (config 1.4.0): a

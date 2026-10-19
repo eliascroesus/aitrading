@@ -192,7 +192,7 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
             timeline.append({"ts": e.get("ts", "")[:16].replace("T", " "), "who": "ledger", "kind": e["kind"],
                              "text": m.get("why") or m.get("reason") or (f"{m.get('from')} -> {m.get('to')}" if "to" in m else json.dumps(m)[:120])})
     timeline.sort(key=lambda x: x["ts"])
-    data["timeline"] = timeline[-80:]
+    timeline = timeline[-90:]
 
     # --- what the operator thinks, what the auditor found, what was promoted ------------------------
     rl = state / "research_log.jsonl"
@@ -263,5 +263,64 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
                 continue
             exp[p.stem] = rows[:64]
     data["experiments"] = exp
+
+    # --- the lab: every backtest the firm has run, with curves for the ones worth drawing ------
+    data["lab"] = _lab(reports / "lab", state, cfg, hive)
+    for t in data["lab"]["timeline"]:
+        timeline.append(t)
+    timeline.sort(key=lambda x: x["ts"])
+    data["timeline"] = timeline[-100:]
     data["config"] = cfg.model_dump()
     return data
+
+
+LAB_CURVES_KEPT = 40   # the newest tests keep their curves inline; winners and parents always do
+
+
+def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, Any]:
+    from hive.operator.lab import PARENT_PREFIX, read_tests
+
+    tests = read_tests(ldir)                      # oldest first, with curves
+    today = datetime.now(UTC).date().isoformat()
+    child_status = {c.get("id"): c.get("status") for c in hive.get("children", [])}
+    keep = {t["id"] for t in tests[-LAB_CURVES_KEPT:]} | {t["id"] for t in tests if t.get("passed")}
+    rows, curves = [], {}
+    for t in tests:
+        row = {k: t.get(k) for k in ("id", "ts", "date", "by", "sleeve", "name", "overrides", "verdict", "passed",
+                                     "child_id", "hypothesis", "is_cagr", "oos_cagr", "is_dd", "oos_dd",
+                                     "parent_oos_cagr", "parent_oos_dd", "elapsed_s")}
+        row["is"] = t.get("insample") or {}
+        row["oos"] = t.get("outofsample") or {}
+        row["child_status"] = child_status.get(t.get("child_id")) if t.get("child_id") else None
+        rows.append(row)
+        if t["id"] in keep and t.get("curves"):
+            curves[t["id"]] = t["curves"]
+    parents = {}
+    for p in sorted(ldir.glob(f"{PARENT_PREFIX}*.json")) if ldir.exists() else []:
+        d = _read_json(p)
+        if d:
+            parents[p.stem[len(PARENT_PREFIX):]] = {"ts": d.get("ts"), "data": d.get("data"), "insample": d.get("insample"),
+                                                     "outofsample": d.get("outofsample"), "curves": d.get("curves") or {}}
+    queue, n_queued, grid_size = [], 0, 0
+    try:
+        from hive.config import REPO_ROOT
+        from hive.hive.registry import HiveRegistry
+        from hive.operator.iterate import load_bounds
+        from hive.operator.sweep import describe, grid
+        from hive.operator.sweep import queue as lab_queue
+
+        reg = HiveRegistry(state / "hive.json", cfg.survival)
+        q = lab_queue(reg, cfg, load_bounds(REPO_ROOT / cfg.operator.bounds_file), ldir)
+        n_queued, grid_size = len(q), len(grid())
+        queue = [describe(sl, ov, stage="sweep" if (sl, ov) in grid() else "refine") for sl, ov in q[:8]]
+    except Exception:
+        pass
+    cells = [t for t in tests if t.get("by") != "parent"]
+    tl = [{"ts": (t.get("ts") or "")[:16].replace("T", " "), "who": "lab", "kind": t.get("by") or "test",
+           "text": f"{t.get('name')}: " + (f"OOS {t['oos_cagr']:.1%}" if t.get("oos_cagr") is not None else "no result")
+                   + (f" vs parent {t['parent_oos_cagr']:.1%}" if t.get("parent_oos_cagr") is not None else "")
+                   + f" — {(t.get('verdict') or '')[:90]}"} for t in cells[-12:]]
+    return {"tests": rows[::-1][:600], "curves": curves, "parents": parents, "queue": queue, "n_queued": n_queued,
+            "grid_size": grid_size, "n_tests": len(cells), "n_passed": sum(1 for t in cells if t.get("passed")),
+            "n_today": sum(1 for t in cells if (t.get("ts") or "")[:10] == today),
+            "last_ts": tests[-1].get("ts") if tests else None, "timeline": tl}

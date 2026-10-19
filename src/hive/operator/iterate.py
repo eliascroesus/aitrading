@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import logging
 import tomllib
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import dataclass, field
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -141,22 +141,32 @@ class EvalResult:
     overrides: dict[str, Any]
     insample: dict[str, float]
     outofsample: dict[str, float]
+    curves: dict[str, dict[str, list]] = field(default_factory=dict)   # window -> {dates, equity, benchmark}
 
 
 KEEP = ("cagr", "sharpe", "max_drawdown", "n_trades", "win_rate", "profit_factor", "avg_hold_days", "n_drawdown_halts")
 
 
-def evaluate(cfg: StrategyConfig, overrides: dict[str, Any], inputs: dict[str, Any]) -> EvalResult:
-    """Backtest a variant in both windows on the cached data (``inputs`` from load_bars_for_backtest)."""
+def evaluate(cfg: StrategyConfig, overrides: dict[str, Any], inputs: dict[str, Any], *,
+             keep_curves: bool = False) -> EvalResult:
+    """Backtest a variant in both windows on the cached data (``inputs`` from load_bars_for_backtest).
+    With ``keep_curves`` the downsampled equity curve of each window (and the benchmark's buy & hold
+    on the same dates) travels with the result, so the lab can show it."""
+    from hive.operator.lab import benchmark_on, downsample
+
     c = _apply_overrides(cfg, overrides)
-    out = {}
+    out, curves = {}, {}
     for label, (s, e) in (("insample", (cfg.operator.insample_start, cfg.operator.insample_end)),
                           ("outofsample", (cfg.operator.outofsample_start, cfg.operator.outofsample_end))):
         res = Backtester(inputs["bars"], inputs["bench"], c, inputs["cost"], asset_class_by_symbol=inputs["classes"],
                          initial_equity=cfg.survival.starting_bankroll_usd, start=s, end=e,
                          universe=inputs.get("universe"), vix=inputs.get("vix")).run()
         out[label] = {k: float(res.metrics.get(k, 0.0)) for k in KEEP}
-    return EvalResult(overrides, out["insample"], out["outofsample"])
+        if keep_curves:
+            cv = downsample(res.equity)
+            cv["benchmark"] = benchmark_on(cv["dates"], inputs.get("bench"), cfg.survival.starting_bankroll_usd)
+            curves[label] = cv
+    return EvalResult(overrides, out["insample"], out["outofsample"], curves)
 
 
 def verdict(parent: EvalResult, child: EvalResult, tolerance: float) -> tuple[bool, str]:
@@ -247,11 +257,15 @@ def operate(
     bounds_path: Path | None = None,
     on: date | None = None,
     proposals_override: list[Proposal] | None = None,
+    lab_dir: Path | None = None,
 ) -> list[dict[str, Any]]:
-    """One operator iteration. Returns the iteration records written to the registry."""
+    """One operator iteration. Returns the iteration records written to the registry.
+    With ``lab_dir`` every backtest (the parent's and each proposal's) is kept as a lab record."""
+    from hive.operator.lab import lab_record, parent_eval, record_test
+
     on = on or date.today()
     bounds = load_bounds(bounds_path or (REPO_ROOT / cfg.operator.bounds_file))
-    parent = evaluate(cfg, {}, inputs)
+    parent = parent_eval(cfg, "stocks", inputs, lab_dir, on=on.isoformat())
     log_path = registry.path.parent / RESEARCH_LOG
     ctx = performance_context(registry, status, parent, bounds, cfg, research_log=read_research_log(log_path))
 
@@ -306,12 +320,17 @@ def operate(
             records.append(rec)
             continue
         p.overrides = rec["overrides"] = coerce_types(cfg, p.overrides)
+        t0 = datetime.now(UTC)
         try:
-            ev = evaluate(cfg, p.overrides, inputs)
+            ev = evaluate(cfg, p.overrides, inputs, keep_curves=lab_dir is not None)
         except Exception as exc:  # a bad value must not take the whole iteration down
             rec["verdict"] = f"rejected: backtest failed: {str(exc)[:160]}"
             registry.record_iteration(rec)
             records.append(rec)
+            if lab_dir is not None:
+                record_test(lab_dir, lab_record(by="operator", sleeve=p.sleeve, name=p.name, overrides=p.overrides,
+                                                 ev=None, parent=parent, verdict=rec["verdict"], on=on.isoformat(),
+                                                 hypothesis=p.hypothesis, cfg=cfg))
             continue
         rec.update({"is_cagr": ev.insample["cagr"], "oos_cagr": ev.outofsample["cagr"],
                     "is_dd": ev.insample["max_drawdown"], "oos_dd": ev.outofsample["max_drawdown"],
@@ -331,6 +350,12 @@ def operate(
             rec["verdict"] = f"rejected: {why}"
         registry.record_iteration(rec)
         records.append(rec)
+        if lab_dir is not None:
+            record_test(lab_dir, lab_record(
+                by="operator", sleeve=p.sleeve, name=p.name, overrides=p.overrides, ev=ev, parent=parent,
+                verdict=rec["verdict"], on=on.isoformat(), hypothesis=p.hypothesis, cfg=cfg,
+                child_id=rec["verdict"].split("spawned shadow child ", 1)[1].split(":")[0] if "spawned shadow child" in rec["verdict"] else None,
+                elapsed_s=round((datetime.now(UTC) - t0).total_seconds(), 1)))
     # The firm's memory: what was tried, what it found, what the operator thought.
     append_research_log(log_path, {
         "date": on.isoformat(), "note": note, "parent_oos_cagr": parent.outofsample.get("cagr"),
