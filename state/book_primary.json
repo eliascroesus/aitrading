@@ -1,3 +1,36 @@
 {
-  "positions": {}
+  "positions": {
+    "COP": {
+      "symbol": "COP",
+      "asset_class": "stock",
+      "qty": 0.051422319,
+      "entry_price": 146.24,
+      "entry_date": "2026-10-19",
+      "r_per_share": 9.602674842452714,
+      "stop_price": 136.6373251575473,
+      "highest_close": 144.66,
+      "bars_held": 1,
+      "invalidation_condition": "none",
+      "source": "reconciled",
+      "stop_order_id": "3de0a84e-d1af-44cd-88cc-6c6ce5dbd615",
+      "below_mid_streak": 0,
+      "meta": {}
+    },
+    "TRV": {
+      "symbol": "TRV",
+      "asset_class": "stock",
+      "qty": 0.044496124,
+      "entry_price": 387.0,
+      "entry_date": "2026-10-19",
+      "r_per_share": 22.373953426167276,
+      "stop_price": 364.6260465738327,
+      "highest_close": 387.32,
+      "bars_held": 1,
+      "invalidation_condition": "none",
+      "source": "reconciled",
+      "stop_order_id": "78f4ce4f-6b57-489c-8abb-d5284250613f",
+      "below_mid_streak": 0,
+      "meta": {}
+    }
+  }
 }

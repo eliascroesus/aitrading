@@ -23,3 +23,15 @@
 {"ts": "2026-10-18T22:39:39.793+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
 {"ts": "2026-10-18T22:39:41.955+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
 {"ts": "2026-10-18T22:39:54.598+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T15:24:22.484+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T15:24:23.518+00:00", "level": "WARNING", "logger": "hive.data.fetch", "msg": "HTTP 429 from https://www.reddit.com/search.rss?q=%24TRV+stock&sort=new&t=week; retrying in 1.0s"}
+{"ts": "2026-10-19T15:24:24.631+00:00", "level": "INFO", "logger": "hive.data.sources.social", "msg": "reddit unavailable for '$TRV stock': Client error '429 Too Many Requests' for url 'https://www.reddit.com/search.rss?q=%24TRV+stock&sort=new&t=week'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"}
+{"ts": "2026-10-19T15:24:27.178+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T15:24:37.993+00:00", "level": "WARNING", "logger": "hive.data.fetch", "msg": "HTTP 429 from https://www.reddit.com/search.rss?q=%24MNST+stock&sort=new&t=week; retrying in 1.0s"}
+{"ts": "2026-10-19T15:24:39.109+00:00", "level": "INFO", "logger": "hive.data.sources.social", "msg": "reddit unavailable for '$MNST stock': Client error '429 Too Many Requests' for url 'https://www.reddit.com/search.rss?q=%24MNST+stock&sort=new&t=week'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"}
+{"ts": "2026-10-19T15:24:41.561+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T15:24:43.933+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T15:24:46.369+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T15:24:48.293+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T15:24:51.065+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T15:24:56.406+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}

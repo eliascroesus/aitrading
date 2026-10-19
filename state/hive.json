@@ -12,11 +12,54 @@
       "equity": 3.0,
       "start_equity": 3.0,
       "parent_start_equity": 100.0,
-      "voi": 0.0,
-      "shadow_days": 2,
+      "voi": 0.0009999999999998899,
+      "shadow_days": 3,
       "hypothesis": "",
       "notes": [],
-      "metrics": {}
+      "metrics": {},
+      "watch": []
+    },
+    {
+      "id": "sweep-stocks-entry-mode-template-cross",
+      "name": "sweep stocks: entry_mode=template_cross",
+      "kind": "variant",
+      "sleeve": "stocks",
+      "overrides": {
+        "stocks.entry_mode": "template_cross"
+      },
+      "status": "shadow",
+      "born": "2026-10-19",
+      "retired": null,
+      "equity": null,
+      "start_equity": null,
+      "parent_start_equity": null,
+      "voi": null,
+      "shadow_days": 0,
+      "hypothesis": "systematic sweep of the pre-registered strategy space",
+      "notes": [],
+      "metrics": {
+        "insample": {
+          "cagr": 0.001429417180691006,
+          "sharpe": 0.05987739431771016,
+          "max_drawdown": -0.2185732671199374,
+          "n_trades": 478.0,
+          "win_rate": 0.303347280334728,
+          "profit_factor": 1.01492795542821,
+          "avg_hold_days": 15.993723849372385,
+          "n_drawdown_halts": 0.0
+        },
+        "outofsample": {
+          "cagr": 0.09251389137798172,
+          "sharpe": 0.9286551869992039,
+          "max_drawdown": -0.16934274130542948,
+          "n_trades": 610.0,
+          "win_rate": 0.3540983606557377,
+          "profit_factor": 1.84058499089627,
+          "avg_hold_days": 20.2,
+          "n_drawdown_halts": 0.0
+        }
+      },
+      "watch": []
     }
   ],
   "iterations": [
@@ -137,6 +180,58 @@
       "oos_dd": -0.3070360000107585,
       "parent_oos_cagr": 0.02831886418463858,
       "verdict": "rejected: OOS CAGR 0.68% does not beat parent 2.83%"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "sweep stocks: entry_mode=template_cross",
+      "kind": "sweep",
+      "hypothesis": "systematic sweep of the pre-registered strategy space",
+      "overrides": {
+        "stocks.entry_mode": "template_cross"
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": 0.001429417180691006,
+      "oos_cagr": 0.09251389137798172,
+      "is_dd": -0.2185732671199374,
+      "oos_dd": -0.16934274130542948,
+      "parent_oos_cagr": 0.028252828339523584,
+      "verdict": "spawned shadow child sweep-stocks-entry-mode-template-cross: beats parent out of sample within the drawdown tolerance"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "sweep stocks: entry_mode=high_breakout",
+      "kind": "sweep",
+      "hypothesis": "systematic sweep of the pre-registered strategy space",
+      "overrides": {
+        "stocks.entry_mode": "high_breakout"
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": -0.011429515852603545,
+      "oos_cagr": 0.03683470249022913,
+      "is_dd": -0.2945424802872999,
+      "oos_dd": -0.2186876127023426,
+      "parent_oos_cagr": 0.028252828339523584,
+      "verdict": "rejected: negative in-sample return"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "sweep stocks: entry_mode=high_breakout, breakout_lookback=30",
+      "kind": "sweep",
+      "hypothesis": "systematic sweep of the pre-registered strategy space",
+      "overrides": {
+        "stocks.entry_mode": "high_breakout",
+        "stocks.breakout_lookback": 30
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": -0.012971413076895089,
+      "oos_cagr": 0.015692919541428818,
+      "is_dd": -0.3145296608245015,
+      "oos_dd": -0.23930319752493245,
+      "parent_oos_cagr": 0.028252828339523584,
+      "verdict": "rejected: OOS CAGR 1.57% does not beat parent 2.83%"
     }
   ]
 }
