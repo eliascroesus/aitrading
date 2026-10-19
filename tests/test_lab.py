@@ -181,3 +181,29 @@ def test_dashboard_collects_the_lab(tmp_path):
     assert d["n_queued"] > 0 and d["queue"] and d["grid_size"] == len(grid())
     assert any(e["who"] == "lab" for e in d["timeline"])
     json.dumps(d)   # serialisable
+
+
+def test_waiting_list_is_best_first_from_the_complete_record(tmp_path):
+    from hive.operator.sweep import seat_waiting, waiting_list
+
+    cfg = StrategyConfig()
+    ldir = tmp_path / "lab"
+    reg = HiveRegistry(tmp_path / "hive.json", cfg.survival)
+    # three cells passed without a seat: two only in the lab's record (older than the registry
+    # window), one in the registry; the best out-of-sample return must be seated first
+    for name, ov, oos in (("lab weaker", {"stocks.trail_atr": 3.0}, 0.04), ("lab best", {"crypto.entry_mode": "high_breakout"}, 0.22)):
+        record_test(ldir, lab_record(by="sweep", sleeve=("crypto" if "crypto" in str(ov) else "stocks"),
+                                     name=name, overrides=ov, ev=None, parent=None,
+                                     verdict="passed but not spawned: tier base allows 2 children; 2 active",
+                                     on="2026-10-18") | {"oos_cagr": oos, "oos_dd": -0.2})
+    reg.record_iteration({"date": "2026-10-19", "proposal": "registry middle", "overrides": {"stocks.trail_atr": 7.0},
+                          "sleeve": "stocks", "oos_cagr": 0.10, "oos_dd": -0.15,
+                          "verdict": "passed but not spawned: tier base allows 2 children; 2 active"})
+    names = [w["proposal"] for w in waiting_list(reg, ldir)]
+    assert names == ["lab best", "registry middle", "lab weaker"]
+    out = seat_waiting(reg, _tier(cfg, "survival"), date(2026, 10, 19), ldir)     # one seat
+    assert len(out) == 1 and "lab best" in out[0]["proposal"] and len(reg.active()) == 1
+    assert [w["proposal"] for w in waiting_list(reg, ldir)] == ["registry middle", "lab weaker"]
+    assert any(t["by"] == "seat" for t in read_tests(ldir))
+    assert summary(ldir)["n_tests"] == 2                                            # seat records are not tests
+    assert seat_waiting(reg, _tier(cfg, "survival"), date(2026, 10, 19), ldir) == []  # no free seat: nothing

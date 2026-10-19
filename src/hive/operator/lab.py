@@ -114,8 +114,9 @@ def read_tests(ldir: Path, *, with_curves: bool = True) -> list[dict[str, Any]]:
 
 
 def recorded_keys(ldir: Path) -> set[str]:
+    """Cells with an evaluation on record (seat records are bookkeeping, not evaluations)."""
     return {cell_key(r.get("sleeve") or "", r["overrides"]) for r in read_tests(ldir, with_curves=False)
-            if r.get("overrides")}
+            if r.get("overrides") and r.get("by") != "seat"}
 
 
 def lab_record(*, by: str, sleeve: str, name: str, overrides: dict[str, Any], ev: EvalResult | None,
@@ -196,7 +197,7 @@ def summary(ldir: Path, *, today: str | None = None) -> dict[str, Any]:
     """Counts for the dashboard header: tests, passes, today's, last timestamp."""
     tests = read_tests(ldir, with_curves=False)
     today = today or datetime.now(UTC).date().isoformat()
-    cells = [t for t in tests if t.get("by") != "parent"]
+    cells = [t for t in tests if t.get("by") not in ("parent", "seat")]
     return {"n_tests": len(cells), "n_passed": sum(1 for t in cells if t.get("passed")),
             "n_today": sum(1 for t in cells if (t.get("ts") or "")[:10] == today),
             "last_ts": tests[-1]["ts"] if tests else None}

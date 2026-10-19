@@ -283,7 +283,9 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
     tests = read_tests(ldir)                      # oldest first, with curves
     today = datetime.now(UTC).date().isoformat()
     child_status = {c.get("id"): c.get("status") for c in hive.get("children", [])}
-    keep = {t["id"] for t in tests[-LAB_CURVES_KEPT:]} | {t["id"] for t in tests if t.get("passed")}
+    best = sorted((t for t in tests if t.get("passed") and t.get("oos_cagr") is not None),
+                  key=lambda t: -t["oos_cagr"])[:LAB_CURVES_KEPT]
+    keep = {t["id"] for t in tests[-LAB_CURVES_KEPT:]} | {t["id"] for t in best}
     rows, curves = [], {}
     for t in tests:
         row = {k: t.get(k) for k in ("id", "ts", "date", "by", "sleeve", "name", "overrides", "verdict", "passed",
@@ -301,26 +303,29 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
         if d:
             parents[p.stem[len(PARENT_PREFIX):]] = {"ts": d.get("ts"), "data": d.get("data"), "insample": d.get("insample"),
                                                      "outofsample": d.get("outofsample"), "curves": d.get("curves") or {}}
-    queue, n_queued, grid_size = [], 0, 0
+    queue, n_queued, grid_size, waiting = [], 0, 0, []
     try:
         from hive.config import REPO_ROOT
         from hive.hive.registry import HiveRegistry
         from hive.operator.iterate import load_bounds
-        from hive.operator.sweep import describe, grid
+        from hive.operator.sweep import describe, grid, waiting_list
         from hive.operator.sweep import queue as lab_queue
 
         reg = HiveRegistry(state / "hive.json", cfg.survival)
         q = lab_queue(reg, cfg, load_bounds(REPO_ROOT / cfg.operator.bounds_file), ldir)
         n_queued, grid_size = len(q), len(grid())
         queue = [describe(sl, ov, stage="sweep" if (sl, ov) in grid() else "refine") for sl, ov in q[:8]]
+        waiting = [{"name": w["proposal"], "sleeve": w["sleeve"], "oos_cagr": w["oos_cagr"], "oos_dd": w["oos_dd"],
+                    "date": w["date"]} for w in waiting_list(reg, ldir)[:10]]
     except Exception:
         pass
-    cells = [t for t in tests if t.get("by") != "parent"]
+    cells = [t for t in tests if t.get("by") not in ("parent", "seat")]
     tl = [{"ts": (t.get("ts") or "")[:16].replace("T", " "), "who": "lab", "kind": t.get("by") or "test",
            "text": f"{t.get('name')}: " + (f"OOS {t['oos_cagr']:.1%}" if t.get("oos_cagr") is not None else "no result")
                    + (f" vs parent {t['parent_oos_cagr']:.1%}" if t.get("parent_oos_cagr") is not None else "")
                    + f" — {(t.get('verdict') or '')[:90]}"} for t in cells[-12:]]
     return {"tests": rows[::-1][:600], "curves": curves, "parents": parents, "queue": queue, "n_queued": n_queued,
+            "waiting": waiting,
             "grid_size": grid_size, "n_tests": len(cells), "n_passed": sum(1 for t in cells if t.get("passed")),
             "n_today": sum(1 for t in cells if (t.get("ts") or "")[:10] == today),
             "last_ts": tests[-1].get("ts") if tests else None, "timeline": tl}

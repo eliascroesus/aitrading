@@ -77,7 +77,7 @@ def results_so_far(registry: HiveRegistry, ldir=None) -> list[dict[str, Any]]:
     src = (read_tests(ldir, with_curves=False) if ldir is not None else []) + list(registry.iterations)
     for it in src:
         ov = it.get("overrides")
-        if not ov:
+        if not ov or it.get("by") == "seat" or it.get("kind") == "seated":
             continue
         k = cell_key(it.get("sleeve") or "", ov)
         rows[k] = {"sleeve": it.get("sleeve") or "", "overrides": ov, "oos_cagr": it.get("oos_cagr"),
@@ -180,31 +180,51 @@ def describe(sleeve: str, overrides: dict[str, Any], *, stage: str = "sweep") ->
     return f"{stage} {sleeve}: " + ", ".join(f"{k.split('.')[-1]}={v}" for k, v in overrides.items())
 
 
-def seat_waiting(registry: HiveRegistry, tier: Tier, on: date) -> list[dict[str, Any]]:
-    """Cells that passed the verdict while every seat was taken wait; seat them when one frees.
-    A cell that was ever seated (any status) is not seated twice."""
+def waiting_list(registry: HiveRegistry, ldir=None) -> list[dict[str, Any]]:
+    """Cells that passed the verdict while every seat was taken, best out-of-sample return first,
+    from the lab's complete record (the registry keeps only its last 200 iterations) and the
+    registry; cells that were ever seated (any status) are left out."""
     seated = {cell_key(c.sleeve, c.overrides or {}) for c in registry.children}
-    out: list[dict[str, Any]] = []
-    for it in list(registry.iterations):
+    src = (read_tests(ldir, with_curves=False) if ldir is not None else []) + list(registry.iterations)
+    rows: dict[str, dict[str, Any]] = {}
+    for it in src:
         if not str(it.get("verdict", "")).startswith("passed but not spawned") or not it.get("overrides"):
             continue
-        key = cell_key(it.get("sleeve", ""), it["overrides"])
+        key = cell_key(it.get("sleeve") or "", it["overrides"])
+        if key in seated:
+            continue
+        rows[key] = {"proposal": it.get("proposal") or it.get("name") or "waiting list", "overrides": it["overrides"],
+                     "sleeve": it.get("sleeve") or "stocks", "hypothesis": it.get("hypothesis") or "",
+                     "date": it.get("date"), "is_cagr": it.get("is_cagr"), "oos_cagr": it.get("oos_cagr"),
+                     "oos_dd": it.get("oos_dd"), "parent_oos_cagr": it.get("parent_oos_cagr")}
+    return sorted(rows.values(), key=lambda r: (-(r["oos_cagr"] or 0.0), -(r["oos_dd"] or 0.0)))
+
+
+def seat_waiting(registry: HiveRegistry, tier: Tier, on: date, ldir=None) -> list[dict[str, Any]]:
+    """Seat the best waiting cells when seats are free. A cell is never seated twice."""
+    out: list[dict[str, Any]] = []
+    seated: set[str] = set()
+    for it in waiting_list(registry, ldir):
+        key = cell_key(it["sleeve"], it["overrides"])
         if key in seated:
             continue
         can, reason = registry.can_spawn(tier)
         if not can:
             break
-        child = registry.spawn(Child(id="", name=str(it.get("proposal", "waiting list"))[:40], kind="variant",
-                                     sleeve=it.get("sleeve", "stocks"), overrides=it["overrides"],
-                                     hypothesis=str(it.get("hypothesis", "")),
-                                     metrics={"is_cagr": it.get("is_cagr"), "oos_cagr": it.get("oos_cagr"),
-                                              "oos_dd": it.get("oos_dd")}), tier)
+        child = registry.spawn(Child(id="", name=str(it["proposal"])[:40], kind="variant", sleeve=it["sleeve"],
+                                     overrides=it["overrides"], hypothesis=str(it["hypothesis"]),
+                                     metrics={"is_cagr": it["is_cagr"], "oos_cagr": it["oos_cagr"],
+                                              "oos_dd": it["oos_dd"]}), tier)
         seated.add(key)
-        rec = {"date": on.isoformat(), "proposal": it.get("proposal"), "kind": "seated", "overrides": it["overrides"],
-               "sleeve": it.get("sleeve"), "cost_usd": 0.0, "oos_cagr": it.get("oos_cagr"),
-               "parent_oos_cagr": it.get("parent_oos_cagr"), "oos_dd": it.get("oos_dd"),
-               "verdict": f"seated from the waiting list as {child.id} (passed on {it.get('date')})"}
+        rec = {"date": on.isoformat(), "proposal": it["proposal"], "kind": "seated", "overrides": it["overrides"],
+               "sleeve": it["sleeve"], "cost_usd": 0.0, "oos_cagr": it["oos_cagr"],
+               "parent_oos_cagr": it["parent_oos_cagr"], "oos_dd": it["oos_dd"],
+               "verdict": f"seated from the waiting list as {child.id} (passed on {it['date']})"}
         registry.record_iteration(rec)
+        if ldir is not None:
+            record_test(ldir, lab_record(by="seat", sleeve=it["sleeve"], name=it["proposal"], overrides=it["overrides"],
+                                         ev=None, parent=None, verdict=rec["verdict"], on=on.isoformat(),
+                                         hypothesis=it["hypothesis"], child_id=child.id))
         out.append(rec)
     return out
 
@@ -221,7 +241,7 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
     on = on or date.today()
     ldir = ldir if ldir is not None else (lab_dir(settings) if settings is not None else None)
     bounds = load_bounds(REPO_ROOT / cfg.operator.bounds_file)
-    records: list[dict[str, Any]] = seat_waiting(registry, tier, on)
+    records: list[dict[str, Any]] = seat_waiting(registry, tier, on, ldir)
     todo = queue(registry, cfg, bounds, ldir, with_refine=with_refine)
     inputs = dict(inputs_by_sleeve or {})
     parents: dict[str, Any] = {}
