@@ -330,6 +330,38 @@ def operate(dry_run: bool = typer.Option(False, help="Propose and evaluate witho
 
 
 @app.command()
+def watch() -> None:
+    """Heartbeat: read the broker's live positions and prices into state/heartbeat.json (no orders, no LLM)."""
+    from datetime import UTC, datetime
+
+    import pandas as pd
+
+    from hive.data.store import BarStore
+    from hive.orchestrator.app import asset_classes_from_store, build_primary_broker
+
+    s = get_settings()
+    setup_logging()
+    cfg = StrategyConfig.load()
+    store = BarStore(s.hive_data_dir / "cache")
+    classes = asset_classes_from_store(store, cfg)
+    now = datetime.now(UTC)
+    broker = build_primary_broker(s, store, classes, pd.Timestamp(now.date()), cfg.survival.starting_bankroll_usd)
+    positions = []
+    for p in broker.positions().values():
+        pnl = (p.current_price / p.avg_price - 1.0) if p.avg_price else None
+        positions.append({"symbol": p.symbol, "asset_class": p.asset_class, "qty": p.qty, "avg_price": p.avg_price,
+                          "current_price": p.current_price, "market_value": p.market_value, "unrealised_pct": pnl,
+                          "stop_price": p.stop_price})
+    hb = {"ts": now.isoformat(timespec="seconds"), "broker": getattr(broker, "name", "broker"),
+          "equity": broker.equity(), "cash": broker.cash(), "market_open": bool(broker.is_market_open()),
+          "positions": positions}
+    s.hive_state_dir.mkdir(parents=True, exist_ok=True)
+    (s.hive_state_dir / "heartbeat.json").write_text(json.dumps(hb, indent=1, default=str))
+    rprint(f"heartbeat {hb['ts']}: {hb['broker']} equity ${hb['equity']:.2f}, {len(positions)} positions, "
+           f"market {'open' if hb['market_open'] else 'closed'}")
+
+
+@app.command()
 def allocate() -> None:
     """Weekly capital allocation between desks from realised results (bounded; no LLM)."""
     from datetime import date as _date

@@ -9,6 +9,27 @@ from hive.execution.base import BrokerPosition, OrderResult, Side
 log = logging.getLogger(__name__)
 
 
+def round_price(px: float, asset_class: str) -> float:
+    """Stocks trade in cents; crypto pairs quote to many decimals (SHIB, PEPE), so keep
+    six significant figures there instead of rounding a sub-cent price to zero."""
+    if asset_class == "crypto":
+        return float(f"{px:.6g}")
+    return round(px, 2)
+
+
+def stop_request(sym: str, qty: float, stop_price: float, asset_class: str, tif):
+    """Alpaca accepts plain stop orders for stocks only; crypto needs a stop-limit. The
+    limit sits 1% under the stop so it behaves like a stop while being a valid crypto order."""
+    from alpaca.trading.enums import OrderSide
+    from alpaca.trading.requests import StopLimitOrderRequest, StopOrderRequest
+
+    stop = round_price(stop_price, asset_class)
+    if asset_class == "crypto":
+        return StopLimitOrderRequest(symbol=sym, qty=qty, side=OrderSide.SELL, time_in_force=tif,
+                                     stop_price=stop, limit_price=round_price(stop * 0.99, asset_class))
+    return StopOrderRequest(symbol=sym, qty=qty, side=OrderSide.SELL, time_in_force=tif, stop_price=stop)
+
+
 def alpaca_symbol(symbol: str, asset_class: str) -> str:
     """Alpaca spot crypto symbols look like ``BTC/USD``."""
     if asset_class == "crypto" and "/" not in symbol:
@@ -90,18 +111,14 @@ class AlpacaBroker:
         )
 
     def submit_stop(self, symbol: str, qty: float, stop_price: float, *, asset_class: str = "stock") -> OrderResult:
-        from alpaca.trading.enums import OrderSide, TimeInForce
-        from alpaca.trading.requests import StopOrderRequest
+        from alpaca.trading.enums import TimeInForce
 
         sym = alpaca_symbol(symbol, asset_class)
         last_exc: Exception | None = None
-        # GTC stops are preferred; fractional quantities may only be accepted as DAY.
+        # GTC stops are preferred; fractional stock quantities may only be accepted as DAY.
         for tif in (TimeInForce.GTC, TimeInForce.DAY):
             try:
-                o = self.client.submit_order(StopOrderRequest(
-                    symbol=sym, qty=qty, side=OrderSide.SELL, time_in_force=tif,
-                    stop_price=round(stop_price, 2),
-                ))
+                o = self.client.submit_order(stop_request(sym, qty, stop_price, asset_class, tif))
                 return OrderResult(True, str(o.id), message=f"stop {tif.value}")
             except Exception as exc:
                 last_exc = exc

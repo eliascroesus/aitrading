@@ -69,5 +69,12 @@ change was blocked by the session's permission classifier as a weakening of
 safety controls and is recorded here as pending the owner's own decision (the
 bounds file is theirs to edit).
 
+Also found while making the desks visible: Alpaca rejects plain stop orders
+for crypto, so every crypto position would have lost its stop twice and been
+closed by the no-stop rule; crypto stops are now stop-limit orders with
+full price precision (a sub-cent SHIB stop had been rounded to zero). Added:
+`desk_notes` journal entries (every desk's bounded view per candidate), the
+hourly heartbeat (`hive watch`, `watch.yml`) and the social scout.
+
 ### Done well (reviewer's words)
 Point-in-time features with a no-lookahead test; internally consistent backtest accounting; fail-closed LLM layer with enum-only actions; sound ledger hash chain; layered live-mode gating and no withdraw path anywhere.

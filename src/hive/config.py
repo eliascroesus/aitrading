@@ -62,6 +62,8 @@ class Settings(BaseSettings):
     hive_llm_enabled: bool = True
     # Fetch headlines / earnings dates over the network during a run (paper/live).
     hive_network_data: bool = True
+    # Keyless social feeds (StockTwits, Reddit) for the quarantined reader.
+    hive_social_data: bool = True
 
     # --- Alpaca (US stocks/ETFs; paper by default) --------------------------
     alpaca_api_key: SecretStr | None = None

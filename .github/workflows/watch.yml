@@ -1,0 +1,50 @@
+name: hourly-heartbeat
+
+# Every hour: read the broker's live positions and prices, rebuild the dashboard
+# with them and publish it. No orders, no LLM calls, no commit (the heartbeat is
+# not part of the record; the daily run's state is).
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HIVE_MODE: ${{ secrets.HIVE_MODE || 'paper' }}
+      ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+      ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          cache-dependency-glob: pyproject.toml
+      - run: uv venv --python 3.13 && uv pip install -e .
+      - name: Restore the data cache (read-only)
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: hive-data-
+          restore-keys: hive-data-
+      - run: .venv/bin/hive watch
+      - run: .venv/bin/hive ui build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports/dashboard
+      - id: deployment
+        uses: actions/deploy-pages@v4

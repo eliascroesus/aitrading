@@ -24,6 +24,7 @@ data/cache/
 data/raw/
 state/*.db
 state/*.sqlite
+state/heartbeat.json
 reports/*.png
 reports/*.html
 

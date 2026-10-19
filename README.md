@@ -70,6 +70,7 @@ hive ui build && hive ui serve          # http://127.0.0.1:8787 (GitHub Pages pu
 hive operate                            # the operator proposes variants, code backtests, spawns shadow children
 hive hive list | spawn | retire | promote <id> --approve   # promotion is always a human decision
 hive allocate                           # weekly: capital moves toward the desk that earned (bounded, no LLM)
+hive watch                              # hourly heartbeat: live positions and prices into the dashboard
 ```
 
 Full setup (accounts, keys, hosts, costs, go-live checklist): `docs/SETUP.md`.

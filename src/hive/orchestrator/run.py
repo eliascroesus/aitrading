@@ -17,7 +17,7 @@ import pandas as pd
 
 from hive.agents import prompts
 from hive.agents.llm import BudgetExceededError, LLMClient
-from hive.agents.pipeline import CandidateContext, CandidatePipeline, features_payload
+from hive.agents.pipeline import CandidateContext, CandidatePipeline, bounded_view, features_payload
 from hive.config import StrategyConfig
 from hive.data.bars import as_of
 from hive.data.quality import max_abs_return_for, truncate_at_first_anomaly
@@ -335,6 +335,11 @@ class DailyRun:
                                              "regime_risk_multiplier": float(reg["risk_multiplier"])},
                                       firm_status=prompts.firm_status(
                                           status.__dict__ if status is not None else None, self.cfg.survival.tiers))
+                self.journal.write("desk_notes", {"notes": [
+                    {"symbol": ev.symbol, "news": bounded_view(ev.news), "fundamental": bounded_view(ev.fundamental),
+                     "technical": bounded_view(ev.technical), "sentiment": bounded_view(ev.sentiment),
+                     "debate": bounded_view(ev.debate), "action": ev.decision.action,
+                     "confidence": ev.decision.confidence, "cost_usd": ev.cost_usd} for ev in evals]})
                 for ev in evals:
                     actions[ev.symbol] = (ev.decision.action, ev.decision.invalidation_condition)
                     summary.decisions.append({"symbol": ev.symbol, "action": ev.decision.action,

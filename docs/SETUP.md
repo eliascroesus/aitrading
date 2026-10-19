@@ -84,6 +84,21 @@ hive status
 | weekly (Sunday, `weekly.yml`) | `hive operate` | the operator proposes ≤ 3 config variants inside `config/bounds.toml`, code backtests them in/out of sample, winners become shadow children if the tier allows |
 | when a child has earned it | `hive hive promote <id> --approve` | **a human** promotes; then apply its overrides to `config/strategy.toml` in a commit |
 
+## 4b. Watching it work
+
+* **Dashboard** (GitHub Pages): the *Live book* card is refreshed every hour
+  by `hourly-heartbeat` with the broker's positions and prices; *The desks*
+  card shows what every employee said about every candidate on the last run
+  (news desk, numbers desk, sentiment desk, debate, portfolio manager), the
+  news watch on open positions, and the memecoin scout's latest scan.
+* **Journals** (`state/journal/<date>.jsonl`, hash-chained, committed daily):
+  every headline digest, analyst view, decision, order, exit and cost.
+* **Daily report** (`reports/daily/<date>.md`) and the **research log**
+  (`state/research_log.jsonl`) the operator writes every Sunday.
+* The news desk reads Finnhub (with a key) or Google News, plus keyless
+  StockTwits and Reddit posts (`HIVE_SOCIAL_DATA`, on by default). Only the
+  quarantined reader ever sees that text.
+
 ## 5. How the hive grows (and what it is not allowed to do)
 
 * **Tiers** cap how many paper sub-agents may run at once: hospice 0, survival

@@ -117,12 +117,19 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
     jdir = state / "journal"
     files = sorted(p for p in jdir.glob("*.jsonl") if "-shadow" not in p.name) if jdir.exists() else []
     recent, llm_calls, anomalies, broken = [], [], 0, []
+    desks: dict = {"date": None, "notes": [], "watch": [], "scout": None}
     for p in files[-30:]:
         ok = Journal.verify_file(p)
         if not ok:
             broken.append(p.name)
         for e in Journal.read(p):
             k, pl = e["kind"], e["payload"]
+            if k == "desk_notes":
+                desks["notes"], desks["date"] = pl.get("notes", []), p.stem[:10]
+            elif k == "news_watch":
+                desks["watch"].append({"date": p.stem[:10], **pl})
+            elif k == "meme_day":
+                desks["scout"] = {"date": p.stem[:10], **pl}
             if k in ("decisions",):
                 for d in pl.get("decisions", []):
                     recent.append({"date": p.stem, "kind": "decision", **d})
@@ -134,6 +141,9 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
                 anomalies += 1
     data["journal"] = {"recent": recent[-200:], "llm_calls": llm_calls[-200:], "anomalies_30d": anomalies,
                        "broken_chains": broken, "n_files": len(files)}
+    desks["watch"] = desks["watch"][-20:]
+    data["desks"] = desks
+    data["heartbeat"] = _read_json(state / "heartbeat.json") or {}
 
     # --- hive registry (children / iterations) -----------------------------------------------
     hive = _read_json(state / "hive.json") or {"children": [], "iterations": []}

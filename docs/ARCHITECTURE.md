@@ -56,7 +56,7 @@ and the daily token budget comes from the survival ledger.
 
 | Agent | Model (configurable) | Input | Output |
 |---|---|---|---|
-| News reader (quarantined) | cheap model, low effort, no tools | raw headlines/filings with ticker names **anonymised** | `event_type ∈ enum`, `sentiment ∈ [-1,1]`, `materiality`, `source_ids` — never raw text |
+| News reader (quarantined) | cheap model, low effort, no tools | raw headlines/filings and social posts (StockTwits, Reddit) with ticker names **anonymised** | `event_type ∈ enum`, `sentiment ∈ [-1,1]`, `materiality`, `attention_spike`, `source_ids` — never raw text |
 | Fundamental analyst | cheap model | precomputed facts (earnings date, revisions, quality flags) | `signal ∈ [-1,1]`, `flags[]`, rationale |
 | Technical analyst | cheap model | the feature row (numbers computed by code) | `signal`, `setup_quality`, rationale |
 | Sentiment/catalyst analyst | cheap model | bounded news-reader output | `signal`, `crowding_flag`, `catalyst_window` |

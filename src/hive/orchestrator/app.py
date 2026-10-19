@@ -139,8 +139,14 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
         fk = settings.finnhub_api_key.get_secret_value() if settings.finnhub_api_key else None
 
         def news_fn(sym: str) -> list[tuple[str, str]]:
-            items = finnhub_company_news(sym, fk) if fk else []
-            return items or google_news_headlines(f"{sym} stock")
+            ac = classes.get(sym, "stock")
+            items = finnhub_company_news(sym, fk) if (fk and ac != "crypto") else []
+            items = items or google_news_headlines(f"{sym} crypto" if ac == "crypto" else f"{sym} stock")
+            if settings.hive_social_data:
+                from hive.data.sources.social import social_items
+
+                items = items + social_items(sym, ac)
+            return items
 
         def fundamentals_fn(sym: str) -> dict:
             return fundamentals_snapshot(sym, as_of=run_date, finnhub_key=fk)
