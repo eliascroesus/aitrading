@@ -61,6 +61,9 @@ jobs:
           git config user.email "hive-bot@users.noreply.github.com"
           git add state/hive.json state/research_log.jsonl reports/lab
           git diff --cached --quiet || git commit -m "lab $(date -u +%FT%H:%MZ)"
+          # the rebuilt dashboard and the heartbeat are tracked by the daily commits but are
+          # not part of this record: drop them (Pages already has the build) so the rebase is clean
+          git checkout -- .
           git pull --rebase origin "$GITHUB_REF_NAME"
           git push
 
