@@ -65,6 +65,22 @@ class RunSummary:
     positions: list[dict[str, Any]] = field(default_factory=list)
 
 
+PENDING_GRACE_DAYS = 4   # a Friday-night order fills Monday; holidays add a day
+
+
+def keep_pending(pos: OpenPosition, pending_symbols: set[str], pending_ids: set[str], run_date: date,
+                 grace_days: int = PENDING_GRACE_DAYS) -> bool:
+    """A queued entry stays in the book while its order is still open at the broker, or
+    for ``grace_days`` calendar days after it was placed when the broker cannot say."""
+    if pos.symbol in pending_symbols or str(pos.meta.get("order_id", "")) in pending_ids:
+        return True
+    try:
+        placed = date.fromisoformat(str(pos.entry_date))
+    except ValueError:
+        return False
+    return (run_date - placed).days <= grace_days
+
+
 class BankrollMismatchError(RuntimeError):
     """The broker's equity is not the study's bankroll (an un-reset paper account, usually)."""
 
@@ -280,6 +296,8 @@ class DailyRun:
         cash = float(self.broker.cash())
         snap = self._snapshot(equity, cash, status)
         blocked, why = risk.buys_blocked(snap)
+        if not blocked and any(e.get("kind") == "candidates" for e in Journal.read(self.journal.path)):
+            blocked, why = True, "this bar was already processed by an earlier run today"
         cands = pd.DataFrame()
         if not blocked:
             cands = self._candidates(mult)
@@ -441,7 +459,9 @@ class DailyRun:
     def _sync_book_with_broker(self) -> None:
         """Two-way reconciliation between the book and what the broker actually holds."""
         held = self.broker.positions()
-        pending_ids = {o.get("symbol") for o in self.broker.pending_orders()} if hasattr(self.broker, "pending_orders") else set()
+        open_orders = self.broker.pending_orders() if hasattr(self.broker, "pending_orders") else []
+        pending_symbols = {str(o.get("symbol")) for o in open_orders}
+        pending_ids = {str(o.get("id", "")) for o in open_orders}
         for sym, pos in list(self.book.positions.items()):
             bp = held.get(sym)
             if bp is not None:
@@ -454,8 +474,8 @@ class DailyRun:
                 elif abs(bp.qty - pos.qty) > 1e-6:
                     pos.qty = bp.qty
                 continue
-            if pos.meta.get("fill_pending") and (sym in pending_ids or pos.entry_date == self.run_date.date().isoformat()):
-                continue  # still queued at the broker
+            if pos.meta.get("fill_pending") and keep_pending(pos, pending_symbols, pending_ids, self.run_date.date()):
+                continue  # still queued at the broker (orders placed after the close fill at the next open)
             self.journal.write("reconcile", {"symbol": sym, "event": "closed_or_unfilled_at_broker"})
             self.book.remove(sym)
         for sym, bp in held.items():

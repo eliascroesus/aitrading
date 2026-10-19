@@ -125,6 +125,21 @@ class AlpacaBroker:
         log.error("alpaca submit_stop failed for %s: %s", symbol, last_exc)
         return OrderResult(False, message=str(last_exc))
 
+    def pending_orders(self) -> list[dict]:
+        """Open (queued, unfilled) orders, with symbols in the book's spelling."""
+        from alpaca.trading.enums import QueryOrderStatus
+        from alpaca.trading.requests import GetOrdersRequest
+
+        out = []
+        try:
+            for o in self.client.get_orders(GetOrdersRequest(status=QueryOrderStatus.OPEN)):
+                sym = str(o.symbol).upper().replace("/USD", "")
+                sym = sym[:-3] if sym.endswith("USD") and len(sym) > 3 and "/" not in str(o.symbol) and str(getattr(o, "asset_class", "")).lower().endswith("crypto") else sym
+                out.append({"symbol": sym, "id": str(o.id), "side": str(getattr(o, "side", "")).lower()})
+        except Exception as exc:
+            log.warning("alpaca pending_orders failed: %s", exc)
+        return out
+
     def cancel_open_orders(self, symbol: str | None = None) -> int:
         from alpaca.trading.enums import QueryOrderStatus
         from alpaca.trading.requests import GetOrdersRequest
