@@ -6,9 +6,9 @@ import tomllib
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, create_model
 
 from hive.agents import prompts
 from hive.agents.llm import BudgetExceededError, LLMClient
@@ -46,6 +46,38 @@ class Proposal(BaseModel):
 class Proposals(BaseModel):
     proposals: list[Proposal] = Field(max_length=5)
     note: str = Field(default="", max_length=300)
+
+
+def proposal_schema(bounds: dict[str, tuple[float, float]]) -> type[BaseModel]:
+    """The reply schema the model fills: overrides as (param, value) pairs whose ``param``
+    is an enum of the pre-registered tunables. A free-form dict does not survive the
+    structured-output grammar (the first live run came back with empty overrides)."""
+    keys = tuple(sorted(bounds)) or ("stocks.trail_atr",)
+    override = create_model("OverrideChoice", param=(Literal[keys], ...), value=(float, ...))
+    proposal = create_model(
+        "ProposalChoice", name=(str, Field(max_length=40)), hypothesis=(str, Field(max_length=300)),
+        overrides=(list[override], Field(min_length=1, max_length=3)),
+        sleeve=(Literal["stocks", "crypto", "all"], "stocks"),
+    )
+    return create_model("ProposalsChoice", proposals=(list[proposal], Field(max_length=5)),
+                        note=(str, Field(default="", max_length=300)))
+
+
+def to_proposals(parsed: BaseModel | None, limit: int) -> list[Proposal]:
+    if parsed is None:
+        return []
+    return [Proposal(name=p.name, hypothesis=p.hypothesis, sleeve=p.sleeve,
+                     overrides={o.param: o.value for o in p.overrides})
+            for p in list(parsed.proposals)[:limit]]
+
+
+def coerce_types(cfg: StrategyConfig, overrides: dict[str, Any]) -> dict[str, Any]:
+    """Integer tunables (bar counts) get integer values; the model replies in floats."""
+    out: dict[str, Any] = {}
+    for k, v in overrides.items():
+        cur = _get(cfg, k)
+        out[k] = int(round(float(v))) if isinstance(cur, int) and not isinstance(cur, bool) else v
+    return out
 
 
 def load_bounds(path: Path) -> dict[str, tuple[float, float]]:
@@ -157,10 +189,11 @@ def operate(
         try:
             parsed, call = llm.parse(
                 role="operator", model=model, system=OPERATOR_SYSTEM.replace("{N}", str(cfg.operator.max_variants_per_iteration)),
-                user=json.dumps(ctx, default=str)[:40_000], schema=Proposals, effort="medium", max_tokens=2500,
+                user=json.dumps(ctx, default=str)[:40_000], schema=proposal_schema(bounds), effort="medium",
+                max_tokens=2500,
             )
             cost = call.cost_usd
-            proposals = parsed.proposals[: cfg.operator.max_variants_per_iteration] if parsed else []
+            proposals = to_proposals(parsed, cfg.operator.max_variants_per_iteration)
             if not proposals:
                 why = (f"model reply rejected: {call.error or call.stop_reason}" if parsed is None
                        else f"model proposed nothing: {parsed.note or 'no note'}")
@@ -181,7 +214,14 @@ def operate(
             registry.record_iteration(rec)
             records.append(rec)
             continue
-        ev = evaluate(cfg, p.overrides, inputs)
+        p.overrides = rec["overrides"] = coerce_types(cfg, p.overrides)
+        try:
+            ev = evaluate(cfg, p.overrides, inputs)
+        except Exception as exc:  # a bad value must not take the whole iteration down
+            rec["verdict"] = f"rejected: backtest failed: {str(exc)[:160]}"
+            registry.record_iteration(rec)
+            records.append(rec)
+            continue
         rec.update({"is_cagr": ev.insample["cagr"], "oos_cagr": ev.outofsample["cagr"],
                     "is_dd": ev.insample["max_drawdown"], "oos_dd": ev.outofsample["max_drawdown"],
                     "parent_oos_cagr": parent.outofsample["cagr"]})

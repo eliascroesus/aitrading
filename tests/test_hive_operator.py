@@ -133,3 +133,27 @@ def test_jupiter_is_a_guard():
 
 def test_survival_rules_children_defaults():
     assert SurvivalRules().max_children == 5
+
+
+def test_proposal_schema_is_typed_and_bounded_to_tunables():
+    import pydantic
+
+    from hive.operator.iterate import coerce_types, proposal_schema, to_proposals
+
+    bounds = load_bounds(REPO_ROOT / "config" / "bounds.toml")
+    schema = proposal_schema(bounds)
+    parsed = schema.model_validate({"proposals": [
+        {"name": "longer impulse", "hypothesis": "slower legs", "sleeve": "stocks",
+         "overrides": [{"param": "stocks.impulse_window", "value": 90.0}, {"param": "stocks.trail_atr", "value": 6}]}],
+        "note": ""})
+    props = to_proposals(parsed, 3)
+    assert props[0].overrides == {"stocks.impulse_window": 90.0, "stocks.trail_atr": 6.0}
+    ov = coerce_types(StrategyConfig(), props[0].overrides)
+    assert ov["stocks.impulse_window"] == 90 and isinstance(ov["stocks.impulse_window"], int)
+    assert ov["stocks.trail_atr"] == 6.0
+    with pytest.raises(pydantic.ValidationError):   # not a pre-registered tunable
+        schema.model_validate({"proposals": [{"name": "x", "hypothesis": "y",
+                                               "overrides": [{"param": "risk.max_leverage", "value": 5}]}]})
+    with pytest.raises(pydantic.ValidationError):   # a proposal must change something
+        schema.model_validate({"proposals": [{"name": "x", "hypothesis": "y", "overrides": []}]})
+    assert to_proposals(None, 3) == []
