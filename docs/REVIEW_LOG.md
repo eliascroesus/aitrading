@@ -83,5 +83,11 @@ the parent, and a dashboard built around the sub-agents (a card each with its
 curve, overrides, today's activity or reports), the operator's notes, the
 auditor's findings and a firm-wide activity timeline.
 
+Config 1.4.0, at the owner's explicit direction that no person should be in
+the loop: promotion into the primary is decided by the evidence rule
+(`hive/governance.py`) and guarded by a baseline sub-agent that can revert it.
+The levers the operator may promote are still only those in
+`config/bounds.toml`; the risk envelope itself was not widened here.
+
 ### Done well (reviewer's words)
 Point-in-time features with a no-lookahead test; internally consistent backtest accounting; fail-closed LLM layer with enum-only actions; sound ledger hash chain; layered live-mode gating and no withdraw path anywhere.

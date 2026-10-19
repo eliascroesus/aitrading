@@ -54,7 +54,8 @@ def run_children(
             if child.sleeve == "meme":
                 eq = _run_meme_child(settings, cfg, child, cdir, journal, parent_equity, run_date)
             else:
-                ccfg = _apply_overrides(cfg, child.overrides)
+                # the baseline runs the pre-registered rules, never the promoted ones
+                ccfg = StrategyConfig.load() if child.kind == "baseline" else _apply_overrides(cfg, child.overrides)
                 ccls = _classes_for_sleeve(classes, child.sleeve)
                 broker = PaperBroker(cdir / "paper.json", price_fn_factory(ccls, pd.Timestamp(run_date)),
                                      starting_cash=cfg.survival.starting_bankroll_usd,
@@ -77,6 +78,19 @@ def run_children(
             journal.write("child_error", {"error": str(exc)[:300]})
     registry.auto_retire_losers(min_days=cfg.survival.child_shadow_days * 2, on=run_date)
     registry.retire_expired_monitors(cfg.operator.monitor_ttl_days, on=run_date)
+    # governance by evidence: promote what earned it, revert what the baseline beats
+    from hive.hive.governance import demote_if_baseline_wins, promote_earned
+
+    ledger = SurvivalLedger(settings.hive_state_dir / "ledger.jsonl", cfg.survival)
+    tier = ledger.tier(ledger.status(parent_equity, on=run_date).equity_net)
+    try:
+        for rec in promote_earned(settings, cfg, registry, tier, run_date):
+            results.append({"id": "operator", "name": "operator", "kind": "promotion", "verdict": rec["verdict"]})
+        rec = demote_if_baseline_wins(settings, cfg, registry, run_date)
+        if rec:
+            results.append({"id": "operator", "name": "operator", "kind": "demotion", "verdict": rec["verdict"]})
+    except Exception as exc:  # governance must never take the cycle down
+        log.exception("governance failed: %s", exc)
     return results
 
 

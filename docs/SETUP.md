@@ -83,7 +83,7 @@ hive status
 | weekly (Sunday, `weekly.yml`) | `hive review` | the auditor reads the journals and proposes changes (never applies them); paid, like `hive operate`, from the research pot that unspent daily budget accrues into |
 | weekly (Sunday, `weekly.yml`) | `hive operate` | the operator proposes ≤ 3 config variants inside `config/bounds.toml`, code backtests them in/out of sample, winners become shadow children if the tier allows |
 | every day after the cycle | `hive sweep --cells 3` | backtests three untested cells of the strategy space (entry families, exits) in- and out-of-sample; winners take a paper seat; no LLM |
-| when a sub-agent shows "ready to promote" | Actions → **promote-sub-agent** → Run workflow with its id | **a human** promotes; its overrides become the primary's live configuration (`state/promoted_overrides.json`) and it frees its seat |
+| automatic, any day | promotion by evidence | a sub-agent that beat the parent for 14 shadow days by ≥ 1% is promoted by the operator into the primary (`state/promoted_overrides.json`); a baseline sub-agent on the pre-registered rules reverts it if it wins back by ≥ 2% over 28 days. Actions → **promote-sub-agent** stays as a human override |
 
 ## 4b. Watching it work
 

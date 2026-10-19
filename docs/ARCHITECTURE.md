@@ -147,10 +147,17 @@ Three things create sub-agents. The **sweep** (`hive sweep`, daily, no LLM)
 backtests untested cells of the pre-registered strategy space and seats the
 winners. The **operator** (Sundays) proposes variants from the evidence and
 **monitors**: news-channel sub-agents watching up to five topics or symbols
-whose bounded daily reports reach the portfolio manager as "desk reports". A
-**human** promotes a variant that has beaten the parent for the shadow period
-(`promote-sub-agent` workflow); its overrides become the primary's, and it
-frees its seat. Every sub-agent that beats the parent also raises the firm's
+whose bounded daily reports reach the portfolio manager as "desk reports".
+**Promotion is governed by evidence, not by a person** (config 1.4.0): a
+variant that has beaten the parent for the shadow period by at least
+`operator.promote_min_voi` is promoted by the operator itself; its overrides
+become the primary's (`state/promoted_overrides.json`) and it frees its seat.
+A `baseline` sub-agent always runs the pre-registered rules on paper and
+takes no seat; if it beats the promoted configuration by
+`operator.demote_min_lag` over `operator.demote_after_days`, the promotion is
+reverted and the comparison restarts. Every promotion and reversal is a ledger
+entry and an iteration record. The `promote-sub-agent` workflow remains as a
+human override. Every sub-agent that beats the parent also raises the firm's
 research pot by a quarter, up to double.
 
 The operator designs sub-agents: it may pick the entry family (`entry_mode`)

@@ -68,7 +68,7 @@ class HiveRegistry:
         return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40] or "child"
 
     def can_spawn(self, tier: Tier) -> tuple[bool, str]:
-        n = len(self.active())
+        n = len([c for c in self.active() if c.kind != "baseline"])   # the baseline takes no seat
         if n >= min(tier.max_children, self.rules.max_children):
             return False, f"tier {tier.name} allows {tier.max_children} children; {n} active"
         return True, ""
@@ -95,17 +95,17 @@ class HiveRegistry:
         self.save()
         return c
 
-    def promote(self, child_id: str, *, approved_by_human: bool) -> Child:
-        """Live promotion is a human decision, always. The operator may only recommend."""
-        if not approved_by_human:
-            raise PromotionNeedsHumanError("promotion to live requires --approve from a human")
+    def promote(self, child_id: str, *, approved_by_human: bool = False, by_operator: bool = False) -> Child:
+        """Promotion by a human (--approve) or by the operator on evidence (auto_promote)."""
+        if not (approved_by_human or by_operator):
+            raise PromotionNeedsHumanError("promotion needs --approve from a human or the operator's evidence rule")
         c = self.get(child_id)
         if c.shadow_days < self.rules.child_shadow_days:
             raise PermissionError(f"child has {c.shadow_days} shadow days; needs {self.rules.child_shadow_days}")
         # A promoted variant's overrides move into the primary (state/promoted_overrides.json,
         # written by the CLI); the child itself steps aside and frees its seat.
         c.status, c.retired = "promoted", date.today().isoformat()
-        c.notes.append("promoted into the primary by human approval")
+        c.notes.append("promoted into the primary by " + ("human approval" if approved_by_human else "the operator (evidence rule)"))
         self.save()
         return c
 
@@ -139,6 +139,8 @@ class HiveRegistry:
     def auto_retire_losers(self, min_days: int, max_negative_voi: float = -0.05, on: date | None = None) -> list[Child]:
         out = []
         for c in self.active():
+            if c.kind == "baseline":
+                continue
             if c.status == "shadow" and c.shadow_days >= min_days and c.voi is not None and c.voi <= max_negative_voi:
                 out.append(self.retire(c.id, f"VOI {c.voi:+.1%} after {c.shadow_days} days", on))
         return out

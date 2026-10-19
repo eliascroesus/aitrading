@@ -304,9 +304,16 @@ class OperatorRules(BaseModel):
     # A variant earns a shadow seat only if it beats the parent out of sample on
     # return without worsening the drawdown by more than this factor.
     max_drawdown_tolerance: float = 1.10
-    # Promotion to live always needs a human; this flag only allows the operator
-    # to *recommend* it in the journal.
-    auto_promote: bool = False
+    # Governance by evidence, not by a person: a sub-agent that has beaten the parent
+    # for the shadow period by at least promote_min_voi is promoted into the primary
+    # by the operator itself; a baseline sub-agent running the pre-registered rules
+    # keeps trading alongside, and if it beats the promoted configuration by
+    # demote_min_lag over demote_after_days the promotion is reverted. The human
+    # promote workflow remains as an override, never a requirement.
+    auto_promote: bool = True
+    promote_min_voi: float = 0.01
+    demote_after_days: int = 28
+    demote_min_lag: float = 0.02
     bounds_file: str = "config/bounds.toml"
     # A news-channel monitor sub-agent expires after this many days unless re-proposed.
     monitor_ttl_days: int = 28
@@ -357,7 +364,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "1.3.0"
+    version: str = "1.4.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     regime: RegimeRules = Field(default_factory=RegimeRules)

@@ -286,21 +286,16 @@ def hive_retire(child_id: str, why: str = typer.Option("retired by human")) -> N
 def hive_promote(child_id: str, approve: bool = typer.Option(False, help="Required: a human approves")) -> None:
     """Promote a shadow child to live. Always a human decision."""
     from hive.hive.registry import HiveRegistry
-    from hive.survival.ledger import SurvivalLedger
 
     s = get_settings()
     cfg = StrategyConfig.load()
     reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+    from datetime import date as _date
+
+    from hive.hive.governance import record_promotion
+
     c = reg.promote(child_id, approved_by_human=approve)
-    path = s.hive_state_dir / "promoted_overrides.json"
-    cur = json.loads(path.read_text()) if path.exists() else {"overrides": {}, "history": []}
-    cur["overrides"] = {**cur.get("overrides", {}), **(c.overrides or {})}
-    cur["history"] = (cur.get("history") or [])[-50:] + [{"date": c.retired, "child": c.id, "name": c.name,
-                                                           "overrides": c.overrides, "voi": c.voi,
-                                                           "shadow_days": c.shadow_days}]
-    path.write_text(json.dumps(cur, indent=1, default=str))
-    SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival).append(
-        "promotion", 0.0, {"child": c.id, "overrides": c.overrides, "voi": c.voi})
+    cur = record_promotion(s, cfg, c, by="human", on=_date.today())
     rprint(f"{c.id} promoted: the primary now runs {cur['overrides']} (state/promoted_overrides.json)")
 
 
