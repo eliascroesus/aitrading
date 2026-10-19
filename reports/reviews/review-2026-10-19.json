@@ -20,44 +20,44 @@
       {
         "severity": "warning",
         "area": "data",
-        "finding": "The weekly journal is empty: runs is an empty list, n_decisions is 0, there are no orders or exits, llm_calls is 0, and shadow_vs_primary is null. There is nothing to audit for drift, calibration, cost or risk. This could be a legitimate all-cash week, but it could equally be a stopped scheduler, a failed data feed, or broken journal writes.",
-        "proposed_change": "Before next week, confirm the run scheduler executed and that journal writes succeed. Record every scheduled run, including runs that produce no signal, with a timestamp and a reason code, so an all-cash week can be told apart from a system outage."
+        "finding": "The weekly journal is completely empty: runs is an empty list, n_decisions is 0, and there are no orders, exits or LLM calls. I cannot tell whether the system correctly stayed idle or whether the scheduler or journal writer failed silently. An unlogged trading week would be a serious blind spot for a single-bankroll firm.",
+        "proposed_change": "Cross-check broker or account records for the week against the journal. Proposal: log a heartbeat record for every scheduled run, including runs that produce no decision, so that 'no runs' can be told apart from 'ran, chose cash'."
       },
       {
         "severity": "warning",
         "area": "process",
-        "finding": "Not even a heartbeat run was recorded. Silent inactivity cannot be told apart from close-only mode, a halt, or a crash. Without a run record, no audit can confirm that hard-limit checks, halts or veto logic were exercised.",
-        "proposed_change": "Write a daily heartbeat entry to the journal recording system state (normal, close-only, halted), equity check status and data-feed status. Raise an alert to operators if no run is logged within an expected window."
+        "finding": "Because zero runs were recorded, none of this week's audit checks can be performed. That covers strategy drift, risk-limit pressure, approve-all or veto-all patterns, edge-of-bounds operator proposals, and in-sample-only variants. An empty log is not evidence that any of these are absent.",
+        "proposed_change": "Treat this week as unaudited rather than clean. Proposal: alert the operator when a week ends with zero runs, so that downtime gets fixed instead of being read as a valid cash decision."
       },
       {
         "severity": "info",
         "area": "calibration",
-        "finding": "With 0 decisions and 0 approve, reduce_half or veto actions, confidence calibration, approve-all or veto-all patterns, and LLM filter value cannot be evaluated. Shadow_vs_primary is null, so there is no shadow-versus-primary comparison either.",
-        "proposed_change": "Make no changes to filter thresholds or strategy parameters on the basis of this week. Resume calibration and shadow-comparison review once decisions accumulate, and do not let an empty week count as evidence for or against any variant."
+        "finding": "There are no decisions, exits or outcomes, so the LLM filter's stated confidence cannot be compared with realised results this week.",
+        "proposed_change": "Carry calibration review forward to the next week that has resolved exits. Proposal: keep a rolling multi-week calibration window so that sparse weeks do not reset the assessment."
       },
       {
         "severity": "info",
         "area": "cost",
-        "finding": "AI cost was 0 USD with 0 LLM calls and 0 failures. No cost creep can be assessed.",
-        "proposed_change": "No change. Keep tracking cost per decision once decisions resume."
+        "finding": "ai_cost_usd is 0 and llm_calls is 0, so there was no AI cost creep this week. Zero cost alongside zero decisions gives no information about cost efficiency.",
+        "proposed_change": "No change needed. Keep monitoring cost per decision once activity resumes."
       },
       {
         "severity": "info",
-        "area": "strategy_drift",
-        "finding": "There are no operator proposals, parameter changes, variants or limit-related arguments in the journal. No incentive-gaming signals (edge-of-bounds proposals, in-sample-only winners, turnover creep, arguments around a limit) can be detected.",
-        "proposed_change": "Make sure parameter-change proposals and variant tests are logged to the journal when they occur, so future audits can check them against the pre-registered bounds."
+        "area": "process",
+        "finding": "shadow_vs_primary is null, so there is no shadow comparison to judge whether the LLM filter adds value over the rules-only baseline.",
+        "proposed_change": "Proposal: make sure the shadow (rules-only) track runs and is journaled alongside the primary whenever runs execute, so the LLM's added value can be measured net of its cost."
       }
     ],
     "cost_per_decision_usd": 0.0,
-    "llm_added_value_assessment": "Not assessable. The LLM made 0 calls on 0 decisions and shadow_vs_primary is null, so there is no evidence the filter added or subtracted value net of its 0 USD cost. The first priority is to confirm whether the system actually ran this week, not to change the filter."
+    "llm_added_value_assessment": "I cannot assess it. The journal records 0 decisions, 0 LLM calls, $0 AI cost and no shadow_vs_primary comparison, so there is no evidence either way about whether the LLM filter improves net results over the rules-only system. Next, confirm whether the system actually ran this week, then judge LLM value from a populated shadow comparison net of call costs."
   },
   "call": {
     "role": "reviewer",
     "model": "claude-opus-5-5",
     "ok": true,
-    "cost_usd": 0.027437,
+    "cost_usd": 0.029637,
     "input_tokens": 138,
-    "output_tokens": 1041,
+    "output_tokens": 1151,
     "cached_tokens": 0,
     "stop_reason": "end_turn",
     "error": ""

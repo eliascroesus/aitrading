@@ -1,18 +1,18 @@
 {
- "generated_at": "2026-10-19T00:06:28+00:00",
+ "generated_at": "2026-10-19T00:32:39+00:00",
  "strategy": {
   "name": "trend-reset-v1",
-  "version": "1.2.0"
+  "version": "1.3.0"
  },
  "survival": {
   "status": {
    "equity_gross": 100.0,
-   "equity_net": 99.7978669,
-   "ai_cost_total": 0.2021331,
+   "equity_net": 99.7218039,
+   "ai_cost_total": 0.2781961,
    "ai_cost_today": 0.041554100000000004,
-   "budget_today": 0.04989893345,
-   "budget_remaining": 0.008344833449999998,
-   "runway_days": 12600.082020787358,
+   "budget_today": 0.04986090195,
+   "budget_remaining": 0.008306801949999998,
+   "runway_days": 12587.268820645855,
    "tier": "base",
    "dead": false,
    "death_reason": "",
@@ -85,7 +85,7 @@
   ],
   "halts": [],
   "death": null,
-  "ai_cost_total": 0.2021331
+  "ai_cost_total": 0.2781961
  },
  "equity": {
   "dates": [
@@ -646,6 +646,55 @@
     "oos_dd": -0.2691266945431374,
     "parent_oos_cagr": 0.02831886418463858,
     "verdict": "rejected: OOS CAGR 1.11% does not beat parent 2.83%"
+   },
+   {
+    "date": "2026-10-19",
+    "proposal": "tighter initial trail",
+    "hypothesis": "Since widening stocks.trail_atr 5->7 cut OOS CAGR to 1.11%, tightening it 5->4 should move the other way and lift OOS CAGR above the parent's 2.83% with max drawdown no worse than -22.9%.",
+    "overrides": {
+     "stocks.trail_atr": 4.0
+    },
+    "sleeve": "stocks",
+    "cost_usd": 0.015475333333333334,
+    "is_cagr": 0.03557143242596994,
+    "oos_cagr": -0.004802393516691317,
+    "is_dd": -0.20510445702452984,
+    "oos_dd": -0.32913989714609837,
+    "parent_oos_cagr": 0.02831886418463858,
+    "verdict": "rejected: OOS CAGR -0.48% does not beat parent 2.83%"
+   },
+   {
+    "date": "2026-10-19",
+    "proposal": "faster failure stop",
+    "hypothesis": "Disabling the failure stop cut OOS CAGR to 0.52%, so shortening stocks.failure_stop_bars 15->10 should cut losers sooner and raise OOS CAGR above 2.83% and profit factor above 1.24 at drawdown no worse than -22.9%.",
+    "overrides": {
+     "stocks.failure_stop_bars": 10
+    },
+    "sleeve": "stocks",
+    "cost_usd": 0.015475333333333334,
+    "is_cagr": 0.03973147280293743,
+    "oos_cagr": -0.010048160827455632,
+    "is_dd": -0.17603138393292728,
+    "oos_dd": -0.37064032100879596,
+    "parent_oos_cagr": 0.02831886418463858,
+    "verdict": "rejected: OOS CAGR -1.00% does not beat parent 2.83%"
+   },
+   {
+    "date": "2026-10-19",
+    "proposal": "tighter late trail, shorter hold",
+    "hypothesis": "Longer holds with a wider late trail hurt OOS (1.39%), so trail_atr_late 3->2.5 with max_hold_bars 126->100 should lock gains earlier and beat the parent's 2.83% OOS CAGR without a drawdown worse than -22.9%.",
+    "overrides": {
+     "stocks.trail_atr_late": 2.5,
+     "stocks.max_hold_bars": 100
+    },
+    "sleeve": "stocks",
+    "cost_usd": 0.015475333333333334,
+    "is_cagr": 0.04219528170954501,
+    "oos_cagr": 0.006756556062486707,
+    "is_dd": -0.21276782150950346,
+    "oos_dd": -0.3070360000107585,
+    "parent_oos_cagr": 0.02831886418463858,
+    "verdict": "rejected: OOS CAGR 0.68% does not beat parent 2.83%"
    }
   ]
  },
@@ -666,6 +715,17 @@
    },
    {
     "date": "2026-10-18",
+    "from": 0.4,
+    "to": 0.4,
+    "why": "hold: only 0 closed trades in 42 days",
+    "scorecard": {
+     "window_days": 42,
+     "pnl_by_class": {},
+     "trades_by_class": {}
+    }
+   },
+   {
+    "date": "2026-10-19",
     "from": 0.4,
     "to": 0.4,
     "why": "hold: only 0 closed trades in 42 days",
@@ -18398,7 +18458,7 @@
  },
  "config": {
   "name": "trend-reset-v1",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "stocks": {
    "bars_per_year": 252,
    "ma_long": 200,
@@ -18431,6 +18491,10 @@
    "setup_valid_bars": 10,
    "trigger_ema": 10,
    "trigger_roc": 5,
+   "entry_mode": "reset_breakout",
+   "breakout_lookback": 55,
+   "pullback_touch_bars": 5,
+   "momentum_min": 0.5,
    "stop_swing_low_bars": 10,
    "stop_swing_low_atr_pad": 0.5,
    "stop_initial_atr": 3.0,
@@ -18476,6 +18540,10 @@
    "setup_valid_bars": 10,
    "trigger_ema": 10,
    "trigger_roc": 3,
+   "entry_mode": "reset_breakout",
+   "breakout_lookback": 55,
+   "pullback_touch_bars": 5,
+   "momentum_min": 0.5,
    "stop_swing_low_bars": 10,
    "stop_swing_low_atr_pad": 0.5,
    "stop_initial_atr": 3.0,

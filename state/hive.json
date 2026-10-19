@@ -88,6 +88,55 @@
       "oos_dd": -0.2691266945431374,
       "parent_oos_cagr": 0.02831886418463858,
       "verdict": "rejected: OOS CAGR 1.11% does not beat parent 2.83%"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "tighter initial trail",
+      "hypothesis": "Since widening stocks.trail_atr 5->7 cut OOS CAGR to 1.11%, tightening it 5->4 should move the other way and lift OOS CAGR above the parent's 2.83% with max drawdown no worse than -22.9%.",
+      "overrides": {
+        "stocks.trail_atr": 4.0
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.015475333333333334,
+      "is_cagr": 0.03557143242596994,
+      "oos_cagr": -0.004802393516691317,
+      "is_dd": -0.20510445702452984,
+      "oos_dd": -0.32913989714609837,
+      "parent_oos_cagr": 0.02831886418463858,
+      "verdict": "rejected: OOS CAGR -0.48% does not beat parent 2.83%"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "faster failure stop",
+      "hypothesis": "Disabling the failure stop cut OOS CAGR to 0.52%, so shortening stocks.failure_stop_bars 15->10 should cut losers sooner and raise OOS CAGR above 2.83% and profit factor above 1.24 at drawdown no worse than -22.9%.",
+      "overrides": {
+        "stocks.failure_stop_bars": 10
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.015475333333333334,
+      "is_cagr": 0.03973147280293743,
+      "oos_cagr": -0.010048160827455632,
+      "is_dd": -0.17603138393292728,
+      "oos_dd": -0.37064032100879596,
+      "parent_oos_cagr": 0.02831886418463858,
+      "verdict": "rejected: OOS CAGR -1.00% does not beat parent 2.83%"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "tighter late trail, shorter hold",
+      "hypothesis": "Longer holds with a wider late trail hurt OOS (1.39%), so trail_atr_late 3->2.5 with max_hold_bars 126->100 should lock gains earlier and beat the parent's 2.83% OOS CAGR without a drawdown worse than -22.9%.",
+      "overrides": {
+        "stocks.trail_atr_late": 2.5,
+        "stocks.max_hold_bars": 100
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.015475333333333334,
+      "is_cagr": 0.04219528170954501,
+      "oos_cagr": 0.006756556062486707,
+      "is_dd": -0.21276782150950346,
+      "oos_dd": -0.3070360000107585,
+      "parent_oos_cagr": 0.02831886418463858,
+      "verdict": "rejected: OOS CAGR 0.68% does not beat parent 2.83%"
     }
   ]
 }
