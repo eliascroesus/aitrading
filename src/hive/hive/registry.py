@@ -67,15 +67,19 @@ class HiveRegistry:
     def slug(name: str) -> str:
         return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40] or "child"
 
-    def can_spawn(self, tier: Tier) -> tuple[bool, str]:
-        n = len([c for c in self.active() if c.kind not in ("baseline", "scout")])   # paper-only, no LLM: no seat
+    SEATLESS = ("baseline", "scout")   # paper-only, no LLM calls: they never take a seat
+
+    def can_spawn(self, tier: Tier, kind: str = "variant") -> tuple[bool, str]:
+        if kind in self.SEATLESS:
+            return True, ""
+        n = len([c for c in self.active() if c.kind not in self.SEATLESS])
         if n >= min(tier.max_children, self.rules.max_children):
             return False, f"tier {tier.name} allows {tier.max_children} children; {n} active"
         return True, ""
 
     # -- lifecycle -------------------------------------------------------------------
     def spawn(self, child: Child, tier: Tier, *, force: bool = False) -> Child:
-        ok, why = self.can_spawn(tier)
+        ok, why = self.can_spawn(tier, child.kind)
         if not ok and not force:
             raise PermissionError(why)
         base = child.id or self.slug(child.name)

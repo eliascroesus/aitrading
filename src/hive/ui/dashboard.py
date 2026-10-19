@@ -150,6 +150,7 @@ function statusPill(txt, col){ return `<span class="status"><span class="dot" st
 
 function render(){
   const S=D.survival, st=S.status||{}, E=D.equity, L=D.latest||{}, P=(L.primary||{}), H=D.hive||{};
+  const ovs=o=>Object.entries(o||{}).map(([k,v])=>`${k.replace(/^stocks\./,'')}=${v}`).join(', ');
   const start=S.starting_bankroll, net=st.equity_net, gross=st.equity_gross;
   const days=E.dates.length, retTot = (net!=null&&start)? net/start-1 : null;
   const burn = S.ai_cost_total||0, hurdle = (days>0&&net)? Math.pow(1+ (burn/days)/net,365)-1 : null;
@@ -218,7 +219,7 @@ function render(){
   html+=card(`Auditor — latest review ${RV.date?esc(RV.date):'(none yet)'}`,'c6',`<ul class="small" style="padding-left:16px;margin:0">${fRows||'<li class="muted">no findings yet</li>'}</ul>${RV.assessment?`<div class="small muted" style="margin-top:6px">${esc(RV.assessment)}</div>`:''}`);
   html+=card(`Latest run — ${esc(P.run_date||'—')}`,'c8',`<div class="small muted" style="margin-bottom:6px">${(P.notes||[]).map(esc).join(' · ')||'no notes'}</div><table><thead><tr><th>candidate</th><th>action</th><th>invalidation</th><th class="num">conf.</th><th>rationale</th><th class="num">cost</th></tr></thead><tbody>${decRows||'<tr><td colspan="6" class="muted">no candidates</td></tr>'}</tbody></table><div class="row" style="margin-top:8px"><div style="flex:1"><b class="small">Orders</b><ul class="small">${orders||'<li class="muted">none</li>'}</ul></div><div style="flex:1"><b class="small">Exits</b><ul class="small">${exits||'<li class="muted">none</li>'}</ul></div></div>`);
   // hive children / iterations
-  const ch=(H.children||[]); const ovs=o=>Object.entries(o||{}).map(([k,v])=>`${k.replace(/^stocks\./,'')}=${v}`).join(', ');
+  const ch=(H.children||[]);
   const chRows=ch.map(c=>`<tr><td><b>${esc(c.name)}</b> <span class="pill">${esc(c.sleeve)}</span><br><code class="ov">${esc(ovs(c.overrides)||'parent config')}</code></td><td>${esc(c.status)}<br><span class="muted small">${c.shadow_days} d</span></td><td class="num">${fmt$(c.equity)}<br><span class="small ${c.voi>0?'':'muted'}">VOI ${c.voi==null?'—':(c.voi>=0?'+':'')+pct(c.voi)}</span></td></tr>`).join('');
   const it=(H.iterations||[]).slice(-12).reverse().map(i=>`<li style="margin:0 0 8px"><span class="muted small">${esc(i.date)}</span> <b>${esc(i.proposal||'')}</b> <code class="ov">${esc(ovs(i.overrides))}</code><br><span class="small">IS ${i.is_cagr==null?'—':pct(i.is_cagr)} · OOS ${i.oos_cagr==null?'—':pct(i.oos_cagr)}${i.parent_oos_cagr==null?'':' (parent '+pct(i.parent_oos_cagr)+')'} — ${esc(i.verdict||'')}</span></li>`).join('');
   html+=card(`Hive — children ${ch.length} (tier allows ${(tiers.find(t=>t.name===st.tier)||{}).max_children??'—'})`,'c4',`<table><thead><tr><th>child</th><th>status</th><th class="num">equity</th></tr></thead><tbody>${chRows||'<tr><td colspan="3" class="muted">no children yet — spawned by the operator when the tier allows and shadow results earn it</td></tr>'}</tbody></table>${D.promoted&&Object.keys(D.promoted.overrides||{}).length?`<div class="small" style="margin-top:8px">Promoted into the primary: <code class="ov">${esc(ovs(D.promoted.overrides))}</code></div>`:''}<h2 style="margin-top:12px">Operator iterations</h2><ul style="padding-left:16px;margin:0">${it||'<li class="muted">none yet</li>'}</ul>`);

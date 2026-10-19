@@ -12,6 +12,8 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           cache-dependency-glob: pyproject.toml
-      - run: uv venv --python 3.13 && uv pip install -e ".[dev]"
+      - run: uv venv --python 3.13 && uv pip install -e ".[dev]" playwright
+      - name: Chromium for the dashboard render test
+        run: .venv/bin/playwright install --with-deps chromium
       - run: .venv/bin/ruff check src tests
       - run: .venv/bin/pytest -q
