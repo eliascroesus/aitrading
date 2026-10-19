@@ -1,0 +1,93 @@
+{
+  "primary": {
+    "run_date": "2026-10-18",
+    "label": "primary",
+    "equity_gross": 100.0,
+    "equity_net": 99.7218039,
+    "tier": "base",
+    "regime": {
+      "state": "green",
+      "crash_guard": false,
+      "risk_multiplier": 1.0,
+      "allow_new_stock": true,
+      "allow_new_etf": true,
+      "class_multipliers": {
+        "stock": 1.0,
+        "crypto": 1.0,
+        "etf": 1.0
+      }
+    },
+    "exits": [],
+    "candidates": [],
+    "decisions": [],
+    "orders": [],
+    "ai_cost_usd": 0.0,
+    "notes": [],
+    "positions": []
+  },
+  "shadow": {
+    "run_date": "2026-10-18",
+    "label": "shadow-rules",
+    "equity_gross": 100.0,
+    "equity_net": 100.0,
+    "tier": "base",
+    "regime": {
+      "state": "green",
+      "crash_guard": false,
+      "risk_multiplier": 1.0,
+      "allow_new_stock": true,
+      "allow_new_etf": true,
+      "class_multipliers": {
+        "stock": 1.0,
+        "crypto": 1.0,
+        "etf": 1.0
+      }
+    },
+    "exits": [],
+    "candidates": [],
+    "decisions": [],
+    "orders": [],
+    "ai_cost_usd": 0.0,
+    "notes": [],
+    "positions": [
+      {
+        "symbol": "TRV",
+        "qty": 0.044232,
+        "entry": 389.5400085449219,
+        "stop": 366.9327,
+        "bars_held": 0,
+        "source": "shadow-rules",
+        "stop_armed": false,
+        "fill_pending": true
+      },
+      {
+        "symbol": "CVX",
+        "qty": 0.074626,
+        "entry": 224.99000549316406,
+        "stop": 211.5922,
+        "bars_held": 0,
+        "source": "shadow-rules",
+        "stop_armed": false,
+        "fill_pending": true
+      }
+    ]
+  },
+  "benchmarks": {
+    "SPY buy&hold": 100.0,
+    "BTC buy&hold": 100.91642679656556
+  },
+  "survival": {
+    "equity_gross": 100.0,
+    "equity_net": 99.7218039,
+    "ai_cost_total": 0.2781961,
+    "ai_cost_today": 0.045109,
+    "budget_today": 0.04986090195,
+    "budget_remaining": 0.004751901949999998,
+    "runway_days": 3726.903378172804,
+    "tier": "base",
+    "dead": false,
+    "death_reason": "",
+    "in_halt_cooldown": false,
+    "peak_equity": 100.0
+  }
+}

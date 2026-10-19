@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-19T00:32:39+00:00",
+ "generated_at": "2026-10-19T01:10:32+00:00",
  "strategy": {
   "name": "trend-reset-v1",
   "version": "1.3.0"
@@ -9,10 +9,10 @@
    "equity_gross": 100.0,
    "equity_net": 99.7218039,
    "ai_cost_total": 0.2781961,
-   "ai_cost_today": 0.041554100000000004,
+   "ai_cost_today": 0.045109,
    "budget_today": 0.04986090195,
-   "budget_remaining": 0.008306801949999998,
-   "runway_days": 12587.268820645855,
+   "budget_remaining": 0.004751901949999998,
+   "runway_days": 3726.903378172804,
    "tier": "base",
    "dead": false,
    "death_reason": "",
@@ -20,9 +20,9 @@
    "peak_equity": 100.0
   },
   "chain_ok": true,
-  "n_marks": 1,
+  "n_marks": 2,
   "start_date": "2026-10-16",
-  "last_date": "2026-10-16",
+  "last_date": "2026-10-18",
   "starting_bankroll": 100.0,
   "death_floor": 25.0,
   "tiers": [
@@ -89,38 +89,46 @@
  },
  "equity": {
   "dates": [
-   "2026-10-16"
+   "2026-10-16",
+   "2026-10-18"
   ],
   "primary_gross": [
+   100.0,
    100.0
   ],
   "primary_net": [
-   99.9584459
+   99.9584459,
+   99.9133369
   ],
   "shadow": {
-   "2026-10-16": 100.0
+   "2026-10-16": 100.0,
+   "2026-10-18": 100.0
   },
   "cum_ai_cost": [
-   0.041554100000000004
+   0.041554100000000004,
+   0.0866631
   ]
  },
  "benchmarks": {
   "SPY buy&hold": {
-   "2026-10-16": 100.0
+   "2026-10-16": 100.0,
+   "2026-10-18": 100.0
   },
   "BTC buy&hold": {
-   "2026-10-16": 100.0
+   "2026-10-16": 100.0,
+   "2026-10-18": 100.91642679656556
   }
  },
  "regime_by_day": {
-  "2026-10-16": "green"
+  "2026-10-16": "green",
+  "2026-10-18": "green"
  },
  "latest": {
   "primary": {
-   "run_date": "2026-10-16",
+   "run_date": "2026-10-18",
    "label": "primary",
    "equity_gross": 100.0,
-   "equity_net": 99.9584459,
+   "equity_net": 99.7218039,
    "tier": "base",
    "regime": {
     "state": "green",
@@ -135,165 +143,15 @@
     }
    },
    "exits": [],
-   "candidates": [
-    {
-     "symbol": "TRV",
-     "score": 0.8667,
-     "raw_close": 389.54,
-     "atr_pct": 1.9345,
-     "pct_of_high": 0.9804,
-     "z_reset": 0.4617,
-     "pullback_atr": 0.8395
-    },
-    {
-     "symbol": "CVX",
-     "score": 0.8333,
-     "raw_close": 224.99,
-     "atr_pct": 1.985,
-     "pct_of_high": 0.9986,
-     "z_reset": 0.9068,
-     "pullback_atr": 0.0
-    },
-    {
-     "symbol": "COP",
-     "score": 0.8,
-     "raw_close": 146.51,
-     "atr_pct": 2.2128,
-     "pct_of_high": 0.9995,
-     "z_reset": 1.0935,
-     "pullback_atr": 0.0
-    },
-    {
-     "symbol": "AIZ",
-     "score": 0.5,
-     "raw_close": 283.31,
-     "atr_pct": 1.9902,
-     "pct_of_high": 0.935,
-     "z_reset": -0.0262,
-     "pullback_atr": 3.0737
-    },
-    {
-     "symbol": "PKG",
-     "score": 0.3333,
-     "raw_close": 236.0,
-     "atr_pct": 2.0956,
-     "pct_of_high": 0.9136,
-     "z_reset": 0.0242,
-     "pullback_atr": 3.9984
-    },
-    {
-     "symbol": "CINF",
-     "score": 0.1667,
-     "raw_close": 171.25,
-     "atr_pct": 1.7443,
-     "pct_of_high": 0.8841,
-     "z_reset": 0.2711,
-     "pullback_atr": 3.9957
-    }
-   ],
-   "decisions": [
-    {
-     "symbol": "TRV",
-     "action": "approve",
-     "invalidation": "close_below_ma50_2d",
-     "confidence": 0.6,
-     "rationale": "Cleanest setup: score 0.867, technical 0.6/0.55, debate 0.25. Close 389.54 is above ma_mid 368.71 and ma_long 322.26, 98% of high, with a modest 0.84 ATR pullback. No negative news. Fundamentals and sentiment are uninformative.",
-     "cost_usd": 0.007245433333333334,
-     "note": ""
-    },
-    {
-     "symbol": "CVX",
-     "action": "veto",
-     "invalidation": "none",
-     "confidence": 0.5,
-     "rationale": "Same energy theme as COP and also extended at the high (pullback 0.0, z_impulse 1.53). Technical 0.45/0.5 and debate 0.15 are weaker than COP. Skipped to avoid doubling correlated exposure.",
-     "cost_usd": 0.0068738133333333335,
-     "note": ""
-    },
-    {
-     "symbol": "COP",
-     "action": "reduce_half",
-     "invalidation": "close_below_ma50_2d",
-     "confidence": 0.45,
-     "rationale": "Strong trend: score 0.8, technical 0.6/0.6, mom_long 0.566. But it sits at the high with no pullback (0.0 ATR) and z_impulse 1.61, so it is extended. Vol is higher at 0.30. Half size limits entry risk. Taken as the single energy exposure.",
-     "cost_usd": 0.006818913333333333,
-     "note": ""
-    },
-    {
-     "symbol": "AIZ",
-     "action": "veto",
-     "invalidation": "none",
-     "confidence": 0.55,
-     "rationale": "Mediocre setup: score 0.5, technical 0.3/0.4, debate 0.1. Deep 3.07 ATR pullback with z_reset slightly negative. Not enough edge.",
-     "cost_usd": 0.006849113333333334,
-     "note": ""
-    },
-    {
-     "symbol": "PKG",
-     "action": "veto",
-     "invalidation": "none",
-     "confidence": 0.6,
-     "rationale": "Weak: score 0.33, close 236.0 is below ma_mid 237.85, mom_vol_adj 0.54, pullback 4.0 ATR. No edge.",
-     "cost_usd": 0.0068516133333333335,
-     "note": ""
-    },
-    {
-     "symbol": "CINF",
-     "action": "veto",
-     "invalidation": "none",
-     "confidence": 0.65,
-     "rationale": "Weakest candidate: score 0.167, negative z_impulse, technical 0.2/0.35, 88% of high. No edge.",
-     "cost_usd": 0.006915213333333333,
-     "note": ""
-    }
-   ],
-   "orders": [
-    {
-     "symbol": "TRV",
-     "side": "buy",
-     "notional": 17.23,
-     "ok": true,
-     "fill_price": 0.0,
-     "filled_qty": 0.0,
-     "message": "OrderStatus.ACCEPTED"
-    },
-    {
-     "symbol": "COP",
-     "side": "buy",
-     "notional": 7.53,
-     "ok": true,
-     "fill_price": 0.0,
-     "filled_qty": 0.0,
-     "message": "OrderStatus.ACCEPTED"
-    }
-   ],
-   "ai_cost_usd": 0.041554100000000004,
+   "candidates": [],
+   "decisions": [],
+   "orders": [],
+   "ai_cost_usd": 0.0,
    "notes": [],
-   "positions": [
-    {
-     "symbol": "TRV",
-     "qty": 0.044232,
-     "entry": 389.5400085449219,
-     "stop": 366.9327,
-     "bars_held": 0,
-     "source": "primary",
-     "stop_armed": false,
-     "fill_pending": true
-    },
-    {
-     "symbol": "COP",
-     "qty": 0.051396,
-     "entry": 146.50999450683594,
-     "stop": 136.784,
-     "bars_held": 0,
-     "source": "primary",
-     "stop_armed": false,
-     "fill_pending": true
-    }
-   ]
+   "positions": []
   },
   "shadow": {
-   "run_date": "2026-10-16",
+   "run_date": "2026-10-18",
    "label": "shadow-rules",
    "equity_gross": 100.0,
    "equity_net": 100.0,
@@ -311,138 +169,9 @@
     }
    },
    "exits": [],
-   "candidates": [
-    {
-     "symbol": "TRV",
-     "score": 0.8667,
-     "raw_close": 389.54,
-     "atr_pct": 1.9345,
-     "pct_of_high": 0.9804,
-     "z_reset": 0.4617,
-     "pullback_atr": 0.8395
-    },
-    {
-     "symbol": "CVX",
-     "score": 0.8333,
-     "raw_close": 224.99,
-     "atr_pct": 1.985,
-     "pct_of_high": 0.9986,
-     "z_reset": 0.9068,
-     "pullback_atr": 0.0
-    },
-    {
-     "symbol": "COP",
-     "score": 0.8,
-     "raw_close": 146.51,
-     "atr_pct": 2.2128,
-     "pct_of_high": 0.9995,
-     "z_reset": 1.0935,
-     "pullback_atr": 0.0
-    },
-    {
-     "symbol": "AIZ",
-     "score": 0.5,
-     "raw_close": 283.31,
-     "atr_pct": 1.9902,
-     "pct_of_high": 0.935,
-     "z_reset": -0.0262,
-     "pullback_atr": 3.0737
-    },
-    {
-     "symbol": "PKG",
-     "score": 0.3333,
-     "raw_close": 236.0,
-     "atr_pct": 2.0956,
-     "pct_of_high": 0.9136,
-     "z_reset": 0.0242,
-     "pullback_atr": 3.9984
-    },
-    {
-     "symbol": "CINF",
-     "score": 0.1667,
-     "raw_close": 171.25,
-     "atr_pct": 1.7443,
-     "pct_of_high": 0.8841,
-     "z_reset": 0.2711,
-     "pullback_atr": 3.9957
-    }
-   ],
-   "decisions": [
-    {
-     "symbol": "TRV",
-     "action": "approve",
-     "invalidation": "none",
-     "confidence": null,
-     "rationale": "rules-only",
-     "cost_usd": 0.0,
-     "note": ""
-    },
-    {
-     "symbol": "CVX",
-     "action": "approve",
-     "invalidation": "none",
-     "confidence": null,
-     "rationale": "rules-only",
-     "cost_usd": 0.0,
-     "note": ""
-    },
-    {
-     "symbol": "COP",
-     "action": "approve",
-     "invalidation": "none",
-     "confidence": null,
-     "rationale": "rules-only",
-     "cost_usd": 0.0,
-     "note": ""
-    },
-    {
-     "symbol": "AIZ",
-     "action": "approve",
-     "invalidation": "none",
-     "confidence": null,
-     "rationale": "rules-only",
-     "cost_usd": 0.0,
-     "note": ""
-    },
-    {
-     "symbol": "PKG",
-     "action": "approve",
-     "invalidation": "none",
-     "confidence": null,
-     "rationale": "rules-only",
-     "cost_usd": 0.0,
-     "note": ""
-    },
-    {
-     "symbol": "CINF",
-     "action": "approve",
-     "invalidation": "none",
-     "confidence": null,
-     "rationale": "rules-only",
-     "cost_usd": 0.0,
-     "note": ""
-    }
-   ],
-   "orders": [
-    {
-     "symbol": "TRV",
-     "side": "buy",
-     "notional": 17.23,
-     "ok": true,
-     "fill_price": 0.0,
-     "filled_qty": 0.0,
-     "message": "queued for next open"
-    },
-    {
-     "symbol": "CVX",
-     "side": "buy",
-     "notional": 16.79,
-     "ok": true,
-     "fill_price": 0.0,
-     "filled_qty": 0.0,
-     "message": "queued for next open"
-    }
-   ],
+   "candidates": [],
+   "decisions": [],
+   "orders": [],
    "ai_cost_usd": 0.0,
    "notes": [],
    "positions": [
@@ -470,16 +199,16 @@
   },
   "benchmarks": {
    "SPY buy&hold": 100.0,
-   "BTC buy&hold": 100.0
+   "BTC buy&hold": 100.91642679656556
   },
   "survival": {
    "equity_gross": 100.0,
-   "equity_net": 99.9584459,
-   "ai_cost_total": 0.041554100000000004,
-   "ai_cost_today": 0.041554100000000004,
-   "budget_today": 0.04997922295,
-   "budget_remaining": 0.008425122949999996,
-   "runway_days": 12627.132372016238,
+   "equity_net": 99.7218039,
+   "ai_cost_total": 0.2781961,
+   "ai_cost_today": 0.045109,
+   "budget_today": 0.04986090195,
+   "budget_remaining": 0.004751901949999998,
+   "runway_days": 3726.903378172804,
    "tier": "base",
    "dead": false,
    "death_reason": "",
@@ -488,36 +217,7 @@
   }
  },
  "positions": {
-  "primary": [
-   {
-    "symbol": "TRV",
-    "asset_class": "stock",
-    "qty": 0.044231656882589586,
-    "entry": 389.5400085449219,
-    "stop": 366.9326860646635,
-    "r": 22.607322480258347,
-    "bars_held": 0,
-    "entry_date": "2026-10-16",
-    "source": "primary",
-    "stop_armed": false,
-    "fill_pending": true,
-    "invalidation": "close_below_ma50_2d"
-   },
-   {
-    "symbol": "COP",
-    "asset_class": "stock",
-    "qty": 0.05139581108679014,
-    "entry": 146.50999450683594,
-    "stop": 136.78402069865052,
-    "r": 9.725973808185415,
-    "bars_held": 0,
-    "entry_date": "2026-10-16",
-    "source": "primary",
-    "stop_armed": false,
-    "fill_pending": true,
-    "invalidation": "close_below_ma50_2d"
-   }
-  ],
+  "primary": [],
   "shadow": [
    {
     "symbol": "TRV",
@@ -552,9 +252,9 @@
  "journal": {
   "recent": [],
   "llm_calls": [],
-  "anomalies_30d": 0,
+  "anomalies_30d": 9,
   "broken_chains": [],
-  "n_files": 0
+  "n_files": 2
  },
  "hive": {
   "children": [
@@ -567,11 +267,11 @@
     "status": "shadow",
     "born": "2026-10-18",
     "retired": null,
-    "equity": null,
-    "start_equity": null,
-    "parent_start_equity": null,
-    "voi": null,
-    "shadow_days": 0,
+    "equity": 3.0,
+    "start_equity": 3.0,
+    "parent_start_equity": 100.0,
+    "voi": 0.0,
+    "shadow_days": 1,
     "hypothesis": "",
     "notes": [],
     "metrics": {}
