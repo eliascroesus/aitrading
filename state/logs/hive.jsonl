@@ -35,3 +35,7 @@
 {"ts": "2026-10-19T15:24:48.293+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
 {"ts": "2026-10-19T15:24:51.065+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
 {"ts": "2026-10-19T15:24:56.406+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T16:32:35.088+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-19T16:32:35.849+00:00", "level": "WARNING", "logger": "hive.data.fetch", "msg": "HTTP 429 from https://www.reddit.com/search.rss?q=%24TRV+stock&sort=new&t=week; retrying in 1.0s"}
+{"ts": "2026-10-19T16:32:36.977+00:00", "level": "INFO", "logger": "hive.data.sources.social", "msg": "reddit unavailable for '$TRV stock': Client error '429 Too Many Requests' for url 'https://www.reddit.com/search.rss?q=%24TRV+stock&sort=new&t=week'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"}
+{"ts": "2026-10-19T16:32:39.675+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}

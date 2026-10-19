@@ -1,0 +1,25 @@
+{
+  "cash": 100.0,
+  "positions": {},
+  "stops": {},
+  "pending": [
+    {
+      "id": "child-sweep-stocks-entry-mode-template-cross-2026-10-19-EEM",
+      "symbol": "EEM",
+      "side": "buy",
+      "qty": null,
+      "notional": 30.0,
+      "asset_class": "etf"
+    },
+    {
+      "id": "child-sweep-stocks-entry-mode-template-cross-2026-10-19-GOOG",
+      "symbol": "GOOG",
+      "side": "buy",
+      "qty": null,
+      "notional": 20.0,
+      "asset_class": "stock"
+    }
+  ],
+  "fills": [],
+  "saved_at": "2026-10-19T16:32:49+00:00"
+}

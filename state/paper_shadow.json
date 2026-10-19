@@ -1,19 +1,26 @@
 {
-  "cash": 65.97999999999999,
+  "cash": 50.80999999999999,
   "positions": {
     "TRV": {
       "asset_class": "stock",
       "qty": 0.04449971396730576,
       "avg_price": 387.1935,
-      "current_price": 386.75,
+      "current_price": 385.5400085449219,
       "stop_price": 364.5861775197416
     },
     "CVX": {
       "asset_class": "stock",
       "qty": 0.07495805265944337,
       "avg_price": 223.9919448852539,
-      "current_price": 223.67999267578125,
+      "current_price": 224.31500244140625,
       "stop_price": 210.59411331257934
+    },
+    "MNST": {
+      "asset_class": "stock",
+      "qty": 0.33382693531175855,
+      "avg_price": 45.44270816802978,
+      "current_price": 46.849998474121094,
+      "stop_price": 42.372222444761604
     }
   },
   "stops": {
@@ -24,18 +31,13 @@
     "CVX": [
       0.07495805265944337,
       210.59411331257934
+    ],
+    "MNST": [
+      0.33382693531175855,
+      42.372222444761604
     ]
   },
-  "pending": [
-    {
-      "id": "shadow-rules-2026-10-19-MNST",
-      "symbol": "MNST",
-      "side": "buy",
-      "qty": null,
-      "notional": 15.17,
-      "asset_class": "stock"
-    }
-  ],
+  "pending": [],
   "fills": [
     {
       "ts": "2026-10-19T15:24:56+00:00",
@@ -54,7 +56,16 @@
       "price": 223.9919448852539,
       "fee": 0.0,
       "id": "shadow-rules-2026-10-16-CVX"
+    },
+    {
+      "ts": "2026-10-19T16:32:39+00:00",
+      "symbol": "MNST",
+      "side": "buy",
+      "qty": 0.33382693531175855,
+      "price": 45.44270816802978,
+      "fee": 0.0,
+      "id": "shadow-rules-2026-10-19-MNST"
     }
   ],
-  "saved_at": "2026-10-19T15:24:56+00:00"
+  "saved_at": "2026-10-19T16:32:39+00:00"
 }

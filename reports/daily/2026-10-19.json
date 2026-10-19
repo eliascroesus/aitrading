@@ -2,8 +2,8 @@
   "primary": {
     "run_date": "2026-10-19",
     "label": "primary",
-    "equity_gross": 99.9,
-    "equity_net": 99.60346492000001,
+    "equity_gross": 99.86,
+    "equity_net": 99.56346492,
     "tier": "base",
     "regime": {
       "state": "green",
@@ -18,38 +18,20 @@
       }
     },
     "exits": [],
-    "candidates": [
-      {
-        "symbol": "MNST",
-        "score": 1.0,
-        "raw_close": 46.6,
-        "atr_pct": 2.1963,
-        "pct_of_high": 0.9288,
-        "z_reset": 0.5672,
-        "pullback_atr": 2.2667
-      }
-    ],
-    "decisions": [
-      {
-        "symbol": "MNST",
-        "action": "veto",
-        "invalidation": "none",
-        "confidence": 0.7,
-        "rationale": "The technical trend is intact: close above ma_mid and ma_long, mom_long 0.27, and a 2.27 ATR pullback. But the debate net signal is only 0.05, sentiment is -0.2, fundamental is -0.1, and there is a low-materiality analyst downgrade plus an attention spike. Earnings in 10 days would likely fall inside the hold. Too weak a setup; stay in cash.",
-        "cost_usd": 0.018338979999999998,
-        "note": ""
-      }
-    ],
+    "candidates": [],
+    "decisions": [],
     "orders": [],
-    "ai_cost_usd": 0.018338979999999998,
-    "notes": [],
+    "ai_cost_usd": 0.0,
+    "notes": [
+      "buys blocked: this bar was already processed by an earlier run today"
+    ],
     "positions": [
       {
         "symbol": "COP",
         "qty": 0.051422,
         "entry": 146.24,
         "stop": 136.6373,
-        "bars_held": 1,
+        "bars_held": 2,
         "source": "reconciled",
         "stop_armed": true,
         "fill_pending": false
@@ -59,7 +41,7 @@
         "qty": 0.044496,
         "entry": 387.0,
         "stop": 364.626,
-        "bars_held": 1,
+        "bars_held": 2,
         "source": "reconciled",
         "stop_armed": true,
         "fill_pending": false
@@ -69,8 +51,8 @@
   "shadow": {
     "run_date": "2026-10-19",
     "label": "shadow-rules",
-    "equity_gross": 99.9568810467106,
-    "equity_net": 99.9568810467106,
+    "equity_gross": 100.42042727848414,
+    "equity_net": 100.42042727848414,
     "tier": "base",
     "regime": {
       "state": "green",
@@ -85,48 +67,20 @@
       }
     },
     "exits": [],
-    "candidates": [
-      {
-        "symbol": "MNST",
-        "score": 1.0,
-        "raw_close": 46.6,
-        "atr_pct": 2.1963,
-        "pct_of_high": 0.9288,
-        "z_reset": 0.5672,
-        "pullback_atr": 2.2667
-      }
-    ],
-    "decisions": [
-      {
-        "symbol": "MNST",
-        "action": "approve",
-        "invalidation": "none",
-        "confidence": null,
-        "rationale": "rules-only",
-        "cost_usd": 0.0,
-        "note": ""
-      }
-    ],
-    "orders": [
-      {
-        "symbol": "MNST",
-        "side": "buy",
-        "notional": 15.17,
-        "ok": true,
-        "fill_price": 0.0,
-        "filled_qty": 0.0,
-        "message": "queued for next open"
-      }
-    ],
+    "candidates": [],
+    "decisions": [],
+    "orders": [],
     "ai_cost_usd": 0.0,
-    "notes": [],
+    "notes": [
+      "buys blocked: this bar was already processed by an earlier run today"
+    ],
     "positions": [
       {
         "symbol": "TRV",
         "qty": 0.0445,
         "entry": 387.1935,
         "stop": 364.5862,
-        "bars_held": 1,
+        "bars_held": 2,
         "source": "shadow-rules",
         "stop_armed": true,
         "fill_pending": false
@@ -136,35 +90,35 @@
         "qty": 0.074958,
         "entry": 223.9919448852539,
         "stop": 210.5941,
-        "bars_held": 1,
+        "bars_held": 2,
         "source": "shadow-rules",
         "stop_armed": true,
         "fill_pending": false
       },
       {
         "symbol": "MNST",
-        "qty": 0.325536,
-        "entry": 46.599998474121094,
-        "stop": 43.5295,
-        "bars_held": 0,
+        "qty": 0.333827,
+        "entry": 45.44270816802978,
+        "stop": 42.3722,
+        "bars_held": 1,
         "source": "shadow-rules",
-        "stop_armed": false,
-        "fill_pending": true
+        "stop_armed": true,
+        "fill_pending": false
       }
     ]
   },
   "benchmarks": {
-    "SPY buy&hold": 100.82476028957173,
+    "SPY buy&hold": 100.61716478924419,
     "BTC buy&hold": 100.91642679656556
   },
   "survival": {
-    "equity_gross": 99.9,
-    "equity_net": 99.60346492000001,
+    "equity_gross": 99.86,
+    "equity_net": 99.56346492,
     "ai_cost_total": 0.29653508,
     "ai_cost_today": 0.018338979999999998,
-    "budget_today": 0.049801732460000005,
-    "budget_remaining": 0.03146275246000001,
-    "runway_days": 1761.0876070379263,
+    "budget_today": 0.04978173246,
+    "budget_remaining": 0.03144275246,
+    "runway_days": 1760.1433679954494,
     "tier": "base",
     "dead": false,
     "death_reason": "",

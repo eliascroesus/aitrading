@@ -12,8 +12,8 @@
       "equity": 3.0,
       "start_equity": 3.0,
       "parent_start_equity": 100.0,
-      "voi": 0.0009999999999998899,
-      "shadow_days": 3,
+      "voi": 0.0013999999999999568,
+      "shadow_days": 4,
       "hypothesis": "",
       "notes": [],
       "metrics": {},
@@ -30,11 +30,11 @@
       "status": "shadow",
       "born": "2026-10-19",
       "retired": null,
-      "equity": null,
-      "start_equity": null,
-      "parent_start_equity": null,
-      "voi": null,
-      "shadow_days": 0,
+      "equity": 100.0,
+      "start_equity": 100.0,
+      "parent_start_equity": 99.86,
+      "voi": 0.0,
+      "shadow_days": 1,
       "hypothesis": "systematic sweep of the pre-registered strategy space",
       "notes": [],
       "metrics": {
@@ -232,6 +232,59 @@
       "oos_dd": -0.23930319752493245,
       "parent_oos_cagr": 0.028252828339523584,
       "verdict": "rejected: OOS CAGR 1.57% does not beat parent 2.83%"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "sweep stocks: entry_mode=high_breakout, breakout_lookback=90",
+      "kind": "sweep",
+      "hypothesis": "systematic sweep of the pre-registered strategy space",
+      "overrides": {
+        "stocks.entry_mode": "high_breakout",
+        "stocks.breakout_lookback": 90
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": -0.000455773371407564,
+      "oos_cagr": 0.0371569056778458,
+      "is_dd": -0.25840131200120264,
+      "oos_dd": -0.26136863901539364,
+      "parent_oos_cagr": 0.028306880049109306,
+      "verdict": "rejected: OOS drawdown -26.1% worse than tolerated -25.2%"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "sweep stocks: entry_mode=ma_pullback",
+      "kind": "sweep",
+      "hypothesis": "systematic sweep of the pre-registered strategy space",
+      "overrides": {
+        "stocks.entry_mode": "ma_pullback"
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": 0.028206850114249393,
+      "oos_cagr": 0.06898089470455404,
+      "is_dd": -0.13540673466273845,
+      "oos_dd": -0.13488807185990948,
+      "parent_oos_cagr": 0.028306880049109306,
+      "verdict": "passed but not spawned: tier base allows 2 children; 2 active"
+    },
+    {
+      "date": "2026-10-19",
+      "proposal": "sweep stocks: entry_mode=ma_pullback, pullback_touch_bars=3",
+      "kind": "sweep",
+      "hypothesis": "systematic sweep of the pre-registered strategy space",
+      "overrides": {
+        "stocks.entry_mode": "ma_pullback",
+        "stocks.pullback_touch_bars": 3
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": 0.034092693159305076,
+      "oos_cagr": 0.026794319206244532,
+      "is_dd": -0.14034046632817798,
+      "oos_dd": -0.34326344729776803,
+      "parent_oos_cagr": 0.028306880049109306,
+      "verdict": "rejected: OOS CAGR 2.68% does not beat parent 2.83%"
     }
   ]
 }

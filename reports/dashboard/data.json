@@ -1,18 +1,18 @@
 {
- "generated_at": "2026-10-19T15:27:12+00:00",
+ "generated_at": "2026-10-19T16:35:07+00:00",
  "strategy": {
   "name": "trend-reset-v1",
-  "version": "1.3.0"
+  "version": "1.4.0"
  },
  "survival": {
   "status": {
-   "equity_gross": 99.9,
-   "equity_net": 99.60346492000001,
+   "equity_gross": 99.86,
+   "equity_net": 99.56346492,
    "ai_cost_total": 0.29653508,
    "ai_cost_today": 0.018338979999999998,
-   "budget_today": 0.049801732460000005,
-   "budget_remaining": 0.03146275246000001,
-   "runway_days": 1761.0876070379263,
+   "budget_today": 0.04978173246,
+   "budget_remaining": 0.03144275246,
+   "runway_days": 1760.1433679954494,
    "tier": "base",
    "dead": false,
    "death_reason": "",
@@ -96,17 +96,17 @@
   "primary_gross": [
    100.0,
    100.0,
-   99.9
+   99.86
   ],
   "primary_net": [
    99.9584459,
    99.9133369,
-   99.79499792
+   99.75499792
   ],
   "shadow": {
    "2026-10-16": 100.0,
    "2026-10-18": 100.0,
-   "2026-10-19": 99.9568810467106
+   "2026-10-19": 100.42042727848414
   },
   "cum_ai_cost": [
    0.041554100000000004,
@@ -118,7 +118,7 @@
   "SPY buy&hold": {
    "2026-10-16": 100.0,
    "2026-10-18": 100.0,
-   "2026-10-19": 100.82476028957173
+   "2026-10-19": 100.61716478924419
   },
   "BTC buy&hold": {
    "2026-10-16": 100.0,
@@ -135,8 +135,8 @@
   "primary": {
    "run_date": "2026-10-19",
    "label": "primary",
-   "equity_gross": 99.9,
-   "equity_net": 99.60346492000001,
+   "equity_gross": 99.86,
+   "equity_net": 99.56346492,
    "tier": "base",
    "regime": {
     "state": "green",
@@ -151,38 +151,20 @@
     }
    },
    "exits": [],
-   "candidates": [
-    {
-     "symbol": "MNST",
-     "score": 1.0,
-     "raw_close": 46.6,
-     "atr_pct": 2.1963,
-     "pct_of_high": 0.9288,
-     "z_reset": 0.5672,
-     "pullback_atr": 2.2667
-    }
-   ],
-   "decisions": [
-    {
-     "symbol": "MNST",
-     "action": "veto",
-     "invalidation": "none",
-     "confidence": 0.7,
-     "rationale": "The technical trend is intact: close above ma_mid and ma_long, mom_long 0.27, and a 2.27 ATR pullback. But the debate net signal is only 0.05, sentiment is -0.2, fundamental is -0.1, and there is a low-materiality analyst downgrade plus an attention spike. Earnings in 10 days would likely fall inside the hold. Too weak a setup; stay in cash.",
-     "cost_usd": 0.018338979999999998,
-     "note": ""
-    }
-   ],
+   "candidates": [],
+   "decisions": [],
    "orders": [],
-   "ai_cost_usd": 0.018338979999999998,
-   "notes": [],
+   "ai_cost_usd": 0.0,
+   "notes": [
+    "buys blocked: this bar was already processed by an earlier run today"
+   ],
    "positions": [
     {
      "symbol": "COP",
      "qty": 0.051422,
      "entry": 146.24,
      "stop": 136.6373,
-     "bars_held": 1,
+     "bars_held": 2,
      "source": "reconciled",
      "stop_armed": true,
      "fill_pending": false
@@ -192,7 +174,7 @@
      "qty": 0.044496,
      "entry": 387.0,
      "stop": 364.626,
-     "bars_held": 1,
+     "bars_held": 2,
      "source": "reconciled",
      "stop_armed": true,
      "fill_pending": false
@@ -202,8 +184,8 @@
   "shadow": {
    "run_date": "2026-10-19",
    "label": "shadow-rules",
-   "equity_gross": 99.9568810467106,
-   "equity_net": 99.9568810467106,
+   "equity_gross": 100.42042727848414,
+   "equity_net": 100.42042727848414,
    "tier": "base",
    "regime": {
     "state": "green",
@@ -218,48 +200,20 @@
     }
    },
    "exits": [],
-   "candidates": [
-    {
-     "symbol": "MNST",
-     "score": 1.0,
-     "raw_close": 46.6,
-     "atr_pct": 2.1963,
-     "pct_of_high": 0.9288,
-     "z_reset": 0.5672,
-     "pullback_atr": 2.2667
-    }
-   ],
-   "decisions": [
-    {
-     "symbol": "MNST",
-     "action": "approve",
-     "invalidation": "none",
-     "confidence": null,
-     "rationale": "rules-only",
-     "cost_usd": 0.0,
-     "note": ""
-    }
-   ],
-   "orders": [
-    {
-     "symbol": "MNST",
-     "side": "buy",
-     "notional": 15.17,
-     "ok": true,
-     "fill_price": 0.0,
-     "filled_qty": 0.0,
-     "message": "queued for next open"
-    }
-   ],
+   "candidates": [],
+   "decisions": [],
+   "orders": [],
    "ai_cost_usd": 0.0,
-   "notes": [],
+   "notes": [
+    "buys blocked: this bar was already processed by an earlier run today"
+   ],
    "positions": [
     {
      "symbol": "TRV",
      "qty": 0.0445,
      "entry": 387.1935,
      "stop": 364.5862,
-     "bars_held": 1,
+     "bars_held": 2,
      "source": "shadow-rules",
      "stop_armed": true,
      "fill_pending": false
@@ -269,35 +223,35 @@
      "qty": 0.074958,
      "entry": 223.9919448852539,
      "stop": 210.5941,
-     "bars_held": 1,
+     "bars_held": 2,
      "source": "shadow-rules",
      "stop_armed": true,
      "fill_pending": false
     },
     {
      "symbol": "MNST",
-     "qty": 0.325536,
-     "entry": 46.599998474121094,
-     "stop": 43.5295,
-     "bars_held": 0,
+     "qty": 0.333827,
+     "entry": 45.44270816802978,
+     "stop": 42.3722,
+     "bars_held": 1,
      "source": "shadow-rules",
-     "stop_armed": false,
-     "fill_pending": true
+     "stop_armed": true,
+     "fill_pending": false
     }
    ]
   },
   "benchmarks": {
-   "SPY buy&hold": 100.82476028957173,
+   "SPY buy&hold": 100.61716478924419,
    "BTC buy&hold": 100.91642679656556
   },
   "survival": {
-   "equity_gross": 99.9,
-   "equity_net": 99.60346492000001,
+   "equity_gross": 99.86,
+   "equity_net": 99.56346492,
    "ai_cost_total": 0.29653508,
    "ai_cost_today": 0.018338979999999998,
-   "budget_today": 0.049801732460000005,
-   "budget_remaining": 0.03146275246000001,
-   "runway_days": 1761.0876070379263,
+   "budget_today": 0.04978173246,
+   "budget_remaining": 0.03144275246,
+   "runway_days": 1760.1433679954494,
    "tier": "base",
    "dead": false,
    "death_reason": "",
@@ -314,7 +268,7 @@
     "entry": 146.24,
     "stop": 136.6373251575473,
     "r": 9.602674842452714,
-    "bars_held": 1,
+    "bars_held": 2,
     "entry_date": "2026-10-19",
     "source": "reconciled",
     "stop_armed": true,
@@ -328,7 +282,7 @@
     "entry": 387.0,
     "stop": 364.6260465738327,
     "r": 22.373953426167276,
-    "bars_held": 1,
+    "bars_held": 2,
     "entry_date": "2026-10-19",
     "source": "reconciled",
     "stop_armed": true,
@@ -344,7 +298,7 @@
     "entry": 387.1935,
     "stop": 364.5861775197416,
     "r": 22.607322480258347,
-    "bars_held": 1,
+    "bars_held": 2,
     "entry_date": "2026-10-16",
     "source": "shadow-rules",
     "stop_armed": true,
@@ -358,7 +312,7 @@
     "entry": 223.9919448852539,
     "stop": 210.59411331257934,
     "r": 13.397831572674562,
-    "bars_held": 1,
+    "bars_held": 2,
     "entry_date": "2026-10-16",
     "source": "shadow-rules",
     "stop_armed": true,
@@ -368,21 +322,109 @@
    {
     "symbol": "MNST",
     "asset_class": "stock",
-    "qty": 0.32553649134612156,
-    "entry": 46.599998474121094,
-    "stop": 43.529512750852916,
+    "qty": 0.33382693531175855,
+    "entry": 45.44270816802978,
+    "stop": 42.372222444761604,
     "r": 3.0704857232681775,
-    "bars_held": 0,
+    "bars_held": 1,
     "entry_date": "2026-10-19",
     "source": "shadow-rules",
-    "stop_armed": false,
-    "fill_pending": true,
+    "stop_armed": true,
+    "fill_pending": false,
     "invalidation": "none"
    }
   ]
  },
  "journal": {
   "recent": [
+   {
+    "date": "2026-10-19-child-sweep-stocks-entry-mode-template-cross",
+    "kind": "decision",
+    "symbol": "EEM",
+    "action": "approve",
+    "invalidation": "none",
+    "confidence": null,
+    "rationale": "rules-only",
+    "cost_usd": 0.0,
+    "note": ""
+   },
+   {
+    "date": "2026-10-19-child-sweep-stocks-entry-mode-template-cross",
+    "kind": "decision",
+    "symbol": "GOOG",
+    "action": "approve",
+    "invalidation": "none",
+    "confidence": null,
+    "rationale": "rules-only",
+    "cost_usd": 0.0,
+    "note": ""
+   },
+   {
+    "date": "2026-10-19-child-sweep-stocks-entry-mode-template-cross",
+    "kind": "decision",
+    "symbol": "HPE",
+    "action": "approve",
+    "invalidation": "none",
+    "confidence": null,
+    "rationale": "rules-only",
+    "cost_usd": 0.0,
+    "note": ""
+   },
+   {
+    "date": "2026-10-19-child-sweep-stocks-entry-mode-template-cross",
+    "kind": "decision",
+    "symbol": "RSG",
+    "action": "approve",
+    "invalidation": "none",
+    "confidence": null,
+    "rationale": "rules-only",
+    "cost_usd": 0.0,
+    "note": ""
+   },
+   {
+    "date": "2026-10-19-child-sweep-stocks-entry-mode-template-cross",
+    "kind": "decision",
+    "symbol": "ETN",
+    "action": "approve",
+    "invalidation": "none",
+    "confidence": null,
+    "rationale": "rules-only",
+    "cost_usd": 0.0,
+    "note": ""
+   },
+   {
+    "date": "2026-10-19-child-sweep-stocks-entry-mode-template-cross",
+    "kind": "decision",
+    "symbol": "URI",
+    "action": "approve",
+    "invalidation": "none",
+    "confidence": null,
+    "rationale": "rules-only",
+    "cost_usd": 0.0,
+    "note": ""
+   },
+   {
+    "date": "2026-10-19-child-sweep-stocks-entry-mode-template-cross",
+    "kind": "order",
+    "symbol": "EEM",
+    "side": "buy",
+    "notional": 30.0,
+    "ok": true,
+    "fill_price": 0.0,
+    "filled_qty": 0.0,
+    "message": "queued for next open"
+   },
+   {
+    "date": "2026-10-19-child-sweep-stocks-entry-mode-template-cross",
+    "kind": "order",
+    "symbol": "GOOG",
+    "side": "buy",
+    "notional": 20.0,
+    "ok": true,
+    "fill_price": 0.0,
+    "filled_qty": 0.0,
+    "message": "queued for next open"
+   },
    {
     "date": "2026-10-19",
     "kind": "decision",
@@ -491,11 +533,35 @@
     "cached_tokens": 0,
     "stop_reason": "end_turn",
     "error": ""
+   },
+   {
+    "date": "2026-10-19",
+    "role": "news_reader",
+    "model": "claude-haiku-5-5",
+    "ok": true,
+    "cost_usd": 0.0005261,
+    "input_tokens": 1471,
+    "output_tokens": 386,
+    "cached_tokens": 0,
+    "stop_reason": "end_turn",
+    "error": ""
+   },
+   {
+    "date": "2026-10-19",
+    "role": "news_reader",
+    "model": "claude-haiku-5-5",
+    "ok": true,
+    "cost_usd": 0.00034668,
+    "input_tokens": 1208,
+    "output_tokens": 422,
+    "cached_tokens": 1488,
+    "stop_reason": "end_turn",
+    "error": ""
    }
   ],
-  "anomalies_30d": 27,
+  "anomalies_30d": 36,
   "broken_chains": [],
-  "n_files": 4
+  "n_files": 5
  },
  "desks": {
   "date": "2026-10-19",
@@ -556,12 +622,28 @@
     "net_sentiment": 0.4,
     "attention_spike": true,
     "cost_usd": 0.00035308
+   },
+   {
+    "date": "2026-10-19",
+    "symbol": "COP",
+    "material_negative": false,
+    "net_sentiment": 0.2,
+    "attention_spike": true,
+    "cost_usd": 0.0005261
+   },
+   {
+    "date": "2026-10-19",
+    "symbol": "TRV",
+    "material_negative": false,
+    "net_sentiment": 0.5,
+    "attention_spike": false,
+    "cost_usd": 0.00034668
    }
   ],
   "scout": {
    "date": "2026-10-19",
    "n_candidates": 0,
-   "scanned": 43,
+   "scanned": 42,
    "exits": [],
    "entries": [],
    "equity": 3.0,
@@ -570,9 +652,9 @@
   "portfolio_note": "No new positions. The only candidate has a mixed and weak combined signal with earnings approaching. Keep the existing 2 positions and the cash buffer of 75.26; preserving the bankroll beats a marginal trade."
  },
  "heartbeat": {
-  "ts": "2026-10-19T15:27:11+00:00",
+  "ts": "2026-10-19T16:35:06+00:00",
   "broker": "alpaca-paper",
-  "equity": 99.91,
+  "equity": 99.86,
   "cash": 75.26,
   "market_open": true,
   "positions": [
@@ -581,9 +663,9 @@
     "asset_class": "stock",
     "qty": 0.051422319,
     "avg_price": 146.24,
-    "current_price": 144.56,
-    "market_value": 7.43361043464,
-    "unrealised_pct": -0.01148796498905913,
+    "current_price": 144.785,
+    "market_value": 7.445180456415,
+    "unrealised_pct": -0.009949398249453067,
     "stop_price": null
    },
    {
@@ -591,9 +673,9 @@
     "asset_class": "stock",
     "qty": 0.044496124,
     "avg_price": 387.0,
-    "current_price": 386.88,
-    "market_value": 17.21466045312,
-    "unrealised_pct": -0.00031007751937983663,
+    "current_price": 385.56,
+    "market_value": 17.15592556944,
+    "unrealised_pct": -0.0037209302325581506,
     "stop_price": null
    }
   ]
@@ -736,6 +818,96 @@
    "who": "primary",
    "kind": "decision",
    "text": "veto MNST (0.70)"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "meme-scout",
+   "kind": "scan",
+   "text": "scanned 42 tokens, 0 passed, 0 entries, 0 exits"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "sweep-stocks-entry-mode-template-cross",
+   "kind": "run",
+   "text": "cycle for 2026-10-19 at $100.00"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "sweep-stocks-entry-mode-template-cross",
+   "kind": "decision",
+   "text": "approve EEM"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "sweep-stocks-entry-mode-template-cross",
+   "kind": "decision",
+   "text": "approve GOOG"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "sweep-stocks-entry-mode-template-cross",
+   "kind": "decision",
+   "text": "approve HPE"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "sweep-stocks-entry-mode-template-cross",
+   "kind": "decision",
+   "text": "approve RSG"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "sweep-stocks-entry-mode-template-cross",
+   "kind": "decision",
+   "text": "approve ETN"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "sweep-stocks-entry-mode-template-cross",
+   "kind": "decision",
+   "text": "approve URI"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "sweep-stocks-entry-mode-template-cross",
+   "kind": "order",
+   "text": "EEM queued for next open"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "sweep-stocks-entry-mode-template-cross",
+   "kind": "order",
+   "text": "GOOG queued for next open"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "shadow",
+   "kind": "fill",
+   "text": "shadow-rules-2026-10-19-MNST filled"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "shadow",
+   "kind": "run",
+   "text": "cycle for 2026-10-19 at $100.42"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "shadow",
+   "kind": "fill_confirmed",
+   "text": "MNST"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "primary",
+   "kind": "run",
+   "text": "cycle for 2026-10-19 at $99.86"
+  },
+  {
+   "ts": "2026-10-19 16:32",
+   "who": "news watch",
+   "kind": "flag",
+   "text": "COP: attention spike"
   }
  ],
  "research_log": [
@@ -808,6 +980,42 @@
      "verdict": "rejected: OOS CAGR 1.57% does not beat parent 2.83%"
     }
    ]
+  },
+  {
+   "date": "2026-10-19",
+   "note": "systematic sweep (code, no LLM)",
+   "parent_oos_cagr": 0.028306880049109306,
+   "proposals": [
+    {
+     "name": "sweep stocks: entry_mode=high_breakout, breakout_lookback=90",
+     "overrides": {
+      "stocks.entry_mode": "high_breakout",
+      "stocks.breakout_lookback": 90
+     },
+     "sleeve": "stocks",
+     "oos_cagr": 0.0371569056778458,
+     "verdict": "rejected: OOS drawdown -26.1% worse than tolerated -25.2%"
+    },
+    {
+     "name": "sweep stocks: entry_mode=ma_pullback",
+     "overrides": {
+      "stocks.entry_mode": "ma_pullback"
+     },
+     "sleeve": "stocks",
+     "oos_cagr": 0.06898089470455404,
+     "verdict": "passed but not spawned: tier base allows 2 children; 2 active"
+    },
+    {
+     "name": "sweep stocks: entry_mode=ma_pullback, pullback_touch_bars=3",
+     "overrides": {
+      "stocks.entry_mode": "ma_pullback",
+      "stocks.pullback_touch_bars": 3
+     },
+     "sleeve": "stocks",
+     "oos_cagr": 0.026794319206244532,
+     "verdict": "rejected: OOS CAGR 2.68% does not beat parent 2.83%"
+    }
+   ]
   }
  ],
  "review": {
@@ -861,8 +1069,8 @@
     "equity": 3.0,
     "start_equity": 3.0,
     "parent_start_equity": 100.0,
-    "voi": 0.0009999999999998899,
-    "shadow_days": 3,
+    "voi": 0.0013999999999999568,
+    "shadow_days": 4,
     "hypothesis": "",
     "notes": [],
     "metrics": {},
@@ -879,11 +1087,11 @@
     "status": "shadow",
     "born": "2026-10-19",
     "retired": null,
-    "equity": null,
-    "start_equity": null,
-    "parent_start_equity": null,
-    "voi": null,
-    "shadow_days": 0,
+    "equity": 100.0,
+    "start_equity": 100.0,
+    "parent_start_equity": 99.86,
+    "voi": 0.0,
+    "shadow_days": 1,
     "hypothesis": "systematic sweep of the pre-registered strategy space",
     "notes": [],
     "metrics": {
@@ -1081,6 +1289,59 @@
     "oos_dd": -0.23930319752493245,
     "parent_oos_cagr": 0.028252828339523584,
     "verdict": "rejected: OOS CAGR 1.57% does not beat parent 2.83%"
+   },
+   {
+    "date": "2026-10-19",
+    "proposal": "sweep stocks: entry_mode=high_breakout, breakout_lookback=90",
+    "kind": "sweep",
+    "hypothesis": "systematic sweep of the pre-registered strategy space",
+    "overrides": {
+     "stocks.entry_mode": "high_breakout",
+     "stocks.breakout_lookback": 90
+    },
+    "sleeve": "stocks",
+    "cost_usd": 0.0,
+    "is_cagr": -0.000455773371407564,
+    "oos_cagr": 0.0371569056778458,
+    "is_dd": -0.25840131200120264,
+    "oos_dd": -0.26136863901539364,
+    "parent_oos_cagr": 0.028306880049109306,
+    "verdict": "rejected: OOS drawdown -26.1% worse than tolerated -25.2%"
+   },
+   {
+    "date": "2026-10-19",
+    "proposal": "sweep stocks: entry_mode=ma_pullback",
+    "kind": "sweep",
+    "hypothesis": "systematic sweep of the pre-registered strategy space",
+    "overrides": {
+     "stocks.entry_mode": "ma_pullback"
+    },
+    "sleeve": "stocks",
+    "cost_usd": 0.0,
+    "is_cagr": 0.028206850114249393,
+    "oos_cagr": 0.06898089470455404,
+    "is_dd": -0.13540673466273845,
+    "oos_dd": -0.13488807185990948,
+    "parent_oos_cagr": 0.028306880049109306,
+    "verdict": "passed but not spawned: tier base allows 2 children; 2 active"
+   },
+   {
+    "date": "2026-10-19",
+    "proposal": "sweep stocks: entry_mode=ma_pullback, pullback_touch_bars=3",
+    "kind": "sweep",
+    "hypothesis": "systematic sweep of the pre-registered strategy space",
+    "overrides": {
+     "stocks.entry_mode": "ma_pullback",
+     "stocks.pullback_touch_bars": 3
+    },
+    "sleeve": "stocks",
+    "cost_usd": 0.0,
+    "is_cagr": 0.034092693159305076,
+    "oos_cagr": 0.026794319206244532,
+    "is_dd": -0.14034046632817798,
+    "oos_dd": -0.34326344729776803,
+    "parent_oos_cagr": 0.028306880049109306,
+    "verdict": "rejected: OOS CAGR 2.68% does not beat parent 2.83%"
    }
   ],
   "ready_ids": []
@@ -1092,7 +1353,7 @@
    "today": {
     "date": "2026-10-19",
     "kinds": {
-     "meme_day": 1
+     "meme_day": 2
     }
    },
    "latest": null,
@@ -1103,9 +1364,30 @@
    }
   },
   "sweep-stocks-entry-mode-template-cross": {
-   "marks": [],
-   "positions": [],
-   "today": null,
+   "marks": [
+    [
+     "2026-10-19",
+     100.0
+    ]
+   ],
+   "positions": [
+    "EEM",
+    "GOOG"
+   ],
+   "today": {
+    "date": "2026-10-19",
+    "kinds": {
+     "run_start": 1,
+     "survival": 1,
+     "regime": 1,
+     "data_anomaly": 9,
+     "candidates": 1,
+     "decisions": 1,
+     "risk": 1,
+     "order": 2,
+     "run_end": 1
+    }
+   },
    "latest": null,
    "meme_book": null
   }
@@ -18870,7 +19152,7 @@
  },
  "config": {
   "name": "trend-reset-v1",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "stocks": {
    "bars_per_year": 252,
    "ma_long": 200,
@@ -19120,7 +19402,10 @@
    "outofsample_start": "2013-01-01",
    "outofsample_end": null,
    "max_drawdown_tolerance": 1.1,
-   "auto_promote": false,
+   "auto_promote": true,
+   "promote_min_voi": 0.01,
+   "demote_after_days": 28,
+   "demote_min_lag": 0.02,
    "bounds_file": "config/bounds.toml",
    "monitor_ttl_days": 28
   },
