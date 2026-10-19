@@ -1,6 +1,54 @@
 # Pre-registered bounds for operator-proposed strategy variants. A proposal that
 # touches a parameter not listed here, or leaves its range, is rejected in code.
-# Ranges follow the robustness grid in docs/STRATEGY.md §10.
+# Ranges follow the robustness grid in docs/STRATEGY.md §10. Since 1.3.0 the
+# operator may also choose the entry family of a sub-agent (same trend template,
+# same exits, same risk limits; a different moment to buy).
+
+["stocks.entry_mode"]
+choices = ["reset_breakout", "template_cross", "high_breakout", "ma_pullback", "momentum_threshold"]
+
+["crypto.entry_mode"]
+choices = ["reset_breakout", "template_cross", "high_breakout", "ma_pullback", "momentum_threshold"]
+
+["stocks.breakout_lookback"]
+min = 20
+max = 120
+
+["crypto.breakout_lookback"]
+min = 14
+max = 120
+
+["stocks.pullback_touch_bars"]
+min = 1
+max = 10
+
+["crypto.pullback_touch_bars"]
+min = 1
+max = 10
+
+["stocks.momentum_min"]
+min = 0.1
+max = 1.5
+
+["crypto.momentum_min"]
+min = 0.1
+max = 1.5
+
+["stocks.exit_closes_below_mid"]
+min = 1
+max = 1000
+
+["crypto.exit_closes_below_mid"]
+min = 1
+max = 1000
+
+["crypto.reset_z_max"]
+min = 0.0
+max = 0.8
+
+["crypto.max_hold_bars"]
+min = 30
+max = 365
 
 ["stocks.impulse_window"]
 min = 42

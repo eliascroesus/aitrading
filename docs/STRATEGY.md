@@ -59,6 +59,23 @@ ATR     = Wilder ATR (20 bars stocks, 14 crypto); close-to-close fallback for cl
 S1 is roughly "+20–25% in three months for a 30%-vol stock"; S2 is roughly
 "−9% to +3% over the last month". A setup stays valid for 10 bars.
 
+## 3b. Entry families the operator may give a sub-agent (since 1.3.0)
+
+The primary runs the pre-registered rule above. A sub-agent may instead run one
+of these, with the same trend template, the same exits and the same limits:
+
+| `entry_mode` | buys when |
+|---|---|
+| `reset_breakout` | the pre-registered setup and trigger (default) |
+| `template_cross` | the trend template is met for the first time |
+| `high_breakout` | the close clears the prior `breakout_lookback`-bar high inside the template |
+| `ma_pullback` | price touched the mid MA within `pullback_touch_bars` and closes back above it with ROC5 > 0 |
+| `momentum_threshold` | vol-adjusted 12-1 momentum ≥ `momentum_min` and the breakout trigger fires |
+
+Each is validated the same way (in-sample, out-of-sample, against the parent)
+before it earns a paper seat, and every test is written to the research log
+the operator reads before its next proposal.
+
 ## 4. Trigger (within 10 bars of a setup)
 
 close > max(high[t−1], high[t−2]) **and** close > EMA10 **and** ROC_5 > 0

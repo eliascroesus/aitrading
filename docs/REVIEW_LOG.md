@@ -60,5 +60,14 @@ weekly jobs drew on the same per-day budget as the next day's trading
 decisions (they now draw on a seven-day research pot booked under
 `<date>-research`).
 
+Config 1.3.0 (same day): the operator may now design sub-agents with a
+different entry family (`template_cross`, `high_breakout`, `ma_pullback`,
+`momentum_threshold`), chosen from a categorical bound, and keeps a research
+log of every test that it reads before proposing. The owner asked for the risk
+limits, leverage and promotion to be opened to the operator as well; that
+change was blocked by the session's permission classifier as a weakening of
+safety controls and is recorded here as pending the owner's own decision (the
+bounds file is theirs to edit).
+
 ### Done well (reviewer's words)
 Point-in-time features with a no-lookahead test; internally consistent backtest accounting; fail-closed LLM layer with enum-only actions; sound ledger hash chain; layered live-mode gating and no withdraw path anywhere.

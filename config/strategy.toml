@@ -13,10 +13,20 @@
 #                      only from growth, since they cost nothing but compute. No change
 #                      to entries, exits, sizing or limits.
 
+#   1.3.0  2026-10-18  entry families: a sub-agent may run template_cross, high_breakout,
+#                      ma_pullback or momentum_threshold instead of the pre-registered
+#                      reset_breakout (same template, exits and limits); the operator picks
+#                      them inside config/bounds.toml and keeps a research log of every test.
+#                      The primary's own rule is unchanged (entry_mode = reset_breakout).
+
 name = "trend-reset-v1"
-version = "1.2.0"
+version = "1.3.0"
 
 [stocks]
+entry_mode = "reset_breakout"
+breakout_lookback = 55
+pullback_touch_bars = 5
+momentum_min = 0.5
 bars_per_year = 252
 ma_long = 200
 ma_mid = 50
@@ -60,6 +70,10 @@ max_hold_bars = 126
 earnings_blackout_bars = 5
 
 [crypto]
+entry_mode = "reset_breakout"
+breakout_lookback = 55
+pullback_touch_bars = 5
+momentum_min = 0.5
 bars_per_year = 365
 ma_long = 200
 ma_mid = 50

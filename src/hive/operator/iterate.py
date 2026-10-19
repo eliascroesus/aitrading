@@ -25,7 +25,10 @@ OPERATOR_SYSTEM = (
     "earn more: propose up to {N} variants of its configuration, each changing one to three "
     "parameters within the stated bounds, each with the sleeve it should trade (stocks, crypto or "
     "all) and a one-sentence testable hypothesis grounded in the evidence summary and the firm's "
-    "own results so far. Code backtests every proposal in-sample and out-of-sample; only variants "
+    "own results so far. A variant may change the entry family (entry_mode) as well as any knob: "
+    "the trend template, exits and limits stay, the moment to buy is yours to design. Read "
+    "tested_variants and research_log before proposing: never repeat a tested variant, build on "
+    "what beat the parent, and say what you learned in the note. Code backtests every proposal in-sample and out-of-sample; only variants "
     "that beat the parent out of sample without a worse drawdown become paper-traded sub-agents, "
     "and only while the firm's tier has a free seat. Sub-agents that underperform the parent are "
     "retired; a human promotes the winners into the live configuration. Whenever a seat is free, "
@@ -39,7 +42,7 @@ OPERATOR_SYSTEM = (
 class Proposal(BaseModel):
     name: str = Field(max_length=40)
     hypothesis: str = Field(max_length=300)
-    overrides: dict[str, float | int | bool] = Field(max_length=3)
+    overrides: dict[str, float | int | bool | str] = Field(max_length=3)
     sleeve: str = "stocks"
 
 
@@ -53,7 +56,7 @@ def proposal_schema(bounds: dict[str, tuple[float, float]]) -> type[BaseModel]:
     is an enum of the pre-registered tunables. A free-form dict does not survive the
     structured-output grammar (the first live run came back with empty overrides)."""
     keys = tuple(sorted(bounds)) or ("stocks.trail_atr",)
-    override = create_model("OverrideChoice", param=(Literal[keys], ...), value=(float, ...))
+    override = create_model("OverrideChoice", param=(Literal[keys], ...), value=(float | str, ...))
     proposal = create_model(
         "ProposalChoice", name=(str, Field(max_length=40)), hypothesis=(str, Field(max_length=300)),
         overrides=(list[override], Field(min_length=1, max_length=3)),
@@ -76,25 +79,43 @@ def coerce_types(cfg: StrategyConfig, overrides: dict[str, Any]) -> dict[str, An
     out: dict[str, Any] = {}
     for k, v in overrides.items():
         cur = _get(cfg, k)
-        out[k] = int(round(float(v))) if isinstance(cur, int) and not isinstance(cur, bool) else v
+        if isinstance(cur, bool):
+            out[k] = str(v).lower() in ("1", "true", "yes") if isinstance(v, str) else bool(v)
+        elif isinstance(cur, int):
+            out[k] = int(round(float(v)))
+        elif isinstance(cur, str):
+            out[k] = str(v)
+        else:
+            out[k] = float(v)
     return out
 
 
-def load_bounds(path: Path) -> dict[str, tuple[float, float]]:
+Bound = tuple[float, float] | list[str]   # a numeric range, or the allowed choices
+
+
+def load_bounds(path: Path) -> dict[str, Bound]:
     if not path.exists():
         return {}
     with path.open("rb") as fh:
         raw = tomllib.load(fh)
-    return {k: (float(v["min"]), float(v["max"])) for k, v in raw.items()}
+    out: dict[str, Bound] = {}
+    for k, v in raw.items():
+        out[k] = [str(c) for c in v["choices"]] if "choices" in v else (float(v["min"]), float(v["max"]))
+    return out
 
 
-def validate_overrides(overrides: dict[str, Any], bounds: dict[str, tuple[float, float]]) -> tuple[bool, str]:
+def validate_overrides(overrides: dict[str, Any], bounds: dict[str, Bound]) -> tuple[bool, str]:
     if not overrides:
         return False, "no overrides"
     for k, v in overrides.items():
         if k not in bounds:
             return False, f"{k} is not a pre-registered tunable"
-        lo, hi = bounds[k]
+        b = bounds[k]
+        if isinstance(b, list):
+            if str(v) not in b:
+                return False, f"{k}={v} is not one of {b}"
+            continue
+        lo, hi = b
         try:
             fv = float(v)
         except (TypeError, ValueError):
@@ -138,14 +159,52 @@ def verdict(parent: EvalResult, child: EvalResult, tolerance: float) -> tuple[bo
     return True, "beats parent out of sample within the drawdown tolerance"
 
 
+RESEARCH_LOG = "research_log.jsonl"
+
+
+def read_research_log(path: Path, last: int = 12) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    return rows[-last:]
+
+
+def append_research_log(path: Path, entry: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(entry, default=str) + "\n")
+
+
+def tested_variants(registry: HiveRegistry) -> list[dict[str, Any]]:
+    """Every variant ever backtested, condensed, so the operator builds on its own record."""
+    out = []
+    for it in registry.iterations:
+        if it.get("overrides"):
+            out.append({"overrides": it["overrides"], "sleeve": it.get("sleeve"), "oos_cagr": it.get("oos_cagr"),
+                        "oos_dd": it.get("oos_dd"), "parent_oos_cagr": it.get("parent_oos_cagr"),
+                        "verdict": (it.get("verdict") or "")[:60]})
+    return out[-60:]
+
+
 def performance_context(registry: HiveRegistry, status: dict[str, Any] | None, parent_eval: EvalResult | None,
-                        bounds: dict[str, tuple[float, float]], cfg: StrategyConfig) -> dict[str, Any]:
+                        bounds: dict[str, Bound], cfg: StrategyConfig,
+                        research_log: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     return {
+        "entry_families": {
+            "reset_breakout": "the pre-registered rule: strong impulse, quiet reset of short ROC, breakout trigger",
+            "template_cross": "buy the first bar the trend template is met (earliest, most trades)",
+            "high_breakout": "buy a close above the prior breakout_lookback-bar high inside the template",
+            "ma_pullback": "buy the recovery above the mid MA after a touch within pullback_touch_bars",
+            "momentum_threshold": "buy when vol-adjusted 12-1 momentum >= momentum_min with the breakout trigger",
+        },
+        "tested_variants": tested_variants(registry),
+        "research_log": research_log or [],
         "firm_status": prompts.firm_status(status, cfg.survival.tiers),
         "survival": status, "parent_backtest": None if parent_eval is None else
         {"insample": parent_eval.insample, "outofsample": parent_eval.outofsample},
         "current_tunables": {k: _get(cfg, k) for k in bounds},
-        "bounds": {k: {"min": lo, "max": hi} for k, (lo, hi) in bounds.items()},
+        "bounds": {k: ({"choices": b} if isinstance(b, list) else {"min": b[0], "max": b[1]})
+                   for k, b in bounds.items()},
         "children": [{"name": c.name, "status": c.status, "overrides": c.overrides, "voi": c.voi,
                       "shadow_days": c.shadow_days} for c in registry.children][-12:],
         "past_iterations": registry.iterations[-8:],
@@ -179,7 +238,8 @@ def operate(
     on = on or date.today()
     bounds = load_bounds(bounds_path or (REPO_ROOT / cfg.operator.bounds_file))
     parent = evaluate(cfg, {}, inputs)
-    ctx = performance_context(registry, status, parent, bounds, cfg)
+    log_path = registry.path.parent / RESEARCH_LOG
+    ctx = performance_context(registry, status, parent, bounds, cfg, research_log=read_research_log(log_path))
 
     proposals: list[Proposal] = []
     cost = 0.0
@@ -205,6 +265,7 @@ def operate(
             registry.record_iteration({"date": on.isoformat(), "proposal": "", "verdict": f"skipped: {exc}"})
             return registry.iterations[-1:]
     records = []
+    note = getattr(parsed, "note", "") if proposals_override is None and llm is not None else ""
     for p in proposals:
         ok, why = validate_overrides(p.overrides, bounds)
         rec: dict[str, Any] = {"date": on.isoformat(), "proposal": p.name, "hypothesis": p.hypothesis,
@@ -240,6 +301,12 @@ def operate(
             rec["verdict"] = f"rejected: {why}"
         registry.record_iteration(rec)
         records.append(rec)
+    # The firm's memory: what was tried, what it found, what the operator thought.
+    append_research_log(log_path, {
+        "date": on.isoformat(), "note": note, "parent_oos_cagr": parent.outofsample.get("cagr"),
+        "proposals": [{"name": r.get("proposal"), "overrides": r.get("overrides"), "sleeve": r.get("sleeve"),
+                       "oos_cagr": r.get("oos_cagr"), "verdict": (r.get("verdict") or "")[:120]} for r in records],
+    })
     return records
 
 

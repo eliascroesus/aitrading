@@ -143,10 +143,13 @@ daily: children trade their own paper books (stocks / crypto / all / meme sleeve
         ▼  human: `hive hive promote <id> --approve` → overrides committed to strategy.toml
 ```
 
-The operator can propose, measure and recommend. It cannot change limits,
-budgets or the universe, cannot spend past the ledger's daily budget, and
-cannot promote anything to live. Every proposal, verdict and child mark is in
-`state/hive.json` and on the dashboard.
+The operator designs sub-agents: it may pick the entry family (`entry_mode`)
+and any knob listed in `config/bounds.toml`, for any sleeve, and it reads its
+own research log (`state/research_log.jsonl`) and every variant ever tested
+before proposing, so it builds on evidence rather than repeating itself. It
+cannot touch anything outside the bounds file, cannot spend past the research
+pot, and cannot promote anything to live. Every proposal, verdict and child
+mark is in `state/hive.json` and on the dashboard.
 
 ## The dashboard
 

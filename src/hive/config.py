@@ -152,6 +152,18 @@ class TrendRules(BaseModel):
     trigger_ema: int = 10
     trigger_roc: int = 5
 
+    # --- entry family (a sub-agent may run any of these; limits are unchanged) --
+    #   reset_breakout     the pre-registered rule: impulse, reset, breakout trigger
+    #   template_cross     enter the first bar the trend template is satisfied
+    #   high_breakout      close above the prior breakout_lookback-bar high, inside the template
+    #   ma_pullback        touched the mid MA within pullback_touch_bars, closes back above it
+    #   momentum_threshold vol-adjusted 12-1 momentum >= momentum_min with the breakout trigger
+    entry_mode: Literal["reset_breakout", "template_cross", "high_breakout", "ma_pullback",
+                        "momentum_threshold"] = "reset_breakout"
+    breakout_lookback: int = 55
+    pullback_touch_bars: int = 5
+    momentum_min: float = 0.5
+
     # --- stops & exits --------------------------------------------------------
     stop_swing_low_bars: int = 10
     stop_swing_low_atr_pad: float = 0.5
@@ -341,7 +353,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "1.2.0"
+    version: str = "1.3.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     regime: RegimeRules = Field(default_factory=RegimeRules)

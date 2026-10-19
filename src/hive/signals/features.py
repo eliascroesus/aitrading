@@ -56,6 +56,26 @@ def _streak(flag: pd.Series) -> pd.Series:
     return f.groupby(groups).cumsum() * f
 
 
+def entry_signal(f: pd.DataFrame, close: pd.Series, high: pd.Series, low: pd.Series,
+                 rules: TrendRules) -> pd.Series:
+    """The entry families a sub-agent may run. Every one requires the trend template;
+    they differ in what counts as the moment to buy. Row t uses rows <= t only."""
+    mode = rules.entry_mode
+    if mode == "template_cross":
+        prev = f["template_ok"].shift(1).fillna(False).astype(bool)
+        return f["template_ok"] & ~prev
+    if mode == "high_breakout":
+        prior_high = high.shift(1).rolling(rules.breakout_lookback, min_periods=rules.breakout_lookback).max()
+        return f["template_ok"] & (close > prior_high)
+    if mode == "ma_pullback":
+        touched = (low <= f["ma_mid"]).astype(int).rolling(rules.pullback_touch_bars, min_periods=1).max() > 0
+        return (f["template_ok"] & touched & (close > f["ma_mid"])
+                & (ind.roc_pct(close, rules.trigger_roc) > 0))
+    if mode == "momentum_threshold":
+        return f["template_ok"] & (f["mom_vol_adj"] >= rules.momentum_min) & f["trigger"]
+    return f["template_ok"] & f["setup_recent"] & f["trigger"]      # reset_breakout (pre-registered)
+
+
 def compute_features(bars: pd.DataFrame, rules: TrendRules) -> pd.DataFrame:
     px = adjust_ohlc(bars)
     close, high, low = px["close"], px["high"], px["low"]
@@ -125,7 +145,7 @@ def compute_features(bars: pd.DataFrame, rules: TrendRules) -> pd.DataFrame:
         & (close > f["ema_trig"])
         & (ind.roc_pct(close, rules.trigger_roc) > 0)
     )
-    f["entry_signal"] = f["template_ok"] & f["setup_recent"] & f["trigger"]
+    f["entry_signal"] = entry_signal(f, close, high, low, rules)
 
     # --- stop reference & exit helpers ---------------------------------------------
     f["swing_low"] = low.rolling(rules.stop_swing_low_bars, min_periods=1).min()
