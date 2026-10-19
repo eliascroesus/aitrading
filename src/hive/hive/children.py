@@ -35,7 +35,10 @@ def _classes_for_sleeve(classes: dict[str, str], sleeve: str) -> dict[str, str]:
 def run_children(
     settings: Settings, cfg: StrategyConfig, run_date: date, *, store: BarStore, classes: dict[str, str],
     universe: PointInTimeUniverse | None, kill: bool, parent_equity: float, price_fn_factory,
+    llm=None, news_fn=None,
 ) -> list[dict[str, Any]]:
+    from hive.hive.monitors import run_monitor_child
+
     registry = HiveRegistry(settings.hive_state_dir / "hive.json", cfg.survival)
     results = []
     rd = run_date.isoformat()
@@ -43,6 +46,11 @@ def run_children(
         cdir = settings.hive_state_dir / "children" / child.id
         journal = Journal(settings.hive_state_dir / "journal", f"{rd}-child-{child.id}")
         try:
+            if child.kind == "monitor":
+                reports = run_monitor_child(settings, child, cdir, journal, llm, run_date, classes, news_fn)
+                results.append({"id": child.id, "name": child.name, "kind": "monitor", "sleeve": child.sleeve,
+                                "reports": len(reports), "equity": None})
+                continue
             if child.sleeve == "meme":
                 eq = _run_meme_child(settings, cfg, child, cdir, journal, parent_equity, run_date)
             else:
@@ -68,6 +76,7 @@ def run_children(
             log.exception("child %s failed", child.id)
             journal.write("child_error", {"error": str(exc)[:300]})
     registry.auto_retire_losers(min_days=cfg.survival.child_shadow_days * 2, on=run_date)
+    registry.retire_expired_monitors(cfg.operator.monitor_ttl_days, on=run_date)
     return results
 
 

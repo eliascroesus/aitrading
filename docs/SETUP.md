@@ -82,7 +82,8 @@ hive status
 | weekly (Sunday, `weekly.yml`) | `hive allocate` | the crypto sleeve's share of equity moves ±5 points toward the desk that earned, within 20–60%, from realised P&L; no LLM |
 | weekly (Sunday, `weekly.yml`) | `hive review` | the auditor reads the journals and proposes changes (never applies them); paid, like `hive operate`, from the research pot that unspent daily budget accrues into |
 | weekly (Sunday, `weekly.yml`) | `hive operate` | the operator proposes ≤ 3 config variants inside `config/bounds.toml`, code backtests them in/out of sample, winners become shadow children if the tier allows |
-| when a child has earned it | `hive hive promote <id> --approve` | **a human** promotes; then apply its overrides to `config/strategy.toml` in a commit |
+| every day after the cycle | `hive sweep --cells 3` | backtests three untested cells of the strategy space (entry families, exits) in- and out-of-sample; winners take a paper seat; no LLM |
+| when a sub-agent shows "ready to promote" | Actions → **promote-sub-agent** → Run workflow with its id | **a human** promotes; its overrides become the primary's live configuration (`state/promoted_overrides.json`) and it frees its seat |
 
 ## 4b. Watching it work
 
@@ -109,7 +110,11 @@ hive status
 * A child is a **paper portfolio** with its own sleeve (`stocks`, `crypto`,
   `all`, `meme`) and config overrides. Its value is measured against the
   parent over the same days (value of information). Losers retire themselves.
-* The operator **can**: propose variants, read every journal, recommend.
+* The operator may also propose a **monitor**: a news-channel sub-agent that
+  watches up to five topics or symbols and files bounded daily reports the
+  portfolio manager reads. Monitors cost about a cent a day, take a seat, and
+  expire after 28 days unless re-proposed.
+* The operator **can**: propose variants and monitors, read every journal, recommend.
   It **cannot**: change risk limits or budgets, touch the universe, spend
   beyond the ledger's daily budget, or promote to live. Those are code and
   humans, on purpose — the research record of agents under "survive at all

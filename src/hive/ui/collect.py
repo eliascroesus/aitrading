@@ -126,6 +126,7 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
             k, pl = e["kind"], e["payload"]
             if k == "desk_notes":
                 desks["notes"], desks["date"] = pl.get("notes", []), p.stem[:10]
+                desks["portfolio_note"] = pl.get("portfolio_note", "")
             elif k == "news_watch":
                 desks["watch"].append({"date": p.stem[:10], **pl})
             elif k == "meme_day":
@@ -145,9 +146,98 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
     data["desks"] = desks
     data["heartbeat"] = _read_json(state / "heartbeat.json") or {}
 
+    # --- firm activity timeline: every desk and sub-agent, newest last ----------------------------
+    timeline: list[dict] = []
+
+    def who_of(stem: str) -> str:
+        if "-child-" in stem:
+            return stem.split("-child-", 1)[1]
+        return "shadow" if stem.endswith("-shadow") else "primary"
+
+    all_files = sorted(jdir.glob("*.jsonl")) if jdir.exists() else []
+    for p in all_files[-40:]:
+        who = who_of(p.stem)
+        for e in Journal.read(p):
+            k, pl, ts = e["kind"], e["payload"], e.get("ts", "")[:16].replace("T", " ")
+            if k == "decisions":
+                for d in pl.get("decisions", []):
+                    timeline.append({"ts": ts, "who": who, "kind": "decision",
+                                     "text": f"{d.get('action')} {d.get('symbol')}"
+                                             + (f" ({d.get('confidence'):.2f})" if d.get("confidence") is not None else "")})
+            elif k in ("order", "exit", "fill", "fill_confirmed", "untradable", "reconcile", "death", "kill_switch"):
+                sym = pl.get("symbol", "")
+                detail = pl.get("reason") or pl.get("event") or pl.get("message") or ""
+                timeline.append({"ts": ts, "who": who, "kind": k, "text": f"{sym} {detail}".strip()})
+            elif k == "news_watch" and (pl.get("material_negative") or pl.get("attention_spike")):
+                timeline.append({"ts": ts, "who": "news watch", "kind": "flag",
+                                 "text": f"{pl.get('symbol')}: " + ("material negative" if pl.get("material_negative") else "attention spike")})
+            elif k == "monitor_report":
+                timeline.append({"ts": ts, "who": who, "kind": "report",
+                                 "text": f"{pl.get('query')}: sent {pl.get('net_sentiment', 0):+.2f}"
+                                         + (" material negative" if pl.get("material_negative") else "")
+                                         + (" attention spike" if pl.get("attention_spike") else "")})
+            elif k == "meme_day":
+                timeline.append({"ts": ts, "who": who, "kind": "scan",
+                                 "text": f"scanned {pl.get('scanned')} tokens, {pl.get('n_candidates')} passed, "
+                                         f"{len(pl.get('entries') or [])} entries, {len(pl.get('exits') or [])} exits"})
+            elif k == "run_start":
+                timeline.append({"ts": ts, "who": who, "kind": "run", "text": f"cycle for {pl.get('date')} at ${pl.get('equity', 0):,.2f}"})
+    for line in (state / "ledger.jsonl").read_text().splitlines() if (state / "ledger.jsonl").exists() else []:
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        if e.get("kind") in ("tier_change", "allocation_change", "promotion", "halt", "death", "capital_in"):
+            m = e.get("meta", {})
+            timeline.append({"ts": e.get("ts", "")[:16].replace("T", " "), "who": "ledger", "kind": e["kind"],
+                             "text": m.get("why") or m.get("reason") or (f"{m.get('from')} -> {m.get('to')}" if "to" in m else json.dumps(m)[:120])})
+    timeline.sort(key=lambda x: x["ts"])
+    data["timeline"] = timeline[-80:]
+
+    # --- what the operator thinks, what the auditor found, what was promoted ------------------------
+    rl = state / "research_log.jsonl"
+    rows = [json.loads(x) for x in rl.read_text().splitlines() if x.strip()] if rl.exists() else []
+    data["research_log"] = rows[-8:]
+    reviews = sorted((reports / "reviews").glob("review-*.json")) if (reports / "reviews").exists() else []
+    rv = _read_json(reviews[-1]) if reviews else None
+    data["review"] = ({"date": reviews[-1].stem.replace("review-", ""),
+                       "findings": (rv.get("report") or {}).get("findings", []),
+                       "assessment": (rv.get("report") or {}).get("llm_added_value_assessment", "")}
+                      if rv and isinstance(rv, dict) else {})
+    data["promoted"] = _read_json(state / "promoted_overrides.json") or {}
+
     # --- hive registry (children / iterations) -----------------------------------------------
     hive = _read_json(state / "hive.json") or {"children": [], "iterations": []}
+    try:
+        from hive.hive.registry import HiveRegistry
+
+        hive["ready_ids"] = [c.id for c in HiveRegistry(state / "hive.json", cfg.survival).ready_to_promote()] \
+            if (state / "hive.json").exists() else []
+    except Exception:
+        hive["ready_ids"] = []
     data["hive"] = hive
+    detail: dict[str, dict] = {}
+    for c in hive.get("children", []):
+        cid = c.get("id")
+        cdir = state / "children" / str(cid)
+        d: dict = {"marks": [], "positions": [], "today": None, "latest": None, "meme_book": None}
+        if (cdir / "ledger.jsonl").exists():
+            try:
+                d["marks"] = [[dt, round(v, 2)] for dt, v in SurvivalLedger(cdir / "ledger.jsonl", cfg.survival).equity_marks()][-120:]
+            except Exception:
+                pass
+        if (cdir / "book.json").exists():
+            d["positions"] = list(((_read_json(cdir / "book.json") or {}).get("positions") or {}).keys())
+        d["latest"] = _read_json(cdir / "latest.json") if (cdir / "latest.json").exists() else None
+        d["meme_book"] = _read_json(cdir / "meme_book.json") if (cdir / "meme_book.json").exists() else None
+        cj = sorted(jdir.glob(f"*-child-{cid}.jsonl")) if jdir.exists() else []
+        if cj:
+            kinds: dict[str, int] = {}
+            for e in Journal.read(cj[-1]):
+                kinds[e["kind"]] = kinds.get(e["kind"], 0) + 1
+            d["today"] = {"date": cj[-1].stem[:10], "kinds": kinds}
+        detail[str(cid)] = d
+    data["children_detail"] = detail
     data["allocation"] = _read_json(state / "allocation.json") or {}
 
     # --- backtests & experiments --------------------------------------------------------------

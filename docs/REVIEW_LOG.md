@@ -76,5 +76,12 @@ full price precision (a sub-cent SHIB stop had been rounded to zero). Added:
 `desk_notes` journal entries (every desk's bounded view per candidate), the
 hourly heartbeat (`hive watch`, `watch.yml`) and the social scout.
 
+Added next: monitor sub-agents (news channels the operator proposes), a daily
+code-driven sweep of the strategy space, one-click human promotion whose
+overrides the primary adopts, a research-pot bonus for sub-agents that beat
+the parent, and a dashboard built around the sub-agents (a card each with its
+curve, overrides, today's activity or reports), the operator's notes, the
+auditor's findings and a firm-wide activity timeline.
+
 ### Done well (reviewer's words)
 Point-in-time features with a no-lookahead test; internally consistent backtest accounting; fail-closed LLM layer with enum-only actions; sound ledger hash chain; layered live-mode gating and no withdraw path anywhere.

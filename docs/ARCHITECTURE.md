@@ -143,6 +143,16 @@ daily: children trade their own paper books (stocks / crypto / all / meme sleeve
         ▼  human: `hive hive promote <id> --approve` → overrides committed to strategy.toml
 ```
 
+Three things create sub-agents. The **sweep** (`hive sweep`, daily, no LLM)
+backtests untested cells of the pre-registered strategy space and seats the
+winners. The **operator** (Sundays) proposes variants from the evidence and
+**monitors**: news-channel sub-agents watching up to five topics or symbols
+whose bounded daily reports reach the portfolio manager as "desk reports". A
+**human** promotes a variant that has beaten the parent for the shadow period
+(`promote-sub-agent` workflow); its overrides become the primary's, and it
+frees its seat. Every sub-agent that beats the parent also raises the firm's
+research pot by a quarter, up to double.
+
 The operator designs sub-agents: it may pick the entry family (`entry_mode`)
 and any knob listed in `config/bounds.toml`, for any sleeve, and it reads its
 own research log (`state/research_log.jsonl`) and every variant ever tested

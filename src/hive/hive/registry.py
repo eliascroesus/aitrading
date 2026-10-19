@@ -16,7 +16,7 @@ Sleeve = str  # "stocks" | "crypto" | "all" | "meme"
 class Child:
     id: str
     name: str
-    kind: str                      # "variant" | "scout"
+    kind: str                      # "variant" | "scout" | "monitor"
     sleeve: Sleeve
     overrides: dict[str, Any] = field(default_factory=dict)
     status: str = "shadow"         # shadow | live | retired
@@ -30,6 +30,7 @@ class Child:
     hypothesis: str = ""
     notes: list[str] = field(default_factory=list)
     metrics: dict[str, Any] = field(default_factory=dict)
+    watch: list[str] = field(default_factory=list)   # monitors: topics or symbols to report on daily
 
 
 class PromotionNeedsHumanError(PermissionError):
@@ -101,10 +102,27 @@ class HiveRegistry:
         c = self.get(child_id)
         if c.shadow_days < self.rules.child_shadow_days:
             raise PermissionError(f"child has {c.shadow_days} shadow days; needs {self.rules.child_shadow_days}")
-        c.status = "live"
-        c.notes.append("promoted to live by human approval")
+        # A promoted variant's overrides move into the primary (state/promoted_overrides.json,
+        # written by the CLI); the child itself steps aside and frees its seat.
+        c.status, c.retired = "promoted", date.today().isoformat()
+        c.notes.append("promoted into the primary by human approval")
         self.save()
         return c
+
+    def ready_to_promote(self) -> list[Child]:
+        """Shadow variants that have beaten the parent for the required shadow period."""
+        return [c for c in self.active() if c.kind == "variant" and c.status == "shadow"
+                and c.shadow_days >= self.rules.child_shadow_days and (c.voi or 0.0) > 0.0]
+
+    def retire_expired_monitors(self, ttl_days: int, on: date | None = None) -> list[Child]:
+        on = on or date.today()
+        out = []
+        for c in self.active():
+            if c.kind != "monitor" or not c.born:
+                continue
+            if (on - date.fromisoformat(c.born)).days >= ttl_days:
+                out.append(self.retire(c.id, f"monitor expired after {ttl_days} days (re-propose if still useful)", on))
+        return out
 
     # -- marks / value of information ---------------------------------------------------
     def mark(self, child_id: str, equity: float, parent_equity: float, *, on: date | None = None) -> Child:

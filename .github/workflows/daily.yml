@@ -56,6 +56,8 @@ jobs:
         run: .venv/bin/hive data refresh --days 600 || echo "refresh failed; using cached data"
       - name: Daily cycle (paper unless secrets say otherwise)
         run: .venv/bin/hive run ${{ secrets.HIVE_MODE == 'live' && '--live' || '' }}
+      - name: Strategy sweep (backtest three untested cells of the strategy space; no LLM)
+        run: .venv/bin/hive sweep --cells 3 || echo "sweep skipped"
       - name: Heartbeat (live positions and prices for the dashboard)
         run: .venv/bin/hive watch || echo "heartbeat skipped"
       - name: Rebuild the dashboard

@@ -108,12 +108,32 @@ def apply_allocation(settings: Settings, cfg: StrategyConfig) -> StrategyConfig:
     return cfg.model_copy(update={"risk": cfg.risk.model_copy(update={"crypto_sleeve_pct": pct})})
 
 
+def apply_promoted(cfg: StrategyConfig, settings: Settings) -> StrategyConfig:
+    """Overrides of sub-agents a human promoted (hive hive promote) become the primary's."""
+    path = settings.hive_state_dir / "promoted_overrides.json"
+    if not path.exists():
+        return cfg
+    try:
+        ov = json.loads(path.read_text()).get("overrides", {})
+    except (ValueError, OSError):
+        return cfg
+    if not ov:
+        return cfg
+    from hive.backtest.experiments import _apply_overrides
+
+    try:
+        return _apply_overrides(cfg, ov)
+    except Exception as exc:  # a bad file must not stop the run; the primary keeps its config
+        log.error("promoted overrides ignored: %s", exc)
+        return cfg
+
+
 def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_shadow: bool = True,
             llm_enabled: bool | None = None) -> dict[str, Path]:
     ts = pd.Timestamp(run_date)
     rd = ts.date().isoformat()
     clear_feature_cache()
-    cfg = apply_allocation(settings, cfg)
+    cfg = apply_promoted(apply_allocation(settings, cfg), settings)
     store = BarStore(settings.hive_data_dir / "cache")
     classes = asset_classes_from_store(store, cfg)
     pit = settings.hive_data_dir / "raw" / "sp500_pit_membership.csv"
@@ -154,6 +174,10 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
         journal.write("replay", {"note": "historical date: news/fundamentals disabled to avoid lookahead"})
 
     names = load_company_names(settings.hive_data_dir / "raw" / "sp500_constituents.csv")
+    from hive.hive.monitors import latest_desk_reports
+    from hive.hive.registry import HiveRegistry
+
+    desk_reports = latest_desk_reports(settings, HiveRegistry(settings.hive_state_dir / "hive.json", cfg.survival))
     primary_broker = build_primary_broker(settings, store, classes, ts, cfg.survival.starting_bankroll_usd)
     try:
         primary = DailyRun(
@@ -162,7 +186,7 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
             ledger=ledger, llm=llm, universe=universe, asset_classes=classes, kill_switch=kill,
             cheap_model=settings.hive_llm_cheap_model, decision_model=settings.hive_llm_model,
             effort=settings.hive_llm_effort, news_fn=news_fn, fundamentals_fn=fundamentals_fn,
-            company_names=names,
+            company_names=names, desk_reports=desk_reports,
         ).execute()
     except SystemDeadError as exc:
         write_post_mortem(settings, ledger, str(exc), run_date)
@@ -190,11 +214,15 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
     try:
         from hive.hive.children import run_children
 
+        spent_before = llm.spent_usd if llm is not None else 0.0
         children = run_children(settings, cfg, run_date, store=store, classes=classes, universe=universe,
                                 kill=kill, parent_equity=primary.equity_gross,
-                                price_fn_factory=lambda cls, t: latest_close_fn(store, cls, t))
+                                price_fn_factory=lambda cls, t: latest_close_fn(store, cls, t),
+                                llm=llm, news_fn=news_fn)
         if children:
             journal.write("children", {"children": children})
+        if llm is not None and llm.spent_usd - spent_before > 0:   # the monitors' reader calls
+            ledger.append("ai_cost", llm.spent_usd - spent_before, {"label": "monitors", "date": rd})
     except Exception as exc:  # never let the hive take the primary down
         log.exception("children run failed: %s", exc)
 

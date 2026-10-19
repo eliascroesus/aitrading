@@ -31,8 +31,10 @@ def test_registry_respects_tier_limits_and_human_promotion(tmp_path):
     for i in range(cfg.survival.child_shadow_days):
         reg.mark(c.id, 100 + i, 100 + i * 0.5, on=date(2026, 1, 1) + timedelta(days=i))
     assert reg.get(c.id).voi == pytest.approx((113 / 100 - 1) - (106.5 / 100 - 1))
+    assert [x.id for x in reg.ready_to_promote()] == [c.id]
     reg.promote(c.id, approved_by_human=True)
-    assert HiveRegistry(tmp_path / "hive.json", cfg.survival).get(c.id).status == "live"
+    again = HiveRegistry(tmp_path / "hive.json", cfg.survival)
+    assert again.get(c.id).status == "promoted" and c.id not in [x.id for x in again.active()]  # seat freed
 
 
 def test_auto_retire_losers(tmp_path):
@@ -154,6 +156,8 @@ def test_proposal_schema_is_typed_and_bounded_to_tunables():
     with pytest.raises(pydantic.ValidationError):   # not a pre-registered tunable
         schema.model_validate({"proposals": [{"name": "x", "hypothesis": "y",
                                                "overrides": [{"param": "risk.max_leverage", "value": 5}]}]})
-    with pytest.raises(pydantic.ValidationError):   # a proposal must change something
-        schema.model_validate({"proposals": [{"name": "x", "hypothesis": "y", "overrides": []}]})
+    # an empty override list is a monitor's shape; for a variant, code rejects it ("no overrides")
+    empty = schema.model_validate({"proposals": [{"name": "x", "hypothesis": "y", "overrides": []}]})
+    ok, why = validate_overrides(to_proposals(empty, 3)[0].overrides, bounds)
+    assert not ok and "no overrides" in why
     assert to_proposals(None, 3) == []

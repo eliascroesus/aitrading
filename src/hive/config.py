@@ -308,6 +308,8 @@ class OperatorRules(BaseModel):
     # to *recommend* it in the journal.
     auto_promote: bool = False
     bounds_file: str = "config/bounds.toml"
+    # A news-channel monitor sub-agent expires after this many days unless re-proposed.
+    monitor_ttl_days: int = 28
 
 
 class MemeRules(BaseModel):

@@ -229,6 +229,7 @@ outofsample_start = "2013-01-01"
 max_drawdown_tolerance = 1.10
 auto_promote = false
 bounds_file = "config/bounds.toml"
+monitor_ttl_days = 28
 
 [meme]
 enabled = false

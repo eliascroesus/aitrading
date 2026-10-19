@@ -7,6 +7,7 @@ each row carries ``k = raw_close / close`` to convert ATRs and swing lows.
 
 from __future__ import annotations
 
+import json
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -120,7 +121,9 @@ class DailyRun:
         news_fn: Callable[[str], list[tuple[str, str]]] | None = None,
         fundamentals_fn: Callable[[str], dict[str, Any]] | None = None,
         company_names: dict[str, list[str]] | None = None,
+        desk_reports: list[dict[str, Any]] | None = None,
     ):
+        self.desk_reports = desk_reports or []
         self.news_fn = news_fn
         self.fundamentals_fn = fundamentals_fn
         self.company_names = company_names or {}
@@ -352,12 +355,15 @@ class DailyRun:
                 evals = pipe.evaluate(ctxs, {"equity": equity, "cash": cash, "n_positions": len(self.book),
                                              "regime_risk_multiplier": float(reg["risk_multiplier"])},
                                       firm_status=prompts.firm_status(
-                                          status.__dict__ if status is not None else None, self.cfg.survival.tiers))
+                                          status.__dict__ if status is not None else None, self.cfg.survival.tiers)
+                                      + (("\nDesk reports from the firm's monitors (bounded): "
+                                          + json.dumps(self.desk_reports, default=str)[:3000]) if self.desk_reports else ""))
                 self.journal.write("desk_notes", {"notes": [
                     {"symbol": ev.symbol, "news": bounded_view(ev.news), "fundamental": bounded_view(ev.fundamental),
                      "technical": bounded_view(ev.technical), "sentiment": bounded_view(ev.sentiment),
                      "debate": bounded_view(ev.debate), "action": ev.decision.action,
-                     "confidence": ev.decision.confidence, "cost_usd": ev.cost_usd} for ev in evals]})
+                     "confidence": ev.decision.confidence, "cost_usd": ev.cost_usd} for ev in evals],
+                    "portfolio_note": getattr(pipe, "last_portfolio_note", "")})
                 for ev in evals:
                     actions[ev.symbol] = (ev.decision.action, ev.decision.invalidation_condition)
                     summary.decisions.append({"symbol": ev.symbol, "action": ev.decision.action,

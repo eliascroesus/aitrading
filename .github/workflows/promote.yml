@@ -1,0 +1,39 @@
+name: promote-sub-agent
+
+# A human promotes a sub-agent into the primary: its overrides become the live
+# configuration (state/promoted_overrides.json) and it frees its seat. Run it
+# from the Actions tab with the child's id (as shown on the dashboard).
+on:
+  workflow_dispatch:
+    inputs:
+      child_id:
+        description: "Sub-agent id to promote (e.g. sweep-stocks-entry-mode-high-breakout)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hive-state
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          cache-dependency-glob: pyproject.toml
+      - run: uv venv --python 3.13 && uv pip install -e .
+      - run: .venv/bin/hive hive promote "${{ inputs.child_id }}" --approve
+      - name: Commit the promotion
+        run: |
+          git config user.name "hive-bot"
+          git config user.email "hive-bot@users.noreply.github.com"
+          git add state
+          git diff --cached --quiet || git commit -m "promote ${{ inputs.child_id }} into the primary"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push

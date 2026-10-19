@@ -28,7 +28,11 @@ OPERATOR_SYSTEM = (
     "own results so far. A variant may change the entry family (entry_mode) as well as any knob: "
     "the trend template, exits and limits stay, the moment to buy is yours to design. Read "
     "tested_variants and research_log before proposing: never repeat a tested variant, build on "
-    "what beat the parent, and say what you learned in the note. Code backtests every proposal in-sample and out-of-sample; only variants "
+    "what beat the parent, and say what you learned in the note. You may also propose a monitor "
+    "(kind=monitor, watch=up to five topics or symbols, no overrides): a news-channel sub-agent whose "
+    "bounded daily reports reach the portfolio manager; it costs about a cent a day and takes a seat, "
+    "so propose one only when a theme bears on open positions or candidates and no monitor covers it. "
+    "Variants in ready_to_promote have earned promotion; the owner promotes them. Code backtests every proposal in-sample and out-of-sample; only variants "
     "that beat the parent out of sample without a worse drawdown become paper-traded sub-agents, "
     "and only while the firm's tier has a free seat. Sub-agents that underperform the parent are "
     "retired; a human promotes the winners into the live configuration. Whenever a seat is free, "
@@ -42,8 +46,10 @@ OPERATOR_SYSTEM = (
 class Proposal(BaseModel):
     name: str = Field(max_length=40)
     hypothesis: str = Field(max_length=300)
-    overrides: dict[str, float | int | bool | str] = Field(max_length=3)
+    overrides: dict[str, float | int | bool | str] = Field(default_factory=dict, max_length=3)
     sleeve: str = "stocks"
+    kind: str = "variant"            # "variant" (backtested strategy) | "monitor" (news channel)
+    watch: list[str] = Field(default_factory=list, max_length=5)
 
 
 class Proposals(BaseModel):
@@ -59,7 +65,9 @@ def proposal_schema(bounds: dict[str, tuple[float, float]]) -> type[BaseModel]:
     override = create_model("OverrideChoice", param=(Literal[keys], ...), value=(float | str, ...))
     proposal = create_model(
         "ProposalChoice", name=(str, Field(max_length=40)), hypothesis=(str, Field(max_length=300)),
-        overrides=(list[override], Field(min_length=1, max_length=3)),
+        kind=(Literal["variant", "monitor"], "variant"),
+        overrides=(list[override], Field(default_factory=list, max_length=3)),
+        watch=(list[str], Field(default_factory=list, max_length=5)),
         sleeve=(Literal["stocks", "crypto", "all"], "stocks"),
     )
     return create_model("ProposalsChoice", proposals=(list[proposal], Field(max_length=5)),
@@ -69,7 +77,8 @@ def proposal_schema(bounds: dict[str, tuple[float, float]]) -> type[BaseModel]:
 def to_proposals(parsed: BaseModel | None, limit: int) -> list[Proposal]:
     if parsed is None:
         return []
-    return [Proposal(name=p.name, hypothesis=p.hypothesis, sleeve=p.sleeve,
+    return [Proposal(name=p.name, hypothesis=p.hypothesis, sleeve=p.sleeve, kind=getattr(p, "kind", "variant"),
+                     watch=[str(w)[:60] for w in getattr(p, "watch", [])],
                      overrides={o.param: o.value for o in p.overrides})
             for p in list(parsed.proposals)[:limit]]
 
@@ -199,6 +208,9 @@ def performance_context(registry: HiveRegistry, status: dict[str, Any] | None, p
         },
         "tested_variants": tested_variants(registry),
         "research_log": research_log or [],
+        "monitors": [{"name": c.name, "watch": c.watch, "born": c.born} for c in registry.active() if c.kind == "monitor"],
+        "ready_to_promote": [{"name": c.name, "voi": c.voi, "shadow_days": c.shadow_days, "overrides": c.overrides}
+                             for c in registry.ready_to_promote()],
         "firm_status": prompts.firm_status(status, cfg.survival.tiers),
         "survival": status, "parent_backtest": None if parent_eval is None else
         {"insample": parent_eval.insample, "outofsample": parent_eval.outofsample},
@@ -267,9 +279,25 @@ def operate(
     records = []
     note = getattr(parsed, "note", "") if proposals_override is None and llm is not None else ""
     for p in proposals:
-        ok, why = validate_overrides(p.overrides, bounds)
         rec: dict[str, Any] = {"date": on.isoformat(), "proposal": p.name, "hypothesis": p.hypothesis,
-                               "overrides": p.overrides, "sleeve": p.sleeve, "cost_usd": cost / max(len(proposals), 1)}
+                               "overrides": p.overrides, "sleeve": p.sleeve, "cost_usd": cost / max(len(proposals), 1),
+                               "kind": p.kind}
+        if p.kind == "monitor":
+            watch = [w.strip() for w in p.watch if w and w.strip()][:5]
+            if not watch:
+                rec["verdict"] = "rejected: a monitor needs something to watch"
+            else:
+                can, reason = registry.can_spawn(tier)
+                if can:
+                    child = registry.spawn(Child(id="", name=p.name, kind="monitor", sleeve="all", watch=watch,
+                                                 hypothesis=p.hypothesis), tier)
+                    rec["watch"], rec["verdict"] = watch, f"spawned monitor {child.id} watching {', '.join(watch)}"
+                else:
+                    rec["watch"], rec["verdict"] = watch, f"monitor not spawned: {reason}"
+            registry.record_iteration(rec)
+            records.append(rec)
+            continue
+        ok, why = validate_overrides(p.overrides, bounds)
         if not ok:
             rec["verdict"] = f"rejected: {why}"
             registry.record_iteration(rec)

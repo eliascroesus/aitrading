@@ -202,7 +202,7 @@ class SurvivalLedger:
         floor = self.rules.daily_ai_budget_min_usd if tier.risk_multiplier > 0 else 0.0
         return float(min(max(raw, floor), self.rules.daily_ai_budget_max_usd))
 
-    def research_budget(self, equity_net: float, tier: Tier, on: date, days: int = 7) -> float:
+    def research_budget(self, equity_net: float, tier: Tier, on: date, days: int = 7, bonus: float = 1.0) -> float:
         """What the weekly auditor and operator may spend.
 
         Unspent daily budget over the last ``days`` days accrues into a research pot
@@ -219,7 +219,8 @@ class SurvivalLedger:
             pot += max(per_day - spent, 0.0)
         research = sum(e.amount_usd for e in self.entries
                        if e.kind == "ai_cost" and str(e.day).endswith("-research") and str(e.day)[:10] in window)
-        return max(min(pot, days * per_day) - research, 0.0)
+        # ``bonus`` > 1 rewards a firm whose sub-agents beat the parent (set by the CLI from the registry).
+        return max(min(pot, days * per_day) * max(bonus, 1.0) - research, 0.0)
 
     def death_recorded(self) -> LedgerEntry | None:
         for e in reversed(self.entries):

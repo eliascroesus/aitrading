@@ -204,6 +204,7 @@ class CandidatePipeline:
             for p in packets:
                 by_symbol[p["symbol"]].decision = _veto(p["symbol"], "PM call failed (fail closed)")
             return evals
+        self.last_portfolio_note = pm.portfolio_note
         decided = {d.symbol: d for d in pm.decisions}
         share = call.cost_usd / max(len(packets), 1)
         for p in packets:

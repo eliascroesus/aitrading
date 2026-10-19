@@ -221,7 +221,8 @@ def review(days: int = typer.Option(7)) -> None:
     st = ledger.status(last, on=today)
     # The weekly review is paid from the bankroll like every other call, out of the
     # research pot that unspent daily budget accrues into (ledger.research_budget).
-    budget = ledger.research_budget(st.equity_net, ledger.tier(st.equity_net), today)
+    budget = ledger.research_budget(st.equity_net, ledger.tier(st.equity_net), today,
+                                    bonus=_research_bonus(cfg, s.hive_state_dir))
     llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(), budget_usd=max(budget, 0.0))
     out = s.hive_reports_dir / "reviews" / f"review-{today.isoformat()}.json"
     rep = run_review(llm, s.hive_llm_model, inputs, out)
@@ -285,11 +286,22 @@ def hive_retire(child_id: str, why: str = typer.Option("retired by human")) -> N
 def hive_promote(child_id: str, approve: bool = typer.Option(False, help="Required: a human approves")) -> None:
     """Promote a shadow child to live. Always a human decision."""
     from hive.hive.registry import HiveRegistry
+    from hive.survival.ledger import SurvivalLedger
 
     s = get_settings()
-    reg = HiveRegistry(s.hive_state_dir / "hive.json", StrategyConfig.load().survival)
+    cfg = StrategyConfig.load()
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
     c = reg.promote(child_id, approved_by_human=approve)
-    rprint(f"{c.id} is now live. Apply its overrides to config/strategy.toml in a commit: {c.overrides}")
+    path = s.hive_state_dir / "promoted_overrides.json"
+    cur = json.loads(path.read_text()) if path.exists() else {"overrides": {}, "history": []}
+    cur["overrides"] = {**cur.get("overrides", {}), **(c.overrides or {})}
+    cur["history"] = (cur.get("history") or [])[-50:] + [{"date": c.retired, "child": c.id, "name": c.name,
+                                                           "overrides": c.overrides, "voi": c.voi,
+                                                           "shadow_days": c.shadow_days}]
+    path.write_text(json.dumps(cur, indent=1, default=str))
+    SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival).append(
+        "promotion", 0.0, {"child": c.id, "overrides": c.overrides, "voi": c.voi})
+    rprint(f"{c.id} promoted: the primary now runs {cur['overrides']} (state/promoted_overrides.json)")
 
 
 @app.command()
@@ -315,7 +327,8 @@ def operate(dry_run: bool = typer.Option(False, help="Propose and evaluate witho
     llm = None
     if s.anthropic_api_key is not None:
         llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(),
-                        budget_usd=ledger.research_budget(st.equity_net, tier, today))
+                        budget_usd=ledger.research_budget(st.equity_net, tier, today,
+                                                          bonus=_research_bonus(cfg, s.hive_state_dir)))
     reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
     if dry_run:
         reg.path = s.hive_state_dir / "hive.dryrun.json"
@@ -359,6 +372,37 @@ def watch() -> None:
     (s.hive_state_dir / "heartbeat.json").write_text(json.dumps(hb, indent=1, default=str))
     rprint(f"heartbeat {hb['ts']}: {hb['broker']} equity ${hb['equity']:.2f}, {len(positions)} positions, "
            f"market {'open' if hb['market_open'] else 'closed'}")
+
+
+@app.command()
+def sweep(cells: int = typer.Option(3, help="Untested grid cells to backtest this run")) -> None:
+    """Constant strategy search: backtest untested cells of the pre-registered space (no LLM)."""
+    from datetime import date as _date
+
+    from hive.hive.registry import HiveRegistry
+    from hive.operator.sweep import run_sweep
+    from hive.survival.ledger import SurvivalLedger
+
+    s = get_settings()
+    setup_logging()
+    cfg = StrategyConfig.load()
+    ledger = SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival)
+    last = ledger.last_equity_mark() or cfg.survival.starting_bankroll_usd
+    tier = ledger.tier(ledger.status(last).equity_net)
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+    for r in run_sweep(s, cfg, reg, tier, n_cells=cells, on=_date.today()):
+        rprint(f"{r['proposal']}: {r['verdict']}")
+
+
+def _research_bonus(cfg: StrategyConfig, state_dir: Path) -> float:
+    """1 + 0.25 per sub-agent that has beaten the parent for the shadow period, capped at 2x."""
+    from hive.hive.registry import HiveRegistry
+
+    try:
+        n = len(HiveRegistry(state_dir / "hive.json", cfg.survival).ready_to_promote())
+    except Exception:
+        n = 0
+    return min(1.0 + 0.25 * n, 2.0)
 
 
 @app.command()

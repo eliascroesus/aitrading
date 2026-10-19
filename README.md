@@ -71,6 +71,7 @@ hive operate                            # the operator proposes variants, code b
 hive hive list | spawn | retire | promote <id> --approve   # promotion is always a human decision
 hive allocate                           # weekly: capital moves toward the desk that earned (bounded, no LLM)
 hive watch                              # hourly heartbeat: live positions and prices into the dashboard
+hive sweep --cells 3                    # daily: backtest untested cells of the strategy space (no LLM)
 ```
 
 Full setup (accounts, keys, hosts, costs, go-live checklist): `docs/SETUP.md`.
