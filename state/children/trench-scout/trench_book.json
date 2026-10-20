@@ -1,23 +1,12 @@
 {
-  "cash": 68.8385798879429,
+  "cash": 74.70342240466844,
   "positions": {
-    "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
-      "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
-      "symbol": "MONEYBIZ",
-      "qty": 4698.188378561227,
-      "entry_price": 0.001004,
-      "peak_price": 0.002002,
-      "entered_at": "2026-10-20T14:15:41.774834+00:00",
-      "cost_usd": 5.0,
-      "took_half": false,
-      "misses": 0
-    },
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
       "symbol": "pika",
       "qty": 82709.2652884142,
       "entry_price": 5.939e-05,
-      "peak_price": 7.84e-05,
+      "peak_price": 8.283e-05,
       "entered_at": "2026-10-20T14:39:34.197919+00:00",
       "cost_usd": 5.206829461407655,
       "took_half": false,
@@ -39,7 +28,7 @@
       "symbol": "WiSP",
       "qty": 70593.08617473027,
       "entry_price": 6.722e-05,
-      "peak_price": 6.722e-05,
+      "peak_price": 6.964e-05,
       "entered_at": "2026-10-20T16:36:12.459507+00:00",
       "cost_usd": 5.029983287825291,
       "took_half": false,
@@ -50,7 +39,7 @@
       "symbol": "ARTEMI",
       "qty": 39058.11664297884,
       "entry_price": 0.0001199,
-      "peak_price": 0.0001199,
+      "peak_price": 0.0001565,
       "entered_at": "2026-10-20T16:44:22.363984+00:00",
       "cost_usd": 4.964052276622754,
       "took_half": false,
@@ -325,6 +314,16 @@
       "notional": 4.964052276622754,
       "liquidity_usd": 30228.61,
       "age_hours": 0.5233519936116536
+    },
+    {
+      "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
+      "symbol": "MONEYBIZ",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.001328,
+      "proceeds": 5.86484251672555,
+      "pnl_approx": 0.8648425167255498,
+      "age_hours": 2.60073757
     }
   ]
 }
