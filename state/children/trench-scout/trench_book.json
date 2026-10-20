@@ -1,5 +1,5 @@
 {
-  "cash": 50.31983996424686,
+  "cash": 50.28293999104127,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -12,17 +12,6 @@
       "took_half": false,
       "misses": 0
     },
-    "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP": {
-      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
-      "symbol": "WiSP",
-      "qty": 70593.08617473027,
-      "entry_price": 6.722e-05,
-      "peak_price": 8.203e-05,
-      "entered_at": "2026-10-20T16:36:12.459507+00:00",
-      "cost_usd": 5.029983287825291,
-      "took_half": false,
-      "misses": 0
-    },
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
       "symbol": "MONEYBIZ",
@@ -31,17 +20,6 @@
       "peak_price": 0.001547,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
-      "took_half": false,
-      "misses": 0
-    },
-    "CcfmQBZ6o3suCyd638CbjCVZtdsYHSwYnkHbPbSgpump": {
-      "mint": "CcfmQBZ6o3suCyd638CbjCVZtdsYHSwYnkHbPbSgpump",
-      "symbol": "CUMROCKET",
-      "qty": 20331.90155823819,
-      "entry_price": 0.0002082,
-      "peak_price": 0.0003954,
-      "entered_at": "2026-10-20T17:52:54.421396+00:00",
-      "cost_usd": 4.487088018690703,
       "took_half": false,
       "misses": 0
     },
@@ -64,6 +42,28 @@
       "peak_price": 7.124e-05,
       "entered_at": "2026-10-20T18:40:02.587129+00:00",
       "cost_usd": 4.2109919677188135,
+      "took_half": false,
+      "misses": 0
+    },
+    "8ek2qvnarCmbJmJTw6yWmP3wCMhBJjK12Qdkw4TNpump": {
+      "mint": "8ek2qvnarCmbJmJTw6yWmP3wCMhBJjK12Qdkw4TNpump",
+      "symbol": "Rosy",
+      "qty": 19420.38293082811,
+      "entry_price": 0.0001895,
+      "peak_price": 0.0001895,
+      "entered_at": "2026-10-20T19:04:30.965958+00:00",
+      "cost_usd": 3.900972319315443,
+      "took_half": false,
+      "misses": 0
+    },
+    "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "qty": 35116.055013281744,
+      "entry_price": 0.0001048,
+      "peak_price": 0.0001048,
+      "entered_at": "2026-10-20T19:04:30.965958+00:00",
+      "cost_usd": 3.900972319315443,
       "took_half": false,
       "misses": 0
     }
@@ -573,6 +573,44 @@
       "proceeds": 2.9882261180377734,
       "pnl_approx": -1.208122170913831,
       "age_hours": 0.5277235277777778
+    },
+    {
+      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
+      "symbol": "WiSP",
+      "event": "exit",
+      "reason": "trail",
+      "price": 5.858e-05,
+      "proceeds": 3.887222408828757,
+      "pnl_approx": -1.1427608789965342,
+      "age_hours": 2.4718073475
+    },
+    {
+      "mint": "CcfmQBZ6o3suCyd638CbjCVZtdsYHSwYnkHbPbSgpump",
+      "symbol": "CUMROCKET",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0002029,
+      "proceeds": 3.8778222565965366,
+      "pnl_approx": -0.6092657620941666,
+      "age_hours": 1.1934846005555555
+    },
+    {
+      "mint": "8ek2qvnarCmbJmJTw6yWmP3wCMhBJjK12Qdkw4TNpump",
+      "symbol": "Rosy",
+      "event": "entry",
+      "price": 0.0001895,
+      "notional": 3.900972319315443,
+      "liquidity_usd": 62683.29,
+      "age_hours": 0.3346094236246745
+    },
+    {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "event": "entry",
+      "price": 0.0001048,
+      "notional": 3.900972319315443,
+      "liquidity_usd": 27437.83,
+      "age_hours": 2.0307754802788627
     }
   ]
 }
