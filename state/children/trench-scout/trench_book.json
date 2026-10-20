@@ -1,5 +1,5 @@
 {
-  "cash": 44.77692085836844,
+  "cash": 41.320606612149206,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -45,17 +45,6 @@
       "took_half": false,
       "misses": 0
     },
-    "93iqi7JSBc5jbNWjNZqs7nqFWaEaLzPxmPYLvnVspump": {
-      "mint": "93iqi7JSBc5jbNWjNZqs7nqFWaEaLzPxmPYLvnVspump",
-      "symbol": "VAGINA",
-      "qty": 18445.67579446947,
-      "entry_price": 0.0001852,
-      "peak_price": 0.0003142,
-      "entered_at": "2026-10-20T19:28:10.977405+00:00",
-      "cost_usd": 3.6211075065638902,
-      "took_half": false,
-      "misses": 0
-    },
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
       "symbol": "GTAa",
@@ -64,6 +53,28 @@
       "peak_price": 9.887e-05,
       "entered_at": "2026-10-20T19:35:42.405748+00:00",
       "cost_usd": 3.7376708613949847,
+      "took_half": false,
+      "misses": 0
+    },
+    "9SzQ2oUyxALCmbGd3isX9RTaXBWdDpV6B3fK8Tovpump": {
+      "mint": "9SzQ2oUyxALCmbGd3isX9RTaXBWdDpV6B3fK8Tovpump",
+      "symbol": "Punani",
+      "qty": 18805.524379397295,
+      "entry_price": 0.0001782,
+      "peak_price": 0.0001782,
+      "entered_at": "2026-10-20T19:59:50.503040+00:00",
+      "cost_usd": 3.5522131110731134,
+      "took_half": false,
+      "misses": 0
+    },
+    "F6Kw7crAAXQp4hjXVSe8ZuyvnaLyjvJDVBpcxGUFpump": {
+      "mint": "F6Kw7crAAXQp4hjXVSe8ZuyvnaLyjvJDVBpcxGUFpump",
+      "symbol": "DACITY",
+      "qty": 18026.597334096812,
+      "entry_price": 0.0001859,
+      "peak_price": 0.0001859,
+      "entered_at": "2026-10-20T19:59:50.503040+00:00",
+      "cost_usd": 3.5522131110731134,
       "took_half": false,
       "misses": 0
     }
@@ -668,6 +679,34 @@
       "proceeds": 2.3963737289294573,
       "pnl_approx": -1.224733777634433,
       "age_hours": 0.3985872922222222
+    },
+    {
+      "mint": "93iqi7JSBc5jbNWjNZqs7nqFWaEaLzPxmPYLvnVspump",
+      "symbol": "VAGINA",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0002104,
+      "proceeds": 3.6481119759269935,
+      "pnl_approx": 0.0270044693631033,
+      "age_hours": 0.5276460097222222
+    },
+    {
+      "mint": "9SzQ2oUyxALCmbGd3isX9RTaXBWdDpV6B3fK8Tovpump",
+      "symbol": "Punani",
+      "event": "entry",
+      "price": 0.0001782,
+      "notional": 3.5522131110731134,
+      "liquidity_usd": 36267.32,
+      "age_hours": 0.8586035619439019
+    },
+    {
+      "mint": "F6Kw7crAAXQp4hjXVSe8ZuyvnaLyjvJDVBpcxGUFpump",
+      "symbol": "DACITY",
+      "event": "entry",
+      "price": 0.0001859,
+      "notional": 3.5522131110731134,
+      "liquidity_usd": 37229.78,
+      "age_hours": 1.4144702707926433
     }
   ]
 }
