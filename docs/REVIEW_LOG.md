@@ -225,3 +225,34 @@ pump.fun-sized memecoins and X were deferred by the owner.
 * **Still pending, owner's decision** (refused by this session's permission
   gate earlier, not retried): removing the drawdown-tolerance check from the
   verdict, the operator prompt rewrite, and routing orders to Hyperliquid.
+
+### Config 2.3.0: shorts, forex and gold, no pause on paper, models paid by what they add
+
+The owner asked (2026-10-20) for shorting without leverage, forex, XAUUSD and
+other markets, no drawdown pause except with real money, more room for the AI
+to choose, and for the operator to act on the reward and punishment system.
+
+* **Shorts.** The backtester trades a short as the long rules on the mirrored
+  market (`mirror_bars`), with the money on the real price (bid to sell, ask to
+  cover, full value posted from cash). `direction` is a lever per sleeve.
+* **Macro sleeve.** Ten major forex pairs, gold, silver and three index futures
+  from Yahoo's daily series, long and short by default, CFD-like costs. Oil is
+  left out: its continuous futures went below zero in April 2020, which a price
+  series cannot carry. Overnight swap is not charged on forex.
+* **Paper books the primary cannot trade** (shorts, macro) run on the lab's
+  simulator one new day at a time, on their own book, judged by their own
+  record and never promoted into the Alpaca account.
+* **Drawdown halt** in live mode only; its two levers left the search.
+* **Earned budgets** for the desks (value added over the rules-only shadow) and
+  the operator (scorecard against the free search), 0.25x to 4x.
+* **Operator fix.** Every operator proposal had been backtested on stock data
+  against the stock parent, so a crypto proposal could never win; each now
+  runs on its own sleeve. Its instructions now state the rules as the code
+  applies them (they said a human promotes winners and that it could not change
+  sizing, both no longer true). At the time of the change its record was 0 of 3
+  against the search's 570 of 1,400, so its next pot is about half the base.
+* **Caveats.** Records tested before 2.3.0 ran with the drawdown halt; newer
+  ones without, so a few old leaderboard rows are not like for like. An
+  unlevered forex book moves slowly: a 10% prop target in 60 days is rare
+  without leverage.
+

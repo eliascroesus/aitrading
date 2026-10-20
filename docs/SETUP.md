@@ -138,6 +138,17 @@ hive status
   breaks the daily or total loss limit is retired that day, as a firm would
   close the account; one that lags the parent for 10 days is retired; one
   down 75% dies.
+* **The models are paid by what they add** (config 2.3.0,
+  `hive/survival/earned.py`). The daily desks' budget is the tier's share of
+  equity times a multiplier set by what the AI-filtered primary added over the
+  rules-only shadow in the last 30 days, after its own costs (+1% = +25%,
+  between 0.25x and 4x). The operator's research pot is multiplied by its
+  scorecard: its proposals' pass rate against the lab's free search, plus 0.5x
+  per proposal later promoted (0.25x to 4x). The operator is shown its record
+  and how it is paid before it proposes. Every call is still paid from the
+  bankroll and capped at $2 a day.
+* **The drawdown halt** (liquidate at 25% below the peak, pause 21 days) applies
+  with real money only (config 2.3.0). Backtests and paper books never pause.
 * **Sizing is the evidence's** (config 2.2.0): risk per trade, the largest
   position in a stock, ETF, coin or DOGE/SHIB/PEPE (up to 1.0, which is no cap),
   open risk, the volatility target, the halt and the crypto sleeve are lab
@@ -206,7 +217,34 @@ paper one.
 | Stocks/ETFs | `PaperBroker` | Alpaca | fractional from $1; the core of the study |
 | Crypto (BTC/ETH/SOL) | `PaperBroker` | Alpaca spot (Hyperliquid perps adapter exists in `hive/execution/hyperliquid.py` but is **not routed**: the daily run sends every order to the one primary broker; wiring a second venue is an owner decision, see §6b) | regime gated by BTC's 200DMA; position cap and sleeve size are lab levers (start 30% and 40%, ranges up to 100%) |
 | Memecoin majors (DOGE/SHIB/PEPE) | `PaperBroker` | Alpaca spot | same trend rules and BTC regime gate; position cap is a lab lever (start 10%, range 2% to 100%); they rarely sit above a rising 200-day MA, so entries are rare by design |
+| Forex, gold, silver, index futures (the "macro" sleeve, config 2.3.0) | the forex & gold desk and macro sub-agents, on the lab's simulator | **no venue wired** (a forex/CFD broker or a prop firm's platform; see §6a) | 10 major pairs, XAUUSD, XAGUSD, US500, NAS100, US30 from Yahoo's daily series (metals and indices are continuous futures); long and short by default; CFD-like costs, no overnight swap charged; no leverage, so moves are small: an unlevered forex book rarely makes 10% in 60 days |
 | Memecoins | scout on DexScreener prices | **not wired** (`hive/execution/jupiter.py` lists the four prerequisites) | ≤ 1%/token, ≤ 3% total, ≤ 3 open, −40% stop, 35% trail, 72h time stop; expected to go to zero. pump.fun-sized launches and X are deferred by the owner (2026-10-20) |
+
+## 6a. Shorts, forex and gold (config 2.3.0)
+
+* **Shorting** is a lab lever per sleeve: `stocks.direction`, `crypto.direction`
+  and `macro.direction` are `long`, `short` or `both`. A short is the long rules
+  applied to the market seen upside down (a breakdown below the lows, a stop
+  above the price, a trailing stop that follows the lows); its money is real:
+  it sells at the bid, covers at the ask, and posts its full value from cash,
+  so there is no leverage and a short the price runs against loses real money.
+  Never long and short one market at once. New stock and crypto shorts are
+  full size when the benchmark regime is red, halved in yellow, and scaled by
+  `short_green_mult` (a lever, default 0) in a green bull market; the crash
+  guard blocks them. Stocks and crypto stay long by default until a cell that
+  shorts wins.
+* **Where shorts and forex trade today**: in the lab, and on paper on the
+  lab's own simulator, one new day at a time from the day a book was seated,
+  on its own $100 book (the forex & gold desk, and any sub-agent that shorts
+  or trades macro). They are punished like every other book but never
+  promoted into the primary: the Alpaca account trades long stocks and spot
+  crypto only (Alpaca shorts need a margin account of at least $2,000; crypto
+  cannot be shorted there; it offers no forex). The prop-firm readiness check
+  covers them, so a forex or gold book that clears it opens the issue too.
+* **To trade them for real** a venue has to be wired and approved by you:
+  a forex/CFD broker with an API, or the platform of the prop firm you pick
+  (most forex and gold prop firms run MetaTrader 5 or cTrader). That is a
+  follow-up once a book is ready and a firm is chosen.
 
 ## 6b. Paper-trading everything: what runs today, and what each venue needs from you
 
