@@ -1,5 +1,5 @@
 {
-  "cash": 37.51968017870522,
+  "cash": 38.995359174252506,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -45,17 +45,6 @@
       "took_half": false,
       "misses": 0
     },
-    "F6Kw7crAAXQp4hjXVSe8ZuyvnaLyjvJDVBpcxGUFpump": {
-      "mint": "F6Kw7crAAXQp4hjXVSe8ZuyvnaLyjvJDVBpcxGUFpump",
-      "symbol": "DACITY",
-      "qty": 18026.597334096812,
-      "entry_price": 0.0001859,
-      "peak_price": 0.0002159,
-      "entered_at": "2026-10-20T19:59:50.503040+00:00",
-      "cost_usd": 3.5522131110731134,
-      "took_half": false,
-      "misses": 0
-    },
     "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump": {
       "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
       "symbol": "DTC",
@@ -67,25 +56,25 @@
       "took_half": false,
       "misses": 0
     },
-    "Bivugv4GNFUiqUabDhvFcepDskTcgPk7EtExV4mvpump": {
-      "mint": "Bivugv4GNFUiqUabDhvFcepDskTcgPk7EtExV4mvpump",
-      "symbol": "Xingxing",
-      "qty": 51886.676829906166,
-      "entry_price": 6.538e-05,
-      "peak_price": 6.538e-05,
-      "entered_at": "2026-10-20T20:30:46.725653+00:00",
-      "cost_usd": 3.595891987007622,
-      "took_half": false,
-      "misses": 0
-    },
     "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump": {
       "mint": "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump",
       "symbol": "ILLUSTRATOR",
       "qty": 42778.70026657333,
       "entry_price": 7.93e-05,
-      "peak_price": 7.93e-05,
+      "peak_price": 9.744e-05,
       "entered_at": "2026-10-20T20:30:46.725653+00:00",
       "cost_usd": 3.595891987007622,
+      "took_half": false,
+      "misses": 0
+    },
+    "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump": {
+      "mint": "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump",
+      "symbol": "SPACE",
+      "qty": 72618.74610389906,
+      "entry_price": 4.538e-05,
+      "peak_price": 4.538e-05,
+      "entered_at": "2026-10-20T20:38:36.663379+00:00",
+      "cost_usd": 3.4931650200866358,
       "took_half": false,
       "misses": 0
     }
@@ -765,6 +754,35 @@
       "notional": 3.595891987007622,
       "liquidity_usd": 23964.15,
       "age_hours": 1.520327530585395
+    },
+    {
+      "mint": "F6Kw7crAAXQp4hjXVSe8ZuyvnaLyjvJDVBpcxGUFpump",
+      "symbol": "DACITY",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001587,
+      "proceeds": 2.689171737105894,
+      "pnl_approx": -0.8630413739672194,
+      "age_hours": 0.6461556497222223
+    },
+    {
+      "mint": "Bivugv4GNFUiqUabDhvFcepDskTcgPk7EtExV4mvpump",
+      "symbol": "Xingxing",
+      "event": "exit",
+      "reason": "trail",
+      "price": 4.674e-05,
+      "proceeds": 2.2796722785280252,
+      "pnl_approx": -1.3162197084795966,
+      "age_hours": 0.13053825722222223
+    },
+    {
+      "mint": "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump",
+      "symbol": "SPACE",
+      "event": "entry",
+      "price": 4.538e-05,
+      "notional": 3.4931650200866358,
+      "liquidity_usd": 17498.76,
+      "age_hours": 0.38891842725965714
     }
   ]
 }
