@@ -1,5 +1,5 @@
 {
-  "cash": 57.30952536918983,
+  "cash": 52.82243735049912,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -28,7 +28,7 @@
       "symbol": "MONEYBIZ",
       "qty": 3389.2261465051824,
       "entry_price": 0.001403,
-      "peak_price": 0.001465,
+      "peak_price": 0.001467,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
       "took_half": false,
@@ -50,7 +50,7 @@
       "symbol": "GTAa",
       "qty": 36886.7139746612,
       "entry_price": 0.0001147,
-      "peak_price": 0.0001379,
+      "peak_price": 0.0001488,
       "entered_at": "2026-10-20T17:30:03.991883+00:00",
       "cost_usd": 4.4847604584672585,
       "took_half": false,
@@ -64,6 +64,17 @@
       "peak_price": 4.852e-05,
       "entered_at": "2026-10-20T17:30:03.991883+00:00",
       "cost_usd": 4.4847604584672585,
+      "took_half": false,
+      "misses": 0
+    },
+    "CcfmQBZ6o3suCyd638CbjCVZtdsYHSwYnkHbPbSgpump": {
+      "mint": "CcfmQBZ6o3suCyd638CbjCVZtdsYHSwYnkHbPbSgpump",
+      "symbol": "CUMROCKET",
+      "qty": 20331.90155823819,
+      "entry_price": 0.0002082,
+      "peak_price": 0.0002082,
+      "entered_at": "2026-10-20T17:52:54.421396+00:00",
+      "cost_usd": 4.487088018690703,
       "took_half": false,
       "misses": 0
     }
@@ -440,6 +451,15 @@
       "proceeds": 5.1682949163494065,
       "pnl_approx": 0.13465580164985536,
       "age_hours": 1.929572253611111
+    },
+    {
+      "mint": "CcfmQBZ6o3suCyd638CbjCVZtdsYHSwYnkHbPbSgpump",
+      "symbol": "CUMROCKET",
+      "event": "entry",
+      "price": 0.0002082,
+      "notional": 4.487088018690703,
+      "liquidity_usd": 40017.8,
+      "age_hours": 0.380337316148546
     }
   ]
 }
