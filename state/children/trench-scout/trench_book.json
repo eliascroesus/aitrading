@@ -1,5 +1,5 @@
 {
-  "cash": 52.141230452840425,
+  "cash": 57.30952536918983,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -9,17 +9,6 @@
       "peak_price": 9.132e-05,
       "entered_at": "2026-10-20T14:39:34.197919+00:00",
       "cost_usd": 5.206829461407655,
-      "took_half": false,
-      "misses": 0
-    },
-    "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump": {
-      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
-      "symbol": "COLLECTOOOR",
-      "qty": 31098.337563477227,
-      "entry_price": 0.0001527,
-      "peak_price": 0.0002441,
-      "entered_at": "2026-10-20T15:49:49.143930+00:00",
-      "cost_usd": 5.033639114699551,
       "took_half": false,
       "misses": 0
     },
@@ -61,7 +50,7 @@
       "symbol": "GTAa",
       "qty": 36886.7139746612,
       "entry_price": 0.0001147,
-      "peak_price": 0.0001313,
+      "peak_price": 0.0001379,
       "entered_at": "2026-10-20T17:30:03.991883+00:00",
       "cost_usd": 4.4847604584672585,
       "took_half": false,
@@ -441,6 +430,16 @@
       "notional": 4.4847604584672585,
       "liquidity_usd": 16094.5,
       "age_hours": 0.46502210917154946
+    },
+    {
+      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
+      "symbol": "COLLECTOOOR",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001768,
+      "proceeds": 5.1682949163494065,
+      "pnl_approx": 0.13465580164985536,
+      "age_hours": 1.929572253611111
     }
   ]
 }
