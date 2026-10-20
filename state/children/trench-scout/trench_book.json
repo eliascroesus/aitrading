@@ -1,5 +1,5 @@
 {
-  "cash": 69.66303306410887,
+  "cash": 64.7286885424752,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -53,6 +53,17 @@
       "peak_price": 0.001403,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
+      "took_half": false,
+      "misses": 0
+    },
+    "kai8sjSxmcxyEyXzy58bBmPFPB4bqZdGMty2ZosxJuP": {
+      "mint": "kai8sjSxmcxyEyXzy58bBmPFPB4bqZdGMty2ZosxJuP",
+      "symbol": "KAI",
+      "qty": 26630.675066025156,
+      "entry_price": 0.0001748,
+      "peak_price": 0.0001748,
+      "entered_at": "2026-10-20T17:06:27.697056+00:00",
+      "cost_usd": 4.934344521633669,
       "took_half": false,
       "misses": 0
     }
@@ -344,6 +355,15 @@
       "notional": 5.040389340559577,
       "liquidity_usd": 106349.31,
       "age_hours": 3.8563632097710503
+    },
+    {
+      "mint": "kai8sjSxmcxyEyXzy58bBmPFPB4bqZdGMty2ZosxJuP",
+      "symbol": "KAI",
+      "event": "entry",
+      "price": 0.0001748,
+      "notional": 4.934344521633669,
+      "liquidity_usd": 52286.28,
+      "age_hours": 0.34675786363389755
     }
   ]
 }
