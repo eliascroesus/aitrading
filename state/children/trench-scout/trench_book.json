@@ -1,5 +1,5 @@
 {
-  "cash": 38.54072385214737,
+  "cash": 33.55074686393926,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -31,6 +31,28 @@
       "peak_price": 7.642e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
+      "took_half": false,
+      "misses": 0
+    },
+    "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump": {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "qty": 1370.8577345875647,
+      "entry_price": 0.001717,
+      "peak_price": 0.001717,
+      "entered_at": "2026-10-20T23:20:12.211649+00:00",
+      "cost_usd": 2.4949884941040597,
+      "took_half": false,
+      "misses": 0
+    },
+    "9vuGTtRoL6GeD4Gwt6mQBm7Bn1AzJWATBvjkiMQXpump": {
+      "mint": "9vuGTtRoL6GeD4Gwt6mQBm7Bn1AzJWATBvjkiMQXpump",
+      "symbol": "GEMMA",
+      "qty": 40345.60730693947,
+      "entry_price": 5.834e-05,
+      "peak_price": 5.834e-05,
+      "entered_at": "2026-10-20T23:20:12.211649+00:00",
+      "cost_usd": 2.4949884941040597,
       "took_half": false,
       "misses": 0
     }
@@ -1071,6 +1093,24 @@
       "proceeds": 0.2663067875739981,
       "pnl_approx": -2.5138535968181843,
       "age_hours": 0.1330793713888889
+    },
+    {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "event": "entry",
+      "price": 0.001717,
+      "notional": 2.4949884941040597,
+      "liquidity_usd": 120917.57,
+      "age_hours": 4.239671255018446
+    },
+    {
+      "mint": "9vuGTtRoL6GeD4Gwt6mQBm7Bn1AzJWATBvjkiMQXpump",
+      "symbol": "GEMMA",
+      "event": "entry",
+      "price": 5.834e-05,
+      "notional": 2.4949884941040597,
+      "liquidity_usd": 19326.56,
+      "age_hours": 0.448533551703559
     }
   ]
 }
