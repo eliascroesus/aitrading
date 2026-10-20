@@ -1,5 +1,5 @@
 {
-  "cash": 39.121779683971724,
+  "cash": 39.1961559535612,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -42,17 +42,6 @@
       "peak_price": 7.61e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
-      "took_half": false,
-      "misses": 0
-    },
-    "B26mMiTtweujaxifxnw3vWJ5GewWkkKaHwo1RjWhpump": {
-      "mint": "B26mMiTtweujaxifxnw3vWJ5GewWkkKaHwo1RjWhpump",
-      "symbol": "POKE",
-      "qty": 34703.37326869997,
-      "entry_price": 8.016e-05,
-      "peak_price": 8.016e-05,
-      "entered_at": "2026-10-20T22:33:44.320957+00:00",
-      "cost_usd": 2.9487317452921293,
       "took_half": false,
       "misses": 0
     }
@@ -1035,6 +1024,16 @@
       "proceeds": 1.8222727985164822,
       "pnl_approx": -1.1264589467756472,
       "age_hours": 0.12487516750000001
+    },
+    {
+      "mint": "B26mMiTtweujaxifxnw3vWJ5GewWkkKaHwo1RjWhpump",
+      "symbol": "POKE",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 2.28e-06,
+      "proceeds": 0.07437626958947778,
+      "pnl_approx": -2.8743554757026515,
+      "age_hours": 0.38271518833333334
     }
   ]
 }
