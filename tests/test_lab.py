@@ -151,6 +151,11 @@ def test_queue_interleaves_sleeves_and_grid_comes_first(tmp_path):
     q2 = queue(reg, cfg, bounds, tmp_path / "lab")
     assert len(q2) > len(grid()) and cell not in q2                    # scored: never again
     assert len(results_so_far(reg, tmp_path / "lab")) == 1
+    # a cell with exactly the same results differs only in a knob that does nothing: never rescored
+    reg.record_iteration({"date": "2026-10-20", "proposal": "y", "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17,
+                          "overrides": {"stocks.entry_mode": "template_cross", "risk.halt_cooldown_bars": 11},
+                          "verdict": "spawned"})
+    assert not [1 for _, _, st in queue_staged(reg, cfg, bounds, tmp_path / "lab") if st == "rescore"]
 
 
 def test_run_sweep_records_every_cell_with_curves_and_honours_the_budget(tmp_path):

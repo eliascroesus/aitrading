@@ -51,7 +51,7 @@ REFINE_DIVISORS = (1, 2, 4)   # coarse steps first (a sixth of the range), then 
 EVOLVE_TOP = 8                # the evolve stage mutates the best EVOLVE_TOP cells per sleeve ...
 EVOLVE_PER_SLEEVE = 150       # ... into this many fresh candidates per call
 EVOLVE_MAX_KNOBS = 6          # a candidate never changes more than this many settings
-RESCORE_TOP = 15              # best cells per sleeve re-tested once to get their prop score
+RESCORE_TOP = 15              # best distinct results per sleeve re-tested once to get their prop score
 STAGES = ("rescore", "sweep", "refine", "evolve")
 
 Cell = tuple[str, dict[str, Any]]
@@ -279,14 +279,23 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
     staged: list[tuple[Cell, str]] = []
     rescore: set[str] = set()
     if cfg.operator.objective == "prop":
+        def same(r: dict[str, Any]) -> tuple:     # cells with identical results differ only in inert knobs
+            return tuple(round(float(r.get(k) or 0.0), 6) for k in ("oos_cagr", "oos_dd", "is_cagr"))
+
         for sl in SLEEVES:
+            done = {same(r) for r in results if r["sleeve"] == sl and r.get("oos_prop") is not None}
             unscored = sorted((r for r in results if r["sleeve"] == sl and r.get("oos_prop") is None
                                and r.get("oos_cagr") is not None
                                and not str(r.get("verdict", "")).startswith("rejected: backtest failed")),
-                              key=lambda r: rank_key(r, "growth"))[:RESCORE_TOP]
+                              key=lambda r: rank_key(r, "growth"))
+            picked = 0
             for r in unscored:
+                if picked >= RESCORE_TOP or same(r) in done:
+                    continue
+                done.add(same(r))
                 staged.append(((sl, r["overrides"]), "rescore"))
                 rescore.add(cell_key(sl, r["overrides"]))
+                picked += 1
     staged += [(c, "sweep") for c in grid()]
     if with_refine:
         staged += [(c, "refine") for c in refine(results, bounds, cfg)]
