@@ -105,7 +105,7 @@ def test_refine_stays_in_bounds_typed_and_family_aware():
     for sleeve, ov in cells:
         ok, why = validate_overrides(ov, bounds)
         assert ok, (ov, why)
-        assert all(k.startswith(sleeve + ".") for k in ov)
+        assert all(k.startswith((sleeve + ".", "risk.")) for k in ov)
         keys.add(cell_key(sleeve, ov))
         for k, v in ov.items():
             if k.endswith(("_bars", "_lookback", "_window", "_period", "exit_closes_below_mid", "max_hold_bars", "review_bars")):
@@ -226,3 +226,32 @@ def test_lab_status_file_reaches_the_dashboard(tmp_path):
     st = read_status(tmp_path / "state")
     assert st["round"] == 2 and st["cells"] == 9
     assert collect(s, StrategyConfig())["lab"]["status"]["queued"] == 120
+
+
+def test_sizing_levers_are_in_the_space_for_both_sleeves():
+    """Config 2.0.0: the risk.* levers are searched by the grid and the refinement, each sleeve
+    getting only the levers that apply to it; leverage is not in the space."""
+    cfg = StrategyConfig()
+    bounds = load_bounds(REPO_ROOT / "config" / "bounds.toml")
+    assert "risk.risk_per_trade_pct" in bounds and "risk.max_drawdown_halt_pct" in bounds
+    assert "risk.max_leverage" not in bounds and "risk.crypto_max_leverage" not in bounds
+    cells = grid()
+    for sleeve, ov in cells:
+        ok, why = validate_overrides(ov, bounds)
+        assert ok, (sleeve, ov, why)
+    assert ("stocks", {"risk.max_position_pct_stock": 0.5}) in cells
+    assert ("crypto", {"risk.crypto_sleeve_pct": 1.0}) in cells
+    assert not any(s == "crypto" and "risk.max_position_pct_stock" in ov for s, ov in cells)
+    results = [{"sleeve": "stocks", "overrides": {"stocks.entry_mode": "template_cross"}, "oos_cagr": 0.09,
+                "oos_dd": -0.17, "verdict": "spawned"},
+               {"sleeve": "crypto", "overrides": {"crypto.entry_mode": "high_breakout"}, "oos_cagr": 0.2,
+                "oos_dd": -0.3, "verdict": "spawned"}]
+    ref = refine(results, bounds, cfg)
+    assert any(s == "stocks" and "risk.risk_per_trade_pct" in ov for s, ov in ref)
+    assert any(s == "crypto" and "risk.max_position_pct_crypto" in ov for s, ov in ref)
+    assert not any(s == "stocks" and "risk.max_position_pct_crypto" in ov for s, ov in ref)
+    assert not any(s == "crypto" and "risk.max_position_pct_stock" in ov for s, ov in ref)
+    for sleeve, ov in ref:
+        ok, why = validate_overrides(ov, bounds)
+        assert ok, (sleeve, ov, why)
+        assert isinstance(ov.get("risk.max_positions", 3), int)

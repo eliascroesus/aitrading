@@ -92,10 +92,15 @@ space (committed to `reports/lab/`), the heartbeat reads the broker, and the
 dashboard is rebuilt and published, so the page moves every few minutes and the
 firm is never idle.
 
-## Honesty rules for the study
+## The one rule, and the honesty rules of the record
 
-* All rules and thresholds are pre-registered in `config/strategy.toml`; any
-  change is a commit.
+* The firm has one rule: grow the bankroll as much and as fast as possible, net
+  of every cost. Death (the floor, or −75% from the peak) is the only thing that
+  ends the game. Every other setting in `config/strategy.toml` is a lever: the
+  lab backtests levers around the clock, winners trade on paper beside the
+  parent, the faster grower is promoted and the slower one retired, by code.
+  `config/strategy.toml` is therefore the firm's *current* configuration, and
+  every change to it is a commit with the evidence that earned it.
 * Three lines are published every day: buy-and-hold benchmark, rules-only
   shadow, rules + LLM filter — the research question is whether the LLM layer
   beats rules-only *net of its own cost*.

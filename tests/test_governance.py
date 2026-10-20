@@ -51,7 +51,7 @@ def test_no_promotion_below_the_evidence_bar(tmp_path):
     tier = _tier(cfg, "base")
     c = reg.spawn(Child(id="", name="meh", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 6}), tier)
     for i in range(cfg.survival.child_shadow_days):
-        reg.mark(c.id, 100 + 0.1 * i, 100 + 0.09 * i)                     # ahead, but under promote_min_voi
+        reg.mark(c.id, 100 + 0.09 * i, 100 + 0.1 * i)                     # behind the parent: not ready
     assert promote_earned(s, cfg, reg, tier, date(2026, 10, 19)) == []
     assert not (tmp_path / "promoted_overrides.json").exists()
     assert ensure_baseline(reg, tier, date(2026, 10, 19)).id == BASELINE_ID
@@ -68,7 +68,7 @@ def test_punishment_is_quick_drawdown_death_and_voi_retirement(tmp_path):
     lag = reg.spawn(Child(id="", name="lag", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 7.0}), tier)
     base = reg.spawn(Child(id="", name="baseline", kind="baseline", sleeve="stocks"), tier, force=True)
     reg.mark(dd.id, 100.0, 100.0, on=date(2026, 10, 1))
-    reg.mark(dd.id, 84.0, 101.0, on=date(2026, 10, 2))           # down 16% from its start after two days
+    reg.mark(dd.id, 24.0, 101.0, on=date(2026, 10, 2))           # at the firm's death line after two days
     for i in range(cfg.survival.child_retire_days):
         reg.mark(lag.id, 100.0 - 0.5 * i, 100.0, on=date(2026, 10, 1) + timedelta(days=i))   # 4.5% behind
         reg.mark(base.id, 80.0, 100.0, on=date(2026, 10, 1) + timedelta(days=i))

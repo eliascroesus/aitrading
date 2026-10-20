@@ -1,8 +1,9 @@
-# Pre-registered bounds for operator-proposed strategy variants. A proposal that
+# The strategy space the lab searches and the operator proposes in. A proposal that
 # touches a parameter not listed here, or leaves its range, is rejected in code.
-# Ranges follow the robustness grid in docs/STRATEGY.md §10. Since 1.3.0 the
-# operator may also choose the entry family of a sub-agent (same trend template,
-# same exits, same risk limits; a different moment to buy).
+# Since 2.0.0 the firm has one rule, the growth rate of the bankroll, so the sizing
+# and concentration levers under risk.* are in the space too and the evidence
+# decides them. Leverage is not: the backtester caps every order at cash, and the
+# venue offers no margin at this size, so a leverage knob would test nothing real.
 
 ["stocks.entry_mode"]
 choices = ["reset_breakout", "template_cross", "high_breakout", "ma_pullback", "momentum_threshold"]
@@ -113,3 +114,49 @@ max = 8
 ["risk.max_new_entries_per_day"]
 min = 1
 max = 3
+
+# --- sizing and concentration (config 2.0.0: levers, not limits) --------------------
+
+["risk.risk_per_trade_pct"]
+min = 0.005
+max = 0.05
+
+["risk.max_position_pct_stock"]
+min = 0.1
+max = 0.6
+
+["risk.max_position_pct_crypto"]
+min = 0.1
+max = 1.0
+
+["risk.max_position_pct_crypto_alt"]
+min = 0.05
+max = 0.5
+
+["risk.max_open_risk_pct"]
+min = 0.03
+max = 0.3
+
+["risk.target_annual_vol"]
+min = 0.1
+max = 0.6
+
+["risk.crypto_sleeve_pct"]
+min = 0.2
+max = 1.0
+
+["risk.crypto_max_positions"]
+min = 1
+max = 6
+
+["risk.max_drawdown_halt_pct"]
+min = 0.15
+max = 0.7
+
+["risk.halt_cooldown_bars"]
+min = 1
+max = 63
+
+["risk.max_daily_loss_pct"]
+min = 0.02
+max = 0.5

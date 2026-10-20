@@ -1,4 +1,5 @@
-# Pre-registered strategy configuration for the HIVE public study.
+# The firm's current configuration. One rule: grow the bankroll as fast as possible;
+# death is the only hard stop. Everything below is a lever the evidence moves (2.0.0).
 # Every change to this file is a change to the study and is recorded in git.
 # Defaults mirror hive.config.StrategyConfig; tests assert they stay in sync.
 #
@@ -25,7 +26,7 @@
 #                      Monitors (news-channel sub-agents) and the daily sweep.
 
 name = "trend-reset-v1"
-version = "1.5.0"
+version = "2.0.0"
 
 [stocks]
 entry_mode = "reset_breakout"
@@ -163,8 +164,8 @@ tier_hysteresis_pct = 0.15
 max_children = 8
 child_shadow_days = 10
 child_retire_days = 10
-child_retire_voi = -0.03
-child_max_drawdown_pct = 0.15
+child_retire_voi = 0.0
+child_max_drawdown_pct = 0.75
 
 [[survival.tiers]]
 name = "hospice"
@@ -236,7 +237,7 @@ insample_end = "2012-12-31"
 outofsample_start = "2013-01-01"
 max_drawdown_tolerance = 1.10
 auto_promote = true
-promote_min_voi = 0.01
+promote_min_voi = 0.0
 demote_after_days = 21
 demote_min_lag = 0.02
 bounds_file = "config/bounds.toml"

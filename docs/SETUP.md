@@ -115,13 +115,23 @@ hive status
   StockTwits and Reddit posts (`HIVE_SOCIAL_DATA`, on by default). Only the
   quarantined reader ever sees that text.
 
-## 5. How the hive grows (and what it is not allowed to do)
+## 5. How the hive grows (the one rule)
 
+* **The one rule** (config 2.0.0): grow the bankroll as much and as fast as
+  possible, net of every cost. Death is the only hard stop. A backtested cell
+  earns a paper seat when it grows faster than the parent out of sample and
+  made money in sample (today's code still also rejects a cell whose
+  out-of-sample drawdown is more than 10% worse than the parent's; removing
+  that check is listed under the owner's pending decisions in
+  `docs/REVIEW_LOG.md`); a sub-agent is promoted into the live configuration
+  as soon as it has out-grown the parent for the shadow period, and retired as
+  soon as it has lagged it for the same period.
+  Sizing and concentration (`risk.*` in `config/bounds.toml`) are levers the
+  lab searches like any other; leverage is not available at this size.
 * **Tiers** cap how many paper sub-agents may run at once: hospice 0, survival
-  1, base 2, growth ($250+, 30 net-positive days) 3, hive ($1k+, 60 days, human
-  approval) 5. Paper sub-agents cost nothing but compute, so the firm can start
-  iterating on day one; a live allocation to any of them is always a human
-  decision (`hive hive promote <id> --approve`).
+  2, base 4, growth ($250+, 30 net-positive days) 6, hive ($1k+, 60 days) 8.
+  Paper sub-agents cost nothing but compute, so the firm can start iterating on
+  day one.
 * A child is a **paper portfolio** with its own sleeve (`stocks`, `crypto`,
   `all`, `meme`) and config overrides. Its value is measured against the
   parent over the same days (value of information). Losers retire themselves.
@@ -129,11 +139,9 @@ hive status
   watches up to five topics or symbols and files bounded daily reports the
   portfolio manager reads. Monitors cost about a cent a day, take a seat, and
   expire after 28 days unless re-proposed.
-* The operator **can**: propose variants and monitors, read every journal, recommend.
-  It **cannot**: change risk limits or budgets, touch the universe, spend
-  beyond the ledger's daily budget, or promote to live. Those are code and
-  humans, on purpose — the research record of agents under "survive at all
-  costs" framing is one of rule-bending, not of returns.
+* The operator **can**: propose variants (entries, exits and sizing levers)
+  and monitors, read every journal, recommend. Budgets and the universe are
+  code's; promotion is the evidence rule's. Nothing in the firm needs a person.
 
 ## 6. Sleeves and what "live" means for each
 

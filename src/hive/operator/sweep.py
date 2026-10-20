@@ -64,6 +64,17 @@ def grid() -> list[Cell]:
             cells += [(sleeve, v) for v in variants]
         cells += [(sleeve, {f"{pre}.exit_closes_below_mid": n}) for n in (1, 3)]
         cells += [(sleeve, {f"{pre}.trail_atr": t}) for t in (3.0, 7.0)]
+        # sizing and concentration: where most of the growth rate is decided (config 2.0.0)
+        cells += [(sleeve, {"risk.risk_per_trade_pct": r}) for r in (0.02, 0.04)]
+        cells += [(sleeve, {"risk.max_open_risk_pct": h}) for h in (0.12, 0.24)]
+        cells += [(sleeve, {"risk.target_annual_vol": v}) for v in (0.3, 0.45)]
+        cells += [(sleeve, {"risk.max_drawdown_halt_pct": d}) for d in (0.4, 0.6)]
+        cells += [(sleeve, {"risk.max_positions": n}) for n in (3, 8)]
+        if sleeve == "stocks":
+            cells += [(sleeve, {"risk.max_position_pct_stock": c}) for c in (0.35, 0.5)]
+        else:
+            cells += [(sleeve, {"risk.max_position_pct_crypto": c}) for c in (0.5, 0.8)]
+            cells += [(sleeve, {"risk.crypto_sleeve_pct": c}) for c in (0.6, 1.0)]
     return cells
 
 
@@ -140,13 +151,15 @@ def refine(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
                 if ka & kb:
                     continue
                 add(sleeve, {**a["overrides"], **b["overrides"]})
-        keys = sorted(k for k, b in bounds.items() if k.startswith(sleeve + ".") and not isinstance(b, list))
+        keys = sorted(k for k, b in bounds.items()
+                      if (k.startswith(sleeve + ".") or k.startswith("risk.")) and not isinstance(b, list)
+                      and not (sleeve == "stocks" and "crypto" in k) and not (sleeve == "crypto" and "stock" in k))
         for div in REFINE_DIVISORS:
             for r in best:
                 mode = r["overrides"].get(f"{sleeve}.entry_mode", _get(cfg, f"{sleeve}.entry_mode"))
                 for k in keys:
                     knob = k.split(".", 1)[1]
-                    if KNOB_FAMILY.get(knob, mode) != mode:
+                    if k.startswith(sleeve + ".") and KNOB_FAMILY.get(knob, mode) != mode:
                         continue
                     lo, hi = bounds[k]            # type: ignore[misc]
                     like = _get(cfg, k)

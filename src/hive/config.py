@@ -280,8 +280,8 @@ class SurvivalRules(BaseModel):
     # ... and dies after child_retire_days behind it by child_retire_voi, or at once when its
     # own paper book is down child_max_drawdown_pct from where it started (config 1.5.0).
     child_retire_days: int = 10
-    child_retire_voi: float = -0.03
-    child_max_drawdown_pct: float = 0.15
+    child_retire_voi: float = 0.0        # behind the parent at all after the period: retired
+    child_max_drawdown_pct: float = 0.75  # the firm's own death line, nothing stricter
     tiers: list[Tier] = Field(
         default_factory=lambda: [
             Tier(name="hospice", min_equity_usd=0.0, close_only=True, risk_multiplier=0.0,
@@ -317,7 +317,7 @@ class OperatorRules(BaseModel):
     # demote_min_lag over demote_after_days the promotion is reverted. The human
     # promote workflow remains as an override, never a requirement.
     auto_promote: bool = True
-    promote_min_voi: float = 0.01
+    promote_min_voi: float = 0.0
     demote_after_days: int = 21
     demote_min_lag: float = 0.02
     bounds_file: str = "config/bounds.toml"
@@ -370,7 +370,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "1.5.0"
+    version: str = "2.0.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     regime: RegimeRules = Field(default_factory=RegimeRules)

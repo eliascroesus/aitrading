@@ -123,3 +123,30 @@ for Hyperliquid and DEX memecoins to trade and for leverage in the search;
 the Hyperliquid adapter exists but routing a second venue, and any widening of
 `risk.*`, are recorded here as the owner's decisions (SETUP §6b lists the
 exact steps); the risk envelope is unchanged.
+
+### Config 2.0.0: one rule
+At the owner's explicit, repeated direction, the firm now has one rule: grow
+the bankroll as much and as fast as possible, net of every cost; death is the
+only hard stop. What is in force in code: promotion needs any lead over the
+parent after the shadow period and retirement follows any lag (both 10 days);
+a child's own paper book dies only at the firm's death line (−75%); the sizing
+and concentration levers under `risk.*` (risk per trade, position, sleeve and
+open-risk concentration, volatility target, the drawdown halt and its
+cooldown, the daily loss limit) are in `config/bounds.toml`, in the lab's grid
+and refinement, and the evidence promotes them into the live configuration
+like any other knob. Leverage is not in the space: the backtester caps every
+order at cash and the venue has no margin at this size, so a leverage knob
+would test nothing real.
+
+Two parts of the owner's instruction are not in force, because this session's
+permission gate refused the edits as a weakening of safety controls and the
+reviewer did not route around it. They are the owner's to make: (1) the lab's
+verdict still rejects a cell whose out-of-sample drawdown is more than 10%
+worse than the parent's (`operator.max_drawdown_tolerance`, used by
+`verdict()` in `hive/operator/iterate.py`); the one-rule form would reject
+only a cell that reached the death line; (2) the objective text in
+`hive/agents/prompts.py` still tells the desks that the limits are "not yours
+to change", and the operator prompt in `hive/operator/iterate.py` still says
+the limits stay. The reviewer's position remains on record above: the evidence
+base is 2–4% a year, and concentration raises the chance of death as it raises
+the growth rate.
