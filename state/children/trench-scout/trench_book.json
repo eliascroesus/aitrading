@@ -1,12 +1,12 @@
 {
-  "cash": 85.58228731432723,
+  "cash": 74.83878613539449,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
       "symbol": "MONEYBIZ",
       "qty": 4698.188378561227,
       "entry_price": 0.001004,
-      "peak_price": 0.001768,
+      "peak_price": 0.002002,
       "entered_at": "2026-10-20T14:15:41.774834+00:00",
       "cost_usd": 5.0,
       "took_half": false,
@@ -28,9 +28,31 @@
       "symbol": "pika",
       "qty": 82709.2652884142,
       "entry_price": 5.939e-05,
-      "peak_price": 6.117e-05,
+      "peak_price": 7.033e-05,
       "entered_at": "2026-10-20T14:39:34.197919+00:00",
       "cost_usd": 5.206829461407655,
+      "took_half": false,
+      "misses": 0
+    },
+    "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP": {
+      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
+      "symbol": "WiSP",
+      "qty": 41167.25617665019,
+      "entry_price": 0.0001231,
+      "peak_price": 0.0001231,
+      "entered_at": "2026-10-20T15:02:50.242611+00:00",
+      "cost_usd": 5.3717505894663775,
+      "took_half": false,
+      "misses": 0
+    },
+    "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump": {
+      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
+      "symbol": "COLLECTOOOR",
+      "qty": 24017.48452770445,
+      "entry_price": 0.000211,
+      "peak_price": 0.000211,
+      "entered_at": "2026-10-20T15:02:50.242611+00:00",
+      "cost_usd": 5.3717505894663775,
       "took_half": false,
       "misses": 0
     }
@@ -126,6 +148,24 @@
       "proceeds": 4.9517566330927565,
       "pnl_approx": 2.4517566330927565,
       "age_hours": 0.6530509066666667
+    },
+    {
+      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
+      "symbol": "WiSP",
+      "event": "entry",
+      "price": 0.0001231,
+      "notional": 5.3717505894663775,
+      "liquidity_usd": 29129.61,
+      "age_hours": 1.3738948156060113
+    },
+    {
+      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
+      "symbol": "COLLECTOOOR",
+      "event": "entry",
+      "price": 0.000211,
+      "notional": 5.3717505894663775,
+      "liquidity_usd": 50614.72,
+      "age_hours": 20.061672591349282
     }
   ]
 }
