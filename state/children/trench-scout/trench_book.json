@@ -1,5 +1,5 @@
 {
-  "cash": 73.89547659767514,
+  "cash": 68.86549330984985,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -17,7 +17,7 @@
       "symbol": "pika",
       "qty": 82709.2652884142,
       "entry_price": 5.939e-05,
-      "peak_price": 7.586e-05,
+      "peak_price": 7.592e-05,
       "entered_at": "2026-10-20T14:39:34.197919+00:00",
       "cost_usd": 5.206829461407655,
       "took_half": false,
@@ -39,9 +39,20 @@
       "symbol": "COLLECTOOOR",
       "qty": 31098.337563477227,
       "entry_price": 0.0001527,
-      "peak_price": 0.0001999,
+      "peak_price": 0.000227,
       "entered_at": "2026-10-20T15:49:49.143930+00:00",
       "cost_usd": 5.033639114699551,
+      "took_half": false,
+      "misses": 0
+    },
+    "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP": {
+      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
+      "symbol": "WiSP",
+      "qty": 70593.08617473027,
+      "entry_price": 6.722e-05,
+      "peak_price": 6.722e-05,
+      "entered_at": "2026-10-20T16:36:12.459507+00:00",
+      "cost_usd": 5.029983287825291,
       "took_half": false,
       "misses": 0
     }
@@ -286,6 +297,15 @@
       "proceeds": 4.835583198845232,
       "pnl_approx": -0.107204453307566,
       "age_hours": 1.1625271644444444
+    },
+    {
+      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
+      "symbol": "WiSP",
+      "event": "entry",
+      "price": 6.722e-05,
+      "notional": 5.029983287825291,
+      "liquidity_usd": 21013.01,
+      "age_hours": 2.930136830512153
     }
   ]
 }
