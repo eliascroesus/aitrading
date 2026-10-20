@@ -1,5 +1,5 @@
 {
-  "cash": 44.656322421658324,
+  "cash": 41.70117918890649,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -28,7 +28,7 @@
       "symbol": "DTC",
       "qty": 1986.0285323117578,
       "entry_price": 0.001492,
-      "peak_price": 0.001638,
+      "peak_price": 0.001831,
       "entered_at": "2026-10-20T21:55:07.597343+00:00",
       "cost_usd": 3.1409438444216913,
       "took_half": false,
@@ -39,20 +39,20 @@
       "symbol": "DACAT",
       "qty": 13263.89691230592,
       "entry_price": 0.0002234,
-      "peak_price": 0.0002322,
+      "peak_price": 0.0002527,
       "entered_at": "2026-10-20T21:55:07.597343+00:00",
       "cost_usd": 3.1409438444216913,
       "took_half": false,
       "misses": 0
     },
-    "AjSQ5K3cg27r8jFyEBvY2XneyPRn4vXRt37wA5KNpump": {
-      "mint": "AjSQ5K3cg27r8jFyEBvY2XneyPRn4vXRt37wA5KNpump",
-      "symbol": "DAKITTY",
-      "qty": 21070.867821484757,
-      "entry_price": 0.0001391,
-      "peak_price": 0.0001391,
-      "entered_at": "2026-10-20T22:02:59.721553+00:00",
-      "cost_usd": 3.1068151768066414,
+    "ECARsqfGxEQbsLhkJugMh1pQrDzM9iBMgtg22uNCpump": {
+      "mint": "ECARsqfGxEQbsLhkJugMh1pQrDzM9iBMgtg22uNCpump",
+      "symbol": "air",
+      "qty": 17163.056902384888,
+      "entry_price": 0.0001647,
+      "peak_price": 0.0001647,
+      "entered_at": "2026-10-20T22:10:52.842315+00:00",
+      "cost_usd": 2.9963608001321584,
       "took_half": false,
       "misses": 0
     }
@@ -940,6 +940,25 @@
       "notional": 3.1068151768066414,
       "liquidity_usd": 31075.03,
       "age_hours": 0.36928813279893663
+    },
+    {
+      "mint": "AjSQ5K3cg27r8jFyEBvY2XneyPRn4vXRt37wA5KNpump",
+      "symbol": "DAKITTY",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 2.081e-06,
+      "proceeds": 0.041217567380319196,
+      "pnl_approx": -3.065597609426322,
+      "age_hours": 0.13142243388888888
+    },
+    {
+      "mint": "ECARsqfGxEQbsLhkJugMh1pQrDzM9iBMgtg22uNCpump",
+      "symbol": "air",
+      "event": "entry",
+      "price": 0.0001647,
+      "notional": 2.9963608001321584,
+      "liquidity_usd": 33965.38,
+      "age_hours": 0.5870475858561198
     }
   ]
 }
