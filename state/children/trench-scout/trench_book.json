@@ -1,5 +1,5 @@
 {
-  "cash": 32.749495221435325,
+  "cash": 39.056813181284205,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -12,17 +12,6 @@
       "took_half": false,
       "misses": 0
     },
-    "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump": {
-      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
-      "symbol": "ONEPIECE",
-      "qty": 78653.28717129104,
-      "entry_price": 4.071e-05,
-      "peak_price": 6.572e-05,
-      "entered_at": "2026-10-20T21:08:44.823531+00:00",
-      "cost_usd": 3.394093839987854,
-      "took_half": false,
-      "misses": 0
-    },
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
       "symbol": "SASONA",
@@ -31,28 +20,6 @@
       "peak_price": 7.642e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
-      "took_half": false,
-      "misses": 0
-    },
-    "9vuGTtRoL6GeD4Gwt6mQBm7Bn1AzJWATBvjkiMQXpump": {
-      "mint": "9vuGTtRoL6GeD4Gwt6mQBm7Bn1AzJWATBvjkiMQXpump",
-      "symbol": "GEMMA",
-      "qty": 40345.60730693947,
-      "entry_price": 5.834e-05,
-      "peak_price": 7.33e-05,
-      "entered_at": "2026-10-20T23:20:12.211649+00:00",
-      "cost_usd": 2.4949884941040597,
-      "took_half": false,
-      "misses": 0
-    },
-    "8tWatwDBrfVy7ebJmH6kDEzdF23Cicn9xXvQxYLepump": {
-      "mint": "8tWatwDBrfVy7ebJmH6kDEzdF23Cicn9xXvQxYLepump",
-      "symbol": "WIPD",
-      "qty": 20950.719319448854,
-      "entry_price": 0.0001107,
-      "peak_price": 0.0001107,
-      "entered_at": "2026-10-20T23:27:29.882477+00:00",
-      "cost_usd": 2.4583993063827676,
       "took_half": false,
       "misses": 0
     }
@@ -1130,6 +1097,36 @@
       "notional": 2.4583993063827676,
       "liquidity_usd": 28571.09,
       "age_hours": 1.4876254486083984
+    },
+    {
+      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
+      "symbol": "ONEPIECE",
+      "event": "exit",
+      "reason": "trail",
+      "price": 4.641e-05,
+      "proceeds": 3.43128111416244,
+      "pnl_approx": 0.037187274174586005,
+      "age_hours": 2.434361441666667
+    },
+    {
+      "mint": "9vuGTtRoL6GeD4Gwt6mQBm7Bn1AzJWATBvjkiMQXpump",
+      "symbol": "GEMMA",
+      "event": "exit",
+      "reason": "trail",
+      "price": 5.294e-05,
+      "proceeds": 2.0077426637796125,
+      "pnl_approx": -0.4872458303244471,
+      "age_hours": 0.2434202977777778
+    },
+    {
+      "mint": "8tWatwDBrfVy7ebJmH6kDEzdF23Cicn9xXvQxYLepump",
+      "symbol": "WIPD",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 4.409e-05,
+      "proceeds": 0.8682941819068299,
+      "pnl_approx": -1.5901051244759377,
+      "age_hours": 0.12184506777777777
     }
   ]
 }
