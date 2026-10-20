@@ -1,5 +1,5 @@
 {
-  "cash": 43.369134611962096,
+  "cash": 39.97504077197424,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -17,7 +17,7 @@
       "symbol": "GTAa",
       "qty": 35664.04962295624,
       "entry_price": 9.887e-05,
-      "peak_price": 9.887e-05,
+      "peak_price": 0.0001071,
       "entered_at": "2026-10-20T19:35:42.405748+00:00",
       "cost_usd": 3.7376708613949847,
       "took_half": false,
@@ -28,7 +28,7 @@
       "symbol": "DTC",
       "qty": 3610.280472913443,
       "entry_price": 0.0009142,
-      "peak_price": 0.00136,
+      "peak_price": 0.001803,
       "entered_at": "2026-10-20T20:07:38.739415+00:00",
       "cost_usd": 3.498549512837718,
       "took_half": false,
@@ -50,7 +50,7 @@
       "symbol": "SPACE",
       "qty": 68574.54355700134,
       "entry_price": 4.534e-05,
-      "peak_price": 4.534e-05,
+      "peak_price": 4.668e-05,
       "entered_at": "2026-10-20T21:01:09.877755+00:00",
       "cost_usd": 3.295719993166907,
       "took_half": false,
@@ -64,6 +64,17 @@
       "peak_price": 8.434e-05,
       "entered_at": "2026-10-20T21:01:09.877755+00:00",
       "cost_usd": 3.295719993166907,
+      "took_half": false,
+      "misses": 0
+    },
+    "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump": {
+      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
+      "symbol": "ONEPIECE",
+      "qty": 78653.28717129104,
+      "entry_price": 4.071e-05,
+      "peak_price": 4.071e-05,
+      "entered_at": "2026-10-20T21:08:44.823531+00:00",
+      "cost_usd": 3.394093839987854,
       "took_half": false,
       "misses": 0
     }
@@ -839,6 +850,15 @@
       "notional": 3.295719993166907,
       "liquidity_usd": 24857.08,
       "age_hours": 2.0267828241644965
+    },
+    {
+      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
+      "symbol": "ONEPIECE",
+      "event": "entry",
+      "price": 4.071e-05,
+      "notional": 3.394093839987854,
+      "liquidity_usd": 17783.68,
+      "age_hours": 18.80871504889594
     }
   ]
 }
