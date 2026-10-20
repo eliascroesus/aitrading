@@ -26,13 +26,15 @@
 #                      Monitors (news-channel sub-agents) and the daily sweep.
 
 name = "trend-reset-v1"
-version = "2.2.0"
+version = "2.3.0"
 
 [stocks]
 entry_mode = "reset_breakout"
 breakout_lookback = 55
 pullback_touch_bars = 5
 momentum_min = 0.5
+direction = "long"
+short_green_mult = 0.0
 bars_per_year = 252
 ma_long = 200
 ma_mid = 50
@@ -80,6 +82,8 @@ entry_mode = "reset_breakout"
 breakout_lookback = 55
 pullback_touch_bars = 5
 momentum_min = 0.5
+direction = "long"
+short_green_mult = 0.0
 bars_per_year = 365
 ma_long = 200
 ma_mid = 50
@@ -142,6 +146,7 @@ max_position_pct_crypto_alt = 0.10
 max_gross_exposure = 1.0
 max_leverage = 1.0
 risk_per_trade_pct = 0.01
+halt_paper = false
 sizing_mode = "fixed"
 edge_fraction = 0.25
 edge_min_trades = 20

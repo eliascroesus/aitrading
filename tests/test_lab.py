@@ -255,7 +255,8 @@ def test_sizing_levers_are_in_the_space_for_both_sleeves():
     getting only the levers that apply to it; leverage is not in the space."""
     cfg = StrategyConfig()
     bounds = load_bounds(REPO_ROOT / "config" / "bounds.toml")
-    assert "risk.risk_per_trade_pct" in bounds and "risk.max_drawdown_halt_pct" in bounds
+    assert "risk.risk_per_trade_pct" in bounds and "stocks.direction" in bounds
+    assert "risk.max_drawdown_halt_pct" not in bounds          # 2.3.0: the halt is for real money only
     assert "risk.max_leverage" not in bounds and "risk.crypto_max_leverage" not in bounds
     cells = grid()
     for sleeve, ov in cells:

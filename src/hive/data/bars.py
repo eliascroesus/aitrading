@@ -96,3 +96,19 @@ def as_of(bars: pd.DataFrame, when: date | datetime | str | pd.Timestamp) -> pd.
 def has_true_ohlc(bars: pd.DataFrame) -> bool:
     """False when a source was close-only (high == low == close everywhere)."""
     return bool(((bars["high"] != bars["close"]) | (bars["low"] != bars["close"])).any())
+
+
+def mirror_bars(bars: pd.DataFrame) -> pd.DataFrame:
+    """The market seen upside down (every price inverted). A short's signals, stops and trailing
+    stops are the long rules applied to this series: a breakdown to new lows is a breakout of
+    the mirror, a stop above the price is a stop below the mirror's. Its profit and loss is
+    still computed on the real price (see the backtester)."""
+    close = bars["close"]
+    m = pd.DataFrame(index=bars.index)
+    for col in ("open", "high", "low"):
+        m[col] = bars[col].where(bars[col] > 0, close)          # a missing print is not a price of zero
+    m["open"], m["high"], m["low"] = 1.0 / m["open"], 1.0 / m["low"], 1.0 / m["high"]
+    m["close"] = 1.0 / close
+    m["adj_close"] = 1.0 / bars["adj_close"]
+    m["volume"] = bars["volume"]
+    return m[BAR_COLUMNS]

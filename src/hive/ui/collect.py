@@ -468,8 +468,11 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
         lever("risk.max_open_risk_pct", r.max_open_risk_pct, "total equity at risk across open stops"),
         lever("risk.target_annual_vol", r.target_annual_vol, "portfolio volatility target for sizing"),
         lever("risk.max_daily_loss_pct", r.max_daily_loss_pct, "no new buys after losing this much in a day"),
-        lever("risk.max_drawdown_halt_pct", r.max_drawdown_halt_pct, "drawdown from peak that liquidates and pauses"),
-        lever("risk.halt_cooldown_bars", r.halt_cooldown_bars, "days paused after a drawdown halt"),
+        lever("stocks.direction", cfg.stocks.direction, "stocks: long, short, or both (a short posts its full value: no leverage)"),
+        lever("crypto.direction", cfg.crypto.direction, "crypto: long, short, or both"),
+        lever("risk.max_drawdown_halt_pct", r.max_drawdown_halt_pct,
+              "real money only: drawdown from peak that liquidates and pauses (backtests and paper never pause)"),
+        lever("risk.halt_cooldown_bars", r.halt_cooldown_bars, "real money only: days paused after a drawdown halt"),
         lever("risk.max_gross_exposure", r.max_gross_exposure, "total exposure, share of equity (1.0 = no margin)"),
         lever("risk.max_leverage", r.max_leverage, "leverage on stocks"),
         lever("risk.crypto_max_leverage", r.crypto_max_leverage, "leverage on crypto (only a perps venue could use it)"),
@@ -512,7 +515,7 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
     ]
     code_rows = [
         "every buy carries a protective stop below its price, or it is not placed",
-        "orders are capped at available cash: no margin, no borrowing, no shorting",
+        "orders are capped at available cash: no margin, no borrowing; a short posts its full value from cash",
         "the language models never place orders, choose sizes or prices; they may only approve, halve or veto a buy the rules found",
         "a model can never block an exit",
         "untrusted text (news, social posts, token names) is read by a quarantined reader that can only return numbers and labels",

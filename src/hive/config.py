@@ -167,6 +167,13 @@ class TrendRules(BaseModel):
     breakout_lookback: int = 55
     pullback_touch_bars: int = 5
     momentum_min: float = 0.5
+    # --- direction (config 2.3.0). "short" trades the same rules on the market seen upside
+    # down: a breakdown below the lows, a stop above the price; "both" runs the two at once,
+    # never long and short the same market together. No leverage either way: a short posts
+    # its full value from cash. short_green_mult scales new shorts while the benchmark regime
+    # is green (a bull market); red allows full size, yellow the yellow multiplier.
+    direction: Literal["long", "short", "both"] = "long"
+    short_green_mult: float = 0.0
 
     # --- stops & exits --------------------------------------------------------
     stop_swing_low_bars: int = 10
@@ -225,6 +232,10 @@ class RiskLimits(BaseModel):
     max_gross_exposure: float = 1.0
     max_leverage: float = 1.0
     risk_per_trade_pct: float = 0.01
+    # The drawdown halt (max_drawdown_halt_pct, halt_cooldown_bars) protects real money. A
+    # paper book or a backtest that sat out the cooldown would only learn less, so it applies
+    # in live mode only unless halt_paper is set (config 2.3.0).
+    halt_paper: bool = False
     # How a book picks its risk per trade. "fixed" risks risk_per_trade_pct on every
     # trade. "edge" lets the book's own closed trades decide: a fraction of the Kelly
     # bet implied by its last edge_lookback_trades results (in R), between
@@ -447,7 +458,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "2.2.0"
+    version: str = "2.3.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     regime: RegimeRules = Field(default_factory=RegimeRules)

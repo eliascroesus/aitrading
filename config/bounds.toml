@@ -6,6 +6,9 @@
 # "edge" sizing, where each book risks what its own closed trades justify. The
 # objective (a prop-firm pass rate, config [prop]) is what keeps these honest: a
 # setting that risks too much fails its simulated evaluations and loses.
+# Since 2.3.0 the lab also picks the direction per sleeve (long, short, or both; a
+# short posts its full value from cash, so still no leverage), and the drawdown halt is
+# out of the space: it applies with real money only, so backtests never pause.
 # Leverage is not in the space: the backtester caps every order at cash, and the
 # venue offers no margin at this size, so a leverage knob would test nothing real.
 
@@ -157,14 +160,6 @@ max = 1.0
 min = 1
 max = 6
 
-["risk.max_drawdown_halt_pct"]
-min = 0.15
-max = 0.7
-
-["risk.halt_cooldown_bars"]
-min = 1
-max = 63
-
 ["risk.max_daily_loss_pct"]
 min = 0.02
 max = 0.5
@@ -185,3 +180,19 @@ max = 60
 ["risk.max_risk_per_trade_pct"]
 min = 0.01
 max = 0.2
+
+# --- direction (config 2.3.0) ------------------------------------------------------
+
+["stocks.direction"]
+choices = ["long", "short", "both"]
+
+["crypto.direction"]
+choices = ["long", "short", "both"]
+
+["stocks.short_green_mult"]
+min = 0.0
+max = 1.0
+
+["crypto.short_green_mult"]
+min = 0.0
+max = 1.0

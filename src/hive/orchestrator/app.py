@@ -186,7 +186,7 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
             ledger=ledger, llm=llm, universe=universe, asset_classes=classes, kill_switch=kill,
             cheap_model=settings.hive_llm_cheap_model, decision_model=settings.hive_llm_model,
             effort=settings.hive_llm_effort, news_fn=news_fn, fundamentals_fn=fundamentals_fn,
-            company_names=names, desk_reports=desk_reports,
+            company_names=names, desk_reports=desk_reports, live=settings.is_live,
         ).execute()
     except SystemDeadError as exc:
         write_post_mortem(settings, ledger, str(exc), run_date)
@@ -205,7 +205,7 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
                 label="shadow-rules", run_date=run_date, cfg=cfg, store=store, broker=shadow_broker,
                 book=PositionBook(settings.hive_state_dir / "book_shadow.json"),
                 journal=Journal(settings.hive_state_dir / "journal", f"{rd}-shadow"), ledger=shadow_ledger,
-                llm=None, universe=universe, asset_classes=classes, kill_switch=kill,
+                llm=None, universe=universe, asset_classes=classes, kill_switch=kill, live=settings.is_live,
             ).execute()
         except SystemDeadError as exc:
             log.warning("shadow portfolio is dead: %s", exc)

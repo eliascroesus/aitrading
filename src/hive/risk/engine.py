@@ -83,11 +83,13 @@ class RiskEngine:
         kill_switch: Callable[[], bool] | None = None,
         tier_risk_multiplier: float = 1.0,
         close_only: bool = False,
+        drawdown_halt: bool = True,
     ):
         self.limits = limits
         self.kill_switch = kill_switch or (lambda: False)
         self.tier_risk_multiplier = tier_risk_multiplier
         self.close_only = close_only
+        self.drawdown_halt = drawdown_halt     # real money only by default (risk.halt_paper)
 
     # -- LLM adjustments can only reduce ----------------------------------------
     @staticmethod
@@ -105,7 +107,8 @@ class RiskEngine:
     def halted(self, snap: PortfolioSnapshot) -> tuple[bool, str]:
         if self.kill_switch():
             return True, "kill switch engaged"
-        if snap.peak_equity and snap.equity <= snap.peak_equity * (1 - self.limits.max_drawdown_halt_pct):
+        if (self.drawdown_halt and snap.peak_equity
+                and snap.equity <= snap.peak_equity * (1 - self.limits.max_drawdown_halt_pct)):
             return True, f"drawdown halt ({self.limits.max_drawdown_halt_pct:.0%})"
         return False, ""
 

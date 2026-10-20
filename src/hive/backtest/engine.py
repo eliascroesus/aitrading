@@ -1,4 +1,12 @@
-"""The backtest engine. See package docstring for the fill conventions."""
+"""The backtest engine. See package docstring for the fill conventions.
+
+Shorts (config 2.3.0): a market whose rules allow shorts is also traded as a second
+instrument, ``<SYMBOL>~S``, whose bars are the market seen upside down (``mirror_bars``).
+Every signal, stop, trailing stop and exit of a short is the long rule applied to that
+series. Money is not: a short sells at the real bid, covers at the real ask, posts its full
+value from cash (no leverage) and gains or loses ``shares x (entry - price)`` in real terms,
+so a short that the price runs against can lose more than a long of the same size.
+"""
 
 from __future__ import annotations
 
@@ -12,13 +20,15 @@ import pandas as pd
 from hive.backtest.costs import CostModel
 from hive.backtest.metrics import summarize
 from hive.config import StrategyConfig, TrendRules
-from hive.data.bars import adjust_ohlc
+from hive.data.bars import adjust_ohlc, mirror_bars
 from hive.data.universe import PointInTimeUniverse
 from hive.signals.features import compute_features, initial_stop, rank_candidates
-from hive.signals.regime import class_multipliers, regime_frame
+from hive.signals.regime import class_multipliers, regime_frame, short_multipliers
 from hive.signals.sizing import edge_risk_pct, size_position
 
 log = logging.getLogger(__name__)
+
+SHORT = "~S"   # suffix of the short instrument of a market
 
 # Optional hook: given (date, ranked candidate rows) return the subset approved.
 # This is where the LLM layer plugs in during agent-assisted backtests.
@@ -38,6 +48,12 @@ class Position:
     fees: float = 0.0
     bars_held: int = 0
     failure_checked: bool = False
+    # shorts: the fields above are in mirrored prices (signals and stops); these are real
+    short: bool = False
+    shares: float = 0.0          # shares sold short
+    real_entry: float = 0.0      # the real price sold at
+    real_r: float = 0.0          # the real distance from the entry up to the initial stop
+    collateral: float = 0.0      # cash posted: the short's full value at entry (no leverage)
 
 
 @dataclass
@@ -48,6 +64,7 @@ class BacktestResult:
     metrics: dict[str, float]
     config: StrategyConfig
     daily_log: list[dict] = field(default_factory=list)
+    open_positions: list[dict] = field(default_factory=list)   # filled when the run is not liquidated at the end
 
 
 class Backtester:
@@ -70,6 +87,7 @@ class Backtester:
         entry_mode: str = "signal",
         seed: int = 0,
         calendar: pd.DatetimeIndex | None = None,
+        liquidate_at_end: bool = True,
     ):
         self.cfg = config
         self.cost = cost
@@ -80,20 +98,29 @@ class Backtester:
         self.candidate_filter = candidate_filter
         self.fractional = fractional
         self.use_regime_filter = use_regime_filter
+        self.liquidate_at_end = liquidate_at_end
         self.asset_class = {s: (asset_class_by_symbol or {}).get(s, "stock") for s in bars_by_symbol}
 
         self.rules: dict[str, TrendRules] = {}
         self.px: dict[str, pd.DataFrame] = {}
         self.features: dict[str, pd.DataFrame] = {}
         self.last_bar: dict[str, pd.Timestamp] = {}
+        self.base: dict[str, str] = {}   # instrument -> its market (a short trades its base's market)
         for sym, bars in bars_by_symbol.items():
             rules = config.rules_for(self.asset_class[sym])
             if len(bars) <= rules.ma_long:
                 continue
-            self.rules[sym] = rules
-            self.px[sym] = adjust_ohlc(bars)
-            self.features[sym] = compute_features(bars, rules)
-            self.last_bar[sym] = bars.index[-1]
+            legs = {"long": [sym], "short": [sym + SHORT], "both": [sym, sym + SHORT]}[rules.direction]
+            for inst in legs:
+                b = mirror_bars(bars) if inst.endswith(SHORT) else bars
+                self.rules[inst] = rules
+                self.px[inst] = adjust_ohlc(b)
+                self.features[inst] = compute_features(b, rules)
+                self.last_bar[inst] = bars.index[-1]
+                self.asset_class[inst] = self.asset_class[sym]
+                self.base[inst] = sym
+        self.short_green = {"stock": config.stocks.short_green_mult, "etf": config.stocks.short_green_mult,
+                            "crypto": config.crypto.short_green_mult}
         self.periods_per_year = (
             365 if all(self.asset_class[s] == "crypto" for s in self.px) and self.px else 252
         )
@@ -178,17 +205,32 @@ class Backtester:
             for order in pending_entries:
                 sym = order["symbol"]
                 bar = self._bar(sym, day)
-                if bar is None or sym in positions or len(positions) >= cfg.risk.max_positions:
+                if (bar is None or sym in positions or len(positions) >= cfg.risk.max_positions
+                        or self.base[sym] in {self.base[s] for s in positions}):
                     continue
-                price = self.cost.fill_price(bar["open"], "buy")
+                short = sym.endswith(SHORT)
+                if short:
+                    real = self.cost.fill_price(1.0 / bar["open"], "sell")      # sold short at the bid
+                    price = 1.0 / real if real > 0 else 0.0
+                else:
+                    price = self.cost.fill_price(bar["open"], "buy")
+                if price <= 0:
+                    continue
                 # Re-anchor the stop to the actual fill, keeping the R distance.
                 stop = price - order["r_per_share"]
                 notional = min(order["notional"], cash)
-                qty = notional / price
-                if not self.fractional:
-                    qty = float(int(qty))
-                    notional = qty * price
-                if qty <= 0 or notional < cfg.risk.min_order_notional_usd:
+                if short:
+                    shares = notional / real
+                    if not self.fractional:
+                        shares = float(int(shares))
+                        notional = shares * real
+                    qty = notional / price
+                else:
+                    qty = notional / price
+                    if not self.fractional:
+                        qty = float(int(qty))
+                        notional = qty * price
+                if qty <= 0 or notional < cfg.risk.min_order_notional_usd or stop <= 0:
                     continue
                 fee = self.cost.commission(notional)
                 if notional + fee > cash:
@@ -199,6 +241,10 @@ class Backtester:
                     entry_date=day, stop_price=stop, r_per_share=order["r_per_share"],
                     highest_close=price, fees=fee,
                 )
+                if short:
+                    positions[sym] = Position(
+                        **{**positions[sym].__dict__, "short": True, "shares": shares, "real_entry": real,
+                           "real_r": 1.0 / stop - real, "collateral": notional})
             pending_entries = []
 
             # ---- 2. intraday stops on today's bar ----------------------------
@@ -213,15 +259,18 @@ class Backtester:
                     pending_exits.pop(sym, None)
 
             # ---- 3. mark to market at close; ratchet trailing stops ---------
-            mv = 0.0
+            mv = gx = 0.0      # market value (what the book is worth) and gross exposure (what it holds)
             for sym, pos in positions.items():
                 bar = self._bar(sym, day)
                 if bar is None:
-                    mv += pos.qty * self._last_close_before(sym, day)
+                    last_px = self._last_close_before(sym, day)
+                    mv += self._value(pos, last_px)
+                    gx += self._exposure(pos, last_px)
                     continue
                 pos.bars_held += 1
                 close = bar["close"]
-                mv += pos.qty * close
+                mv += self._value(pos, close)
+                gx += self._exposure(pos, close)
                 pos.highest_close = max(pos.highest_close, close)
                 f = self.features[sym]
                 rules = self.rules[sym]
@@ -232,13 +281,13 @@ class Backtester:
             equity = cash + mv
             peak_equity = max(peak_equity, equity)
             equity_hist.append((day, equity))
-            exposure_hist.append((day, mv / equity if equity > 0 else 0.0))
+            exposure_hist.append((day, gx / equity if equity > 0 else 0.0))
 
             # ---- 4. portfolio-level halts -----------------------------------
             dd = equity / peak_equity - 1.0
             daily_loss = equity / day_start_equity - 1.0 if day_start_equity > 0 else 0.0
             day_start_equity = equity
-            if dd <= -cfg.risk.max_drawdown_halt_pct and not halted:
+            if cfg.risk.halt_paper and dd <= -cfg.risk.max_drawdown_halt_pct and not halted:
                 halted = True
                 halt_bars_left = cfg.risk.halt_cooldown_bars
                 n_halts += 1
@@ -282,22 +331,23 @@ class Backtester:
             # ---- 6. new entries ---------------------------------------------
             reg = self.regime.loc[day] if day in self.regime.index else None
             mult = class_multipliers(reg, use_filter=self.use_regime_filter)
+            smult = short_multipliers(reg, self.short_green, use_filter=self.use_regime_filter)
             state = str(reg["state"]) if (reg is not None and self.use_regime_filter) else "off"
             n_open_after_exits = len(positions) - len(pending_exits)
             slots = min(cfg.risk.max_positions - n_open_after_exits, cfg.risk.max_new_entries_per_day)
             open_risk = sum(
-                max(p.qty * (self._close_or(p, day) - p.stop_price), 0.0) for p in positions.values()
+                self._risk(p, self._close_or(p, day)) for p in positions.values()
                 if p.symbol not in pending_exits
             ) / equity if equity > 0 else 0.0
             port_vol = self._portfolio_vol(equity_hist)
             n_crypto = sum(1 for p in positions.values() if p.asset_class == "crypto")
-            crypto_exp = sum(p.qty * self._close_or(p, day) for p in positions.values()
+            crypto_exp = sum(self._exposure(p, self._close_or(p, day)) for p in positions.values()
                              if p.asset_class == "crypto") / equity if equity > 0 else 0.0
-            if slots > 0 and max(mult.values()) > 0 and not daily_loss_block:
-                cands = self._candidates(day, positions, mult)
+            if slots > 0 and max(*mult.values(), *smult.values()) > 0 and not daily_loss_block:
+                cands = self._candidates(day, positions, mult, smult)
                 if self.candidate_filter is not None and not cands.empty:
                     cands = self.candidate_filter(day, cands)
-                gross_now = mv / equity if equity > 0 else 0.0
+                gross_now = gx / equity if equity > 0 else 0.0
                 risk_pct = edge_risk_pct([t["r_multiple"] for t in trades[-cfg.risk.edge_lookback_trades:]],
                                          cfg.risk)
                 taken = 0
@@ -312,13 +362,21 @@ class Backtester:
                                            or crypto_exp >= cfg.risk.crypto_sleeve_pct):
                         continue
                     rules = self.rules[sym]
+                    short = sym.endswith(SHORT)
                     price = float(row["close"])
                     stop = initial_stop(price, row, rules)
+                    if stop <= 0 or stop >= price:
+                        continue
+                    # size on the real price: a short's stop sits above it, reflected about the
+                    # price so the risk arithmetic (and every cap) is the long one
+                    real_p, real_s = (1.0 / price, 1.0 / stop) if short else (price, stop)
                     d = size_position(
-                        equity=equity, price=price, stop_price=stop, risk=cfg.risk, asset_class=ac,
-                        risk_multiplier=mult.get(ac, 0.0), portfolio_vol_ann=port_vol,
+                        equity=equity, price=real_p, stop_price=2 * real_p - real_s if short else real_s,
+                        risk=cfg.risk, asset_class=ac,
+                        risk_multiplier=(smult if short else mult).get(ac, 0.0), portfolio_vol_ann=port_vol,
                         fractional=self.fractional,
-                        cap_pct=cfg.risk.max_position_pct_crypto_alt if sym in cfg.universe.crypto_alt_symbols else None,
+                        cap_pct=(cfg.risk.max_position_pct_crypto_alt
+                                 if self.base[sym] in cfg.universe.crypto_alt_symbols else None),
                         risk_pct=risk_pct,
                     )
                     if d.notional <= 0:
@@ -330,7 +388,7 @@ class Backtester:
                         crypto_exp += d.notional / equity
                         n_crypto += 1
                     pending_entries.append({"symbol": sym, "notional": d.notional,
-                                            "r_per_share": d.r_per_share})
+                                            "r_per_share": price - stop if short else d.r_per_share})
                     gross_now += d.notional / equity
                     open_risk += d.qty * d.r_per_share / equity
                     taken += 1
@@ -340,12 +398,23 @@ class Backtester:
         # Liquidate at each name's last available close so the final equity is
         # realised (and pays its exit costs); the last point becomes realised cash.
         last = self.calendar[-1]
+        open_positions: list[dict] = []
         for sym, pos in list(positions.items()):
             px = self.px[sym].loc[:last]
-            if len(px):
-                cash += self._close_position(pos, float(px["close"].iloc[-1]), min(last, px.index[-1]),
-                                             "end_of_test", trades)
-                del positions[sym]
+            if not len(px):
+                continue
+            if not self.liquidate_at_end:
+                c = float(px["close"].iloc[-1])
+                open_positions.append({
+                    "symbol": self.base[sym], "side": "short" if pos.short else "long", "asset_class": pos.asset_class,
+                    "entry_date": str(pos.entry_date.date()), "qty": pos.shares if pos.short else pos.qty,
+                    "entry": pos.real_entry if pos.short else pos.entry_price, "last": 1.0 / c if pos.short else c,
+                    "stop": 1.0 / pos.stop_price if pos.short else pos.stop_price,
+                    "value": self._value(pos, c), "exposure": self._exposure(pos, c)})
+                continue
+            cash += self._close_position(pos, float(px["close"].iloc[-1]), min(last, px.index[-1]),
+                                         "end_of_test", trades)
+            del positions[sym]
         if equity_hist and not positions:
             equity_hist[-1] = (last, cash)
         equity_s = pd.Series(dict(equity_hist), name="equity")
@@ -353,7 +422,7 @@ class Backtester:
         trades_df = pd.DataFrame(trades)
         metrics = summarize(equity_s, trades_df, exposure_s, periods_per_year=self.periods_per_year)
         metrics["n_drawdown_halts"] = n_halts
-        return BacktestResult(equity_s, exposure_s, trades_df, metrics, cfg, daily_log)
+        return BacktestResult(equity_s, exposure_s, trades_df, metrics, cfg, daily_log, open_positions)
 
     # ------------------------------------------------------------------
     def _bar(self, sym: str, day: pd.Timestamp) -> pd.Series | None:
@@ -379,37 +448,77 @@ class Backtester:
         return float(rets.std(ddof=1) * np.sqrt(self.periods_per_year)) if len(rets) > 1 else None
 
     def _candidates(
-        self, day: pd.Timestamp, positions: dict[str, Position], mult: dict[str, float]
+        self, day: pd.Timestamp, positions: dict[str, Position], mult: dict[str, float],
+        smult: dict[str, float] | None = None,
     ) -> pd.DataFrame:
         symbols = self.signal_days.get(day)
         if not symbols:
             return pd.DataFrame(columns=["symbol", "score"])
         allowed = self.universe.members(day) if self.universe is not None else None
+        held = {self.base[s] for s in positions}
         rows = []
         for sym in symbols:
             ac = self.asset_class[sym]
-            if sym in positions or mult.get(ac, 0.0) <= 0:
+            short = sym.endswith(SHORT)
+            if self.base[sym] in held or ((smult or {}) if short else mult).get(ac, 0.0) <= 0:
                 continue
-            if allowed is not None and ac == "stock" and sym not in allowed:
+            if allowed is not None and ac == "stock" and self.base[sym] not in allowed:
                 continue
             row = self.features[sym].loc[day]
             if pd.notna(row["atr"]) and row["atr"] > 0:
-                if ac != "crypto" and row["raw_close"] < self.cfg.universe.min_price_usd:
+                raw = 1.0 / row["raw_close"] if short else row["raw_close"]
+                if ac in ("stock", "etf") and raw < self.cfg.universe.min_price_usd:
                     continue
                 rows.append({"symbol": sym, **row.to_dict()})
         if not rows:
             return pd.DataFrame(columns=["symbol", "score"])
         return rank_candidates(pd.DataFrame(rows))
 
+    @staticmethod
+    def _value(pos: Position, close: float) -> float:
+        """What the position is worth at this (instrument) close: a short is its collateral plus
+        its real gain, ``shares x (entry - price)``."""
+        if pos.short:
+            return pos.collateral + pos.shares * (pos.real_entry - 1.0 / close) if close > 0 else 0.0
+        return pos.qty * close
+
+    @staticmethod
+    def _exposure(pos: Position, close: float) -> float:
+        """The market value held, long or short (what the no-leverage caps count)."""
+        if pos.short:
+            return pos.shares / close if close > 0 else 0.0
+        return pos.qty * close
+
+    @staticmethod
+    def _risk(pos: Position, close: float) -> float:
+        """Money lost if the stop fills from here."""
+        if pos.short:
+            return max(pos.shares * (1.0 / pos.stop_price - 1.0 / close), 0.0) if close > 0 and pos.stop_price > 0 else 0.0
+        return max(pos.qty * (close - pos.stop_price), 0.0)
+
     def _close_position(
         self, pos: Position, ref_price: float, day: pd.Timestamp, reason: str, trades: list[dict]
     ) -> float:
+        if pos.short:
+            real = self.cost.fill_price(1.0 / ref_price, "buy")        # covered at the ask
+            fee = self.cost.commission(pos.shares * real)
+            gain = pos.shares * (pos.real_entry - real)
+            trades.append({
+                "symbol": self.base[pos.symbol], "side": "short", "asset_class": pos.asset_class,
+                "entry_date": pos.entry_date, "exit_date": day, "entry_price": pos.real_entry, "exit_price": real,
+                "qty": pos.shares, "pnl": gain - fee - pos.fees,
+                "return_pct": (pos.real_entry - real) / pos.real_entry * 100.0,
+                "r_per_share": pos.real_r,
+                "r_multiple": (pos.real_entry - real) / pos.real_r if pos.real_r else 0.0,
+                "hold_days": pos.bars_held, "fees": pos.fees + fee, "reason": reason,
+            })
+            return pos.collateral + gain - fee
         price = self.cost.fill_price(ref_price, "sell")
         notional = pos.qty * price
         fee = self.cost.commission(notional)
         pnl = notional - fee - pos.qty * pos.entry_price - pos.fees
         trades.append({
-            "symbol": pos.symbol, "asset_class": pos.asset_class, "entry_date": pos.entry_date,
+            "symbol": pos.symbol, "side": "long", "asset_class": pos.asset_class, "entry_date": pos.entry_date,
             "exit_date": day, "entry_price": pos.entry_price, "exit_price": price, "qty": pos.qty,
             "pnl": pnl, "return_pct": (price / pos.entry_price - 1.0) * 100.0,
             "r_per_share": pos.r_per_share,

@@ -77,7 +77,6 @@ def grid() -> list[Cell]:
         cells += [(sleeve, {"risk.risk_per_trade_pct": r}) for r in (0.02, 0.04)]
         cells += [(sleeve, {"risk.max_open_risk_pct": h}) for h in (0.12, 0.24)]
         cells += [(sleeve, {"risk.target_annual_vol": v}) for v in (0.3, 0.45)]
-        cells += [(sleeve, {"risk.max_drawdown_halt_pct": d}) for d in (0.4, 0.6)]
         cells += [(sleeve, {"risk.max_positions": n}) for n in (3, 8)]
         cells += [(sleeve, {"risk.risk_per_trade_pct": 0.005})]
         if sleeve == "stocks":
@@ -88,6 +87,9 @@ def grid() -> list[Cell]:
             cells += [(sleeve, {"risk.crypto_sleeve_pct": c}) for c in (0.6, 1.0)]
             cells += [(sleeve, {"risk.max_position_pct_crypto_alt": c}) for c in (0.3, 1.0)]
             no_caps = {"risk.max_position_pct_crypto": 1.0, "risk.max_position_pct_crypto_alt": 1.0}
+        # shorts: the same rules on the market upside down, alone or beside the longs (2.3.0)
+        cells += [(sleeve, {f"{pre}.direction": d}) for d in ("both", "short")]
+        cells += [(sleeve, {f"{pre}.direction": "both", f"{pre}.short_green_mult": 0.5})]
         # no position caps at all, and risk per trade chosen by each book's own record (2.2.0)
         edge = {"risk.sizing_mode": "edge"}
         cells += [(sleeve, dict(no_caps)), (sleeve, dict(edge)),
@@ -198,12 +200,19 @@ def refine(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
 def _inert(k: str, ov: dict[str, Any], cfg: StrategyConfig, sleeve: str) -> bool:
     """A knob the cell's other settings make irrelevant (another entry family's knob, an edge
     knob on a fixed-size cell): testing it would retest the same strategy under a new name."""
+    if _inert_short(k, ov, cfg, sleeve):
+        return True
     if k.startswith(sleeve + "."):
         mode = ov.get(f"{sleeve}.entry_mode", _get(cfg, f"{sleeve}.entry_mode"))
         return KNOB_FAMILY.get(k.split(".", 1)[1], mode) != mode
     if k in EDGE_KNOBS:
         return str(ov.get("risk.sizing_mode", cfg.risk.sizing_mode)) != "edge"
     return False
+
+
+def _inert_short(k: str, ov: dict[str, Any], cfg: StrategyConfig, sleeve: str) -> bool:
+    """The short-side regime lever does nothing on a long-only cell."""
+    return k == f"{sleeve}.short_green_mult" and str(ov.get(f"{sleeve}.direction", _get(cfg, f"{sleeve}.direction"))) == "long"
 
 
 def _sleeve_keys(bounds: dict[str, Bound], sleeve: str) -> tuple[list[str], list[str]]:

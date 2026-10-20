@@ -144,7 +144,9 @@ class DailyRun:
         fundamentals_fn: Callable[[str], dict[str, Any]] | None = None,
         company_names: dict[str, list[str]] | None = None,
         desk_reports: list[dict[str, Any]] | None = None,
+        live: bool = False,
     ):
+        self.live = live
         self.desk_reports = desk_reports or []
         self.news_fn = news_fn
         self.fundamentals_fn = fundamentals_fn
@@ -271,7 +273,7 @@ class DailyRun:
                     self.ledger.record_death(self.run_date.date(), status.death_reason, equity)
                 self.journal.write("death", {"reason": status.death_reason})
                 raise SystemDeadError(status.death_reason)
-            if status.in_halt_cooldown:
+            if status.in_halt_cooldown and (self.live or self.cfg.risk.halt_paper):
                 close_only = True
                 summary.notes.append("drawdown halt cooldown: close-only")
 
@@ -303,8 +305,9 @@ class DailyRun:
 
         # --- manage open positions ---------------------------------------------
         self._sync_book_with_broker()
+        halt_on = self.live or self.cfg.risk.halt_paper     # the drawdown halt protects real money
         risk = RiskEngine(self.cfg.risk, kill_switch=lambda: self.kill_switch,
-                          tier_risk_multiplier=tier_mult, close_only=close_only)
+                          tier_risk_multiplier=tier_mult, close_only=close_only, drawdown_halt=halt_on)
         snap0 = self._snapshot(equity, float(self.broker.cash()), status)
         halted, why_halt = risk.halted(snap0)
         if halted and self.ledger is not None and not (status and status.in_halt_cooldown):
@@ -313,7 +316,7 @@ class DailyRun:
             summary.notes.append(f"drawdown halt: liquidated, cooldown {self.cfg.risk.halt_cooldown_bars}d")
             close_only = True
             risk = RiskEngine(self.cfg.risk, kill_switch=lambda: self.kill_switch,
-                              tier_risk_multiplier=tier_mult, close_only=True)
+                              tier_risk_multiplier=tier_mult, close_only=True, drawdown_halt=halt_on)
         summary.exits = self._manage_positions(reg)
         self._ensure_stops()
 
