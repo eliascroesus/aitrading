@@ -1,5 +1,5 @@
 {
-  "cash": 62.14310024847745,
+  "cash": 65.43568514525225,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -34,17 +34,6 @@
       "took_half": false,
       "misses": 0
     },
-    "7LRu3HmrDxFcvaEHj9Fysxbfux2e8VWHx6UfDE9jpump": {
-      "mint": "7LRu3HmrDxFcvaEHj9Fysxbfux2e8VWHx6UfDE9jpump",
-      "symbol": "JEANNE",
-      "qty": 32372.91950264285,
-      "entry_price": 0.0001484,
-      "peak_price": 0.0001484,
-      "entered_at": "2026-10-20T15:42:33.980761+00:00",
-      "cost_usd": 5.092389729443731,
-      "took_half": false,
-      "misses": 0
-    },
     "8T2nkC9HQkgd2yjxc7Yn1LAietmXyZKbv1vR4FXDbonk": {
       "mint": "8T2nkC9HQkgd2yjxc7Yn1LAietmXyZKbv1vR4FXDbonk",
       "symbol": "Bonnie",
@@ -61,7 +50,7 @@
       "symbol": "JARVIS",
       "qty": 18607.82188849127,
       "entry_price": 0.0002552,
-      "peak_price": 0.0002947,
+      "peak_price": 0.0003465,
       "entered_at": "2026-10-20T15:49:49.143930+00:00",
       "cost_usd": 5.033639114699551,
       "took_half": false,
@@ -72,7 +61,7 @@
       "symbol": "COLLECTOOOR",
       "qty": 31098.337563477227,
       "entry_price": 0.0001527,
-      "peak_price": 0.0001527,
+      "peak_price": 0.0001591,
       "entered_at": "2026-10-20T15:49:49.143930+00:00",
       "cost_usd": 5.033639114699551,
       "took_half": false,
@@ -289,6 +278,16 @@
       "notional": 5.033639114699551,
       "liquidity_usd": 42903.86,
       "age_hours": 20.844637720879447
+    },
+    {
+      "mint": "7LRu3HmrDxFcvaEHj9Fysxbfux2e8VWHx6UfDE9jpump",
+      "symbol": "JEANNE",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001082,
+      "proceeds": 3.292584896774799,
+      "pnl_approx": -1.799804832668932,
+      "age_hours": 0.38251206888888883
     }
   ]
 }
