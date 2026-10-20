@@ -146,6 +146,13 @@ def load_bars_for_backtest(
                 bars[sym], classes[sym] = b, "crypto"
         if sleeve == "crypto":
             bench = store.get("crypto", cfg.universe.regime_crypto_symbol)
+    if sleeve == "macro":
+        for sym in store.symbols("macro"):
+            b = store.get("macro", sym)
+            if b is not None and len(b) >= cfg.universe.min_history_bars:
+                bars[sym], classes[sym] = b, "macro"
+        # the buy & hold line on the charts; the macro sleeve has no benchmark regime
+        bench = store.get("macro", cfg.universe.macro_benchmark_symbol) if bars else None
     if bench is None:
         raise FileNotFoundError("benchmark bars missing from the store; run `hive data seed`")
     # Truncate every series at its first implausible print (docs/DATA.md, "Data quality").

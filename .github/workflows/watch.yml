@@ -63,6 +63,8 @@ jobs:
           restore-keys: hive-data-
       - name: Reference files + 2000-2020 history if the cache is cold
         run: bash scripts/bootstrap_data.sh --history || echo "bootstrap failed; the lab will use what is cached"
+      - name: Forex, gold and index prices (whole history the first time, then the last days)
+        run: .venv/bin/hive data macro || echo "macro prices skipped; the lab tests the other sleeves"
       - uses: actions/configure-pages@v5
       - uses: ./.github/actions/lab-round
         with: { minutes: "${{ env.MINUTES }}", round: "1", rounds: "${{ env.ROUNDS }}" }

@@ -69,8 +69,14 @@ def promote_earned(settings: Settings, cfg: StrategyConfig, registry: HiveRegist
     out: list[dict[str, Any]] = []
     if not cfg.operator.auto_promote:
         return out
+    from hive.hive.children import needs_engine
+
     for c in registry.ready_to_promote():
         if (c.voi or 0.0) < cfg.operator.promote_min_voi:
+            continue
+        if needs_engine(c):
+            # shorts, forex, metals and index futures have no venue at the primary: the book keeps
+            # trading on paper and is judged by its own record (and the prop-firm readiness check)
             continue
         registry.promote(c.id, by_operator=True)
         record_promotion(settings, cfg, c, by="operator", on=on)

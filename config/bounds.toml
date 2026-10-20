@@ -196,3 +196,47 @@ max = 1.0
 ["crypto.short_green_mult"]
 min = 0.0
 max = 1.0
+
+# --- forex, metals and index futures (config 2.3.0) ---------------------------------
+
+["macro.entry_mode"]
+choices = ["reset_breakout", "template_cross", "high_breakout", "ma_pullback", "momentum_threshold"]
+
+["macro.direction"]
+choices = ["long", "short", "both"]
+
+["macro.breakout_lookback"]
+min = 20
+max = 120
+
+["macro.pullback_touch_bars"]
+min = 1
+max = 10
+
+["macro.momentum_min"]
+min = 0.1
+max = 1.5
+
+["macro.exit_closes_below_mid"]
+min = 1
+max = 1000
+
+["macro.trail_atr"]
+min = 3.0
+max = 10.0
+
+["macro.max_hold_bars"]
+min = 63
+max = 504
+
+["macro.min_pct_of_high"]
+min = 0.6
+max = 0.95
+
+["macro.impulse_min_z"]
+min = 1.0
+max = 2.5
+
+["risk.max_position_pct_macro"]
+min = 0.05
+max = 1.0

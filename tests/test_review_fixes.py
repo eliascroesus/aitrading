@@ -69,18 +69,18 @@ def test_class_multipliers_match_spec():
     red = pd.Series({"state": "red", "risk_multiplier": 0.0, "allow_new_stock": False, "allow_new_etf": True,
                      "crash_guard": False})
     m = class_multipliers(red)
-    assert m == {"stock": 0.0, "crypto": 0.0, "etf": 1.0, "fx": 1.0}       # currencies have no equity regime
+    assert m == {"stock": 0.0, "crypto": 0.0, "etf": 1.0, "macro": 1.0}       # currencies have no equity regime
     yellow = pd.Series({"state": "yellow", "risk_multiplier": 0.5, "allow_new_stock": True, "allow_new_etf": True,
                         "crash_guard": False})
-    assert class_multipliers(yellow) == {"stock": 0.5, "crypto": 0.5, "etf": 0.5, "fx": 1.0}
-    assert class_multipliers(red, use_filter=False) == {"stock": 1.0, "etf": 1.0, "crypto": 1.0, "fx": 1.0}
+    assert class_multipliers(yellow) == {"stock": 0.5, "crypto": 0.5, "etf": 0.5, "macro": 1.0}
+    assert class_multipliers(red, use_filter=False) == {"stock": 1.0, "etf": 1.0, "crypto": 1.0, "macro": 1.0}
     # shorts are the mirror: full size in RED, halved in YELLOW, the lever in GREEN, none in a crash
     green = pd.Series({"state": "green", "risk_multiplier": 1.0, "allow_new_stock": True, "allow_new_etf": True,
                        "crash_guard": False})
     crash = pd.Series({"state": "red", "risk_multiplier": 0.0, "allow_new_stock": False, "allow_new_etf": False,
                        "crash_guard": True})
     g = {"stock": 0.25, "etf": 0.25, "crypto": 0.0}
-    assert short_multipliers(red, g) == {"stock": 1.0, "etf": 1.0, "crypto": 1.0, "fx": 1.0}
+    assert short_multipliers(red, g) == {"stock": 1.0, "etf": 1.0, "crypto": 1.0, "macro": 1.0}
     assert short_multipliers(yellow, g)["stock"] == 0.5 and short_multipliers(green, g)["stock"] == 0.25
     assert short_multipliers(green, g)["crypto"] == 0.0 and short_multipliers(crash, g)["stock"] == 0.0
 

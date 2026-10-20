@@ -24,7 +24,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 Mode = Literal["backtest", "paper", "live"]
-AssetClass = Literal["stock", "etf", "crypto"]
+AssetClass = Literal["stock", "etf", "crypto", "macro"]
 LIVE_CONFIRMATION_PHRASE = "I_UNDERSTAND_THIS_TRADES_REAL_MONEY"
 
 
@@ -204,6 +204,13 @@ class TrendRules(BaseModel):
             trail_atr=4.0, exit_closes_below_mid=2,
         )
 
+    @classmethod
+    def macro(cls) -> TrendRules:
+        """Forex, metals and index futures (config 2.3.0): five trading days a week, no usable
+        volume (spot FX has none; continuous futures roll), no earnings, and long or short by
+        default because a currency pair has no natural side."""
+        return cls(bars_per_year=260, require_volume=False, earnings_blackout_bars=0, direction="both")
+
 
 class RegimeRules(BaseModel):
     """Benchmark regime: GREEN (normal), YELLOW (half risk), RED (no new longs)."""
@@ -227,6 +234,7 @@ class RiskLimits(BaseModel):
     max_position_pct_stock: float = 0.20
     max_position_pct_etf: float = 0.30
     max_position_pct_crypto: float = 0.30
+    max_position_pct_macro: float = 0.50     # one forex pair, metal or index future
     # Large-cap memecoins (universe.crypto_alt_symbols) get a smaller cap.
     max_position_pct_crypto_alt: float = 0.10
     max_gross_exposure: float = 1.0
@@ -268,6 +276,7 @@ class RiskLimits(BaseModel):
             "stock": self.max_position_pct_stock,
             "etf": self.max_position_pct_etf,
             "crypto": self.max_position_pct_crypto,
+            "macro": self.max_position_pct_macro,
         }.get(asset_class, self.max_position_pct_stock)
 
 
@@ -449,6 +458,17 @@ class UniverseConfig(BaseModel):
     # Large-cap memecoins traded on the same spot venue under the same trend rules,
     # with the smaller position cap (risk.max_position_pct_crypto_alt).
     crypto_alt_symbols: list[str] = Field(default_factory=lambda: ["DOGE", "SHIB", "PEPE"])
+    # Forex, metals and index futures (config 2.3.0): the firm's name -> Yahoo's daily series.
+    # Gold, silver and the indices are continuous front-month futures (their small roll gaps
+    # stand in for the financing a spot or CFD position pays).
+    macro_symbols: dict[str, str] = Field(default_factory=lambda: {
+        "EURUSD": "EURUSD=X", "GBPUSD": "GBPUSD=X", "USDJPY": "JPY=X", "AUDUSD": "AUDUSD=X",
+        "USDCAD": "CAD=X", "USDCHF": "CHF=X", "NZDUSD": "NZDUSD=X", "EURJPY": "EURJPY=X",
+        "GBPJPY": "GBPJPY=X", "EURGBP": "EURGBP=X",
+        "XAUUSD": "GC=F", "XAGUSD": "SI=F",
+        "US500": "ES=F", "NAS100": "NQ=F", "US30": "YM=F",
+    })
+    macro_benchmark_symbol: str = "XAUUSD"
     regime_stock_symbol: str = "SPY"
     regime_crypto_symbol: str = "BTC"
     min_price_usd: float = 5.0
@@ -461,6 +481,7 @@ class StrategyConfig(BaseModel):
     version: str = "2.3.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
+    macro: TrendRules = Field(default_factory=TrendRules.macro)
     regime: RegimeRules = Field(default_factory=RegimeRules)
     risk: RiskLimits = Field(default_factory=RiskLimits)
     survival: SurvivalRules = Field(default_factory=SurvivalRules)
@@ -472,7 +493,7 @@ class StrategyConfig(BaseModel):
     prop: PropRules = Field(default_factory=PropRules)
 
     def rules_for(self, asset_class: str) -> TrendRules:
-        return self.crypto if asset_class == "crypto" else self.stocks
+        return {"crypto": self.crypto, "macro": self.macro}.get(asset_class, self.stocks)
 
     @classmethod
     def load(cls, path: Path | None = None) -> StrategyConfig:

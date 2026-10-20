@@ -36,7 +36,9 @@ from hive.operator.lab import cell_key, lab_dir, lab_record, parent_eval, read_t
 log = logging.getLogger(__name__)
 
 MODES = ("template_cross", "high_breakout", "ma_pullback", "momentum_threshold")
-SLEEVES = ("stocks", "crypto")
+SLEEVES = ("stocks", "crypto", "macro")
+# the risk.* levers that belong to another sleeve's markets (never searched in this one)
+OTHER_MARKETS = {"stocks": ("crypto", "macro"), "crypto": ("stock", "etf", "macro"), "macro": ("stock", "etf", "crypto")}
 # Knobs that only matter for one entry family: refining them on a cell of another family
 # would retest the same strategy under a different name.
 KNOB_FAMILY = {"breakout_lookback": "high_breakout", "pullback_touch_bars": "ma_pullback",
@@ -82,14 +84,21 @@ def grid() -> list[Cell]:
         if sleeve == "stocks":
             cells += [(sleeve, {"risk.max_position_pct_stock": c}) for c in (0.35, 0.5)]
             no_caps = {"risk.max_position_pct_stock": 1.0, "risk.max_position_pct_etf": 1.0}
-        else:
+        elif sleeve == "crypto":
             cells += [(sleeve, {"risk.max_position_pct_crypto": c}) for c in (0.5, 0.8)]
             cells += [(sleeve, {"risk.crypto_sleeve_pct": c}) for c in (0.6, 1.0)]
             cells += [(sleeve, {"risk.max_position_pct_crypto_alt": c}) for c in (0.3, 1.0)]
             no_caps = {"risk.max_position_pct_crypto": 1.0, "risk.max_position_pct_crypto_alt": 1.0}
-        # shorts: the same rules on the market upside down, alone or beside the longs (2.3.0)
-        cells += [(sleeve, {f"{pre}.direction": d}) for d in ("both", "short")]
-        cells += [(sleeve, {f"{pre}.direction": "both", f"{pre}.short_green_mult": 0.5})]
+        else:
+            cells += [(sleeve, {"risk.max_position_pct_macro": 0.25})]
+            no_caps = {"risk.max_position_pct_macro": 1.0}
+        # shorts: the same rules on the market upside down, alone or beside the longs (2.3.0);
+        # the macro sleeve trades both ways by default, so its cells try one side at a time
+        if sleeve == "macro":
+            cells += [(sleeve, {f"{pre}.direction": d}) for d in ("long", "short")]
+        else:
+            cells += [(sleeve, {f"{pre}.direction": d}) for d in ("both", "short")]
+            cells += [(sleeve, {f"{pre}.direction": "both", f"{pre}.short_green_mult": 0.5})]
         # no position caps at all, and risk per trade chosen by each book's own record (2.2.0)
         edge = {"risk.sizing_mode": "edge"}
         cells += [(sleeve, dict(no_caps)), (sleeve, dict(edge)),
@@ -218,8 +227,7 @@ def _inert_short(k: str, ov: dict[str, Any], cfg: StrategyConfig, sleeve: str) -
 def _sleeve_keys(bounds: dict[str, Bound], sleeve: str) -> tuple[list[str], list[str]]:
     """(numeric knobs, categorical knobs) that apply to a sleeve: its own and the sizing levers."""
     own = [k for k in bounds if k.startswith(sleeve + ".")
-           or (k.startswith("risk.") and not (sleeve == "stocks" and "crypto" in k)
-               and not (sleeve == "crypto" and ("stock" in k or "etf" in k)))]
+           or (k.startswith("risk.") and not any(o in k for o in OTHER_MARKETS[sleeve]))]
     return (sorted(k for k in own if not isinstance(bounds[k], list)),
             sorted(k for k in own if isinstance(bounds[k], list)))
 
@@ -410,6 +418,7 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
     todo = queue_staged(registry, cfg, bounds, ldir, with_refine=with_refine)
     inputs = dict(inputs_by_sleeve or {})
     parents: dict[str, Any] = {}
+    no_data: set[str] = set()    # a sleeve whose markets are not in the cache yet is skipped, not failed
     started = datetime.now(UTC)
     n_done = 0
     hypothesis = {"rescore": "a top cell re-tested to score it on the prop objective",
@@ -417,6 +426,16 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
                   "refine": "refinement around the best cells found so far",
                   "evolve": "mutation of one of the best cells found so far"}
     for sleeve, ov, stage in todo:
+        if sleeve in no_data:
+            continue
+        if sleeve not in inputs:
+            try:
+                if settings is None:
+                    raise FileNotFoundError(sleeve)
+                inputs[sleeve] = default_inputs(settings, cfg, sleeve)
+            except FileNotFoundError:
+                no_data.add(sleeve)
+                continue
         elapsed = (datetime.now(UTC) - started).total_seconds()
         if (budget_s is not None and elapsed >= budget_s) or (budget_s is None and n_done >= n_cells):
             break

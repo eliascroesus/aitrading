@@ -51,10 +51,43 @@ def complete_sessions(bars: pd.DataFrame, now: datetime | None = None) -> pd.Dat
     return bars[idx.normalize() < pd.Timestamp(now.date())]
 
 
+def repair_ohlc(bars: pd.DataFrame) -> pd.DataFrame:
+    """Yahoo's forex rows sometimes report a high below the close or a low above it; the bar's
+    true range contains every print it reports."""
+    if not len(bars):
+        return bars
+    out = bars.copy()
+    px = out[["open", "high", "low", "close"]]
+    out["high"], out["low"] = px.max(axis=1), px.min(axis=1)
+    return out
+
+
+def refresh_macro(store: BarStore, cfg: StrategyConfig, *, days: int = 30, full_start: str = "2000-01-01") -> dict[str, int]:
+    """Forex, metals and index futures from Yahoo: the whole history the first time a market is
+    seen (the lab needs 2001 onwards), then the last ``days``. Only closed days are kept."""
+    counts = {"macro": 0, "errors": 0}
+    recent = (datetime.now(UTC) - timedelta(days=days)).date().isoformat()
+    for name, ysym in cfg.universe.macro_symbols.items():
+        start = recent if store.has("macro", name) else full_start
+        try:
+            got = yfinance_source.fetch_daily([ysym], start=start)
+        except Exception as exc:
+            counts["errors"] += 1
+            log.warning("macro refresh failed for %s (%s): %s", name, ysym, exc)
+            continue
+        for _, bars in got.items():
+            bars = repair_ohlc(complete_days(bars))
+            bars = bars[bars["close"] > 0]
+            if len(bars):
+                store.upsert("macro", name, bars, source=f"yfinance:{ysym}")
+                counts["macro"] += 1
+    return counts
+
+
 def refresh_all(store: BarStore, cfg: StrategyConfig, *, pit_csv: Path | None, days: int = 400,
                 hl_testnet: bool = False) -> dict[str, int]:
     start = (datetime.now(UTC) - timedelta(days=days)).date().isoformat()
-    counts = {"stock": 0, "etf": 0, "crypto": 0, "index": 0, "errors": 0}
+    counts = {"stock": 0, "etf": 0, "crypto": 0, "macro": 0, "index": 0, "errors": 0}
 
     stock_syms: list[str] = []
     if pit_csv is not None and Path(pit_csv).exists():
@@ -98,6 +131,9 @@ def refresh_all(store: BarStore, cfg: StrategyConfig, *, pit_csv: Path | None, d
                 counts["errors"] += 1
                 log.warning("yfinance crypto failed for %s: %s", coin, exc)
         counts["crypto"] += int(done)
+
+    mc = refresh_macro(store, cfg, days=min(days, 30))
+    counts["macro"], counts["errors"] = mc["macro"], counts["errors"] + mc["errors"]
 
     try:
         got = yfinance_source.fetch_daily(["^VIX"], start=start)

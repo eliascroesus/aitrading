@@ -320,7 +320,7 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
     ran = [t for t in cells if t.get("oos_cagr") is not None and not str(t.get("verdict", "")).startswith("rejected: backtest failed")]
     leaders: dict[str, list] = {}
     equivalents: dict[str, int] = {}
-    for sl in ("stocks", "crypto"):
+    for sl in ("stocks", "crypto", "macro"):
         seen_sig: dict[tuple, str] = {}
         rows_: list = []
         for t in sorted((t for t in ran if t.get("sleeve") == sl), key=lambda t: rank_key(t, cfg.operator.objective)):
@@ -371,11 +371,11 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
         h = (t.get("ts") or "")[:13]
         if not h:
             continue
-        b = hours.setdefault(h, {"stocks": 0, "crypto": 0})
+        b = hours.setdefault(h, {"stocks": 0, "crypto": 0, "macro": 0})
         if t.get("sleeve") in b:
             b[t["sleeve"]] += 1
-    best_so_far: dict[str, list] = {"stocks": [], "crypto": []}
-    run_best: dict[str, float | None] = {"stocks": None, "crypto": None}
+    best_so_far: dict[str, list] = {"stocks": [], "crypto": [], "macro": []}
+    run_best: dict[str, float | None] = {"stocks": None, "crypto": None, "macro": None}
     for t in ran:
         sl = t.get("sleeve")
         if sl not in run_best or not t.get("passed"):
@@ -408,7 +408,7 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
     return {"tests": rows[::-1][:LAB_ROWS], "curves": curves, "cals": cals, "parents": parents,
             "leaders": {sl: [t["id"] for t in rows_] for sl, rows_ in leaders.items()}, "equivalents": equivalents,
             "knobs": _knobs(ran),
-            "progress": {"hours": [[h, b["stocks"], b["crypto"]] for h, b in sorted(hours.items())][-96:],
+            "progress": {"hours": [[h, b["stocks"], b["crypto"], b["macro"]] for h, b in sorted(hours.items())][-96:],
                          "best": best_so_far},
             "queue": queue, "n_queued": n_queued, "by_stage": by_stage, "grid_size": grid_size, "waiting": waiting,
             "status": read_status(state), "n_tests": len(cells), "n_passed": sum(1 for t in cells if t.get("passed")),
@@ -648,6 +648,15 @@ def _agents(data: dict[str, Any]) -> list[dict[str, Any]]:
                                    f"paper ${lp.get('equity') or 0:,.2f}, funding paid ${lp.get('funding_paid_total') or 0:,.4f}") if lp else "first cycle tonight",
             nxt=(sched.get("daily") or [None])[0], cadence="daily trading cycle",
             status="retired" if pd_.get("status") not in ("shadow", "live") else None)
+    md = next((c for c in hive.get("children", []) if c.get("sleeve") == "macro" and c.get("kind") == "scout"), None)
+    if md:
+        ml = (cd.get(md["id"]) or {}).get("latest") or {}
+        add(md["id"], "Forex & gold desk", "the firm's macro rules on forex, gold, silver and index futures, long and short, paper",
+            "scout", _ts_of(ml.get("ts")),
+            (f"{ml.get('markets', 0)} markets, {len(ml.get('positions') or [])} open "
+             f"({sum(1 for x in ml.get('positions') or [] if x.get('side') == 'short')} short), paper ${ml.get('equity') or 0:,.2f}")
+            if ml else "first cycle tonight", nxt=(sched.get("daily") or [None])[0], cadence="daily trading cycle",
+            status="retired" if md.get("status") not in ("shadow", "live") else None)
     add("heartbeat", "Heartbeat", "reads the broker's live positions and prices", "infra", _ts_of(hb.get("ts")),
         f"equity ${hb.get('equity') or 0:,.2f}, {len(hb.get('positions') or [])} positions, market {'open' if hb.get('market_open') else 'closed'}"
         if hb else "no heartbeat yet", cadence="every lab round")
@@ -673,7 +682,7 @@ def _agents(data: dict[str, Any]) -> list[dict[str, Any]]:
         _ts_of(alloc[-1].get("date")) if alloc else None, (alloc[-1].get("why") or "")[:100] if alloc else "no rebalance yet",
         nxt=(sched.get("weekly") or [None])[0], cadence="weekly")
     for c in hive.get("children", []):
-        if c.get("sleeve") in ("trench", "meme", "perps"):
+        if c.get("sleeve") in ("trench", "meme", "perps") or (c.get("sleeve") == "macro" and c.get("kind") == "scout"):
             continue
         d = cd.get(c.get("id")) or {}
         active = c.get("status") in ("shadow", "live")
@@ -696,7 +705,7 @@ def _knobs(ran: list[dict[str, Any]], *, per_sleeve: int = 8, min_tests: int = 6
     import statistics
 
     out: dict[str, list[dict[str, Any]]] = {}
-    for sl in ("stocks", "crypto"):
+    for sl in ("stocks", "crypto", "macro"):
         pts: dict[str, list] = {}
         for t in ran:
             if t.get("sleeve") != sl:
@@ -759,6 +768,12 @@ def _scouts(state: Path, hive: dict[str, Any]) -> dict[str, Any]:
                 elif k == "exit" and c.get("sleeve") == "perps":
                     trades.append({"ts": ts, "kind": "exit", "symbol": pl.get("symbol"), "reason": pl.get("reason")})
         latest = _read_json(state / "children" / cid / "latest.json") or {}
+        cv = latest.get("curve") or {}
+        if cv.get("dates"):                 # a book on the lab's simulator keeps its own curve
+            equity = [[str(d)[:10], round(float(v), 4)] for d, v in zip(cv["dates"], cv.get("equity") or [], strict=False)]
+            trades = [{"ts": t.get("exit_date"), "kind": t.get("side"), "symbol": t.get("symbol"), "pnl": t.get("pnl"),
+                       "reason": t.get("reason"), "entry": t.get("entry_price"), "exit": t.get("exit_price")}
+                      for t in (latest.get("trades") or [])][::-1]
         rej = latest.get("rejects") or {}
         funnel = None
         if c.get("sleeve") == "trench" and latest:

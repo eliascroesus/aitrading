@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, create_model
 
 from hive.agents import prompts
 from hive.agents.llm import BudgetExceededError, LLMClient
-from hive.backtest.costs import ALPACA_CRYPTO, ALPACA_STOCKS
+from hive.backtest.costs import ALPACA_CRYPTO, ALPACA_STOCKS, MACRO_CFD
 from hive.backtest.engine import Backtester
 from hive.backtest.experiments import _apply_overrides
 from hive.config import REPO_ROOT, StrategyConfig, Tier
@@ -161,7 +161,7 @@ def evaluate(cfg: StrategyConfig, overrides: dict[str, Any], inputs: dict[str, A
                           ("outofsample", (cfg.operator.outofsample_start, cfg.operator.outofsample_end))):
         res = Backtester(inputs["bars"], inputs["bench"], c, inputs["cost"], asset_class_by_symbol=inputs["classes"],
                          initial_equity=cfg.survival.starting_bankroll_usd, start=s, end=e,
-                         universe=inputs.get("universe"), vix=inputs.get("vix")).run()
+                         universe=inputs.get("universe"), vix=inputs.get("vix"), calendar=inputs.get("calendar")).run()
         out[label] = {k: float(res.metrics.get(k, 0.0)) for k in KEEP}
         out[label].update(prop_metrics(res.equity, cfg.prop))
         if keep_curves:
@@ -390,11 +390,18 @@ def operate(
 
 
 def default_inputs(settings, cfg: StrategyConfig, sleeve: str = "stocks") -> dict[str, Any]:
+    import pandas as pd
+
     from hive.data.seed import load_bars_for_backtest, load_pit_universe
     from hive.data.store import BarStore
 
     store = BarStore(settings.hive_data_dir / "cache")
     bars, classes, bench = load_bars_for_backtest(store, cfg, sleeve=sleeve)
+    if sleeve == "macro":
+        # forex trades five days a week and the futures keep their own holidays: every market's days
+        cal = pd.DatetimeIndex(sorted(set().union(*(b.index for b in bars.values()))))
+        return {"bars": bars, "classes": classes, "bench": bench, "cost": MACRO_CFD, "universe": None,
+                "vix": None, "calendar": cal}
     pit = settings.hive_data_dir / "raw" / "sp500_pit_membership.csv"
     vix = store.get("index", "VIX")
     return {"bars": bars, "classes": classes, "bench": bench,

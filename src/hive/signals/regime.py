@@ -82,12 +82,12 @@ def class_multipliers(reg: pd.Series | None, *, use_filter: bool = True) -> dict
     all. Shared by the backtester and the live run so the two cannot diverge.
     """
     if not use_filter or reg is None:
-        return {"stock": 1.0, "etf": 1.0, "crypto": 1.0, "fx": 1.0}
+        return {"stock": 1.0, "etf": 1.0, "crypto": 1.0, "macro": 1.0}
     state = str(reg["state"])
     base = float(reg["risk_multiplier"])
     allow_stock, allow_etf = bool(reg["allow_new_stock"]), bool(reg["allow_new_etf"])
     out = {"stock": base if allow_stock else 0.0, "crypto": base if allow_stock else 0.0,
-           "etf": base if allow_etf else 0.0, "fx": 1.0}   # currencies and metals have no equity regime
+           "etf": base if allow_etf else 0.0, "macro": 1.0}   # currencies and metals have no equity regime
     if state == RegimeState.RED.value and allow_etf:
         out["etf"] = 1.0
     return out
@@ -100,7 +100,7 @@ def short_multipliers(reg: pd.Series | None, green: dict[str, float], *, use_fil
     shorts as it blocks longs: panic states are when shorts get squeezed. Currencies and metals
     are not gated by the equity regime."""
     if not use_filter or reg is None:
-        return {"stock": 1.0, "etf": 1.0, "crypto": 1.0, "fx": 1.0}
+        return {"stock": 1.0, "etf": 1.0, "crypto": 1.0, "macro": 1.0}
     state = str(reg["state"])
     if not bool(reg["allow_new_etf"]):
         m = dict.fromkeys(("stock", "etf", "crypto"), 0.0)
@@ -110,7 +110,7 @@ def short_multipliers(reg: pd.Series | None, green: dict[str, float], *, use_fil
         m = {c: float(reg["risk_multiplier"]) for c in ("stock", "etf", "crypto")}
     else:
         m = {c: float(green.get(c, 0.0)) for c in ("stock", "etf", "crypto")}
-    return {**m, "fx": 1.0}
+    return {**m, "macro": 1.0}
 
 
 def regime_at(frame: pd.DataFrame, when: pd.Timestamp | str) -> pd.Series:

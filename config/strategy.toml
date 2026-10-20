@@ -126,6 +126,56 @@ review_bars = 90
 max_hold_bars = 180
 earnings_blackout_bars = 0
 
+[macro]
+# forex, metals and index futures (config 2.3.0)
+entry_mode = "reset_breakout"
+breakout_lookback = 55
+pullback_touch_bars = 5
+momentum_min = 0.5
+direction = "both"
+short_green_mult = 0.0
+bars_per_year = 260
+ma_long = 200
+ma_mid = 50
+ma_slope_lookbacks = [21, 63]
+high_lookback = 252
+min_pct_of_high = 0.75
+mom_period = 252
+mom_skip = 21
+require_long_momentum = true
+sigma_period = 63
+impulse_period = 63
+impulse_window = 63
+impulse_skip = 10
+impulse_min_z = 1.5
+reset_period = 21
+reset_z_min = -1.0
+reset_z_max = 0.3
+atr_period = 20
+pullback_high_lookback = 63
+pullback_min_atr = 2.0
+pullback_max_atr = 6.0
+volume_short = 10
+volume_long = 50
+volume_max_ratio = 0.9
+require_volume = false
+setup_valid_bars = 10
+trigger_ema = 10
+trigger_roc = 5
+stop_swing_low_bars = 10
+stop_swing_low_atr_pad = 0.5
+stop_initial_atr = 3.0
+trail_atr = 5.0
+trail_atr_late = 3.0
+trail_tighten_after_bars = 63
+exit_closes_below_mid = 1000
+exit_closes_below_long = 1
+failure_stop_bars = 15
+failure_stop_min_r = 0.5
+review_bars = 63
+max_hold_bars = 126
+earnings_blackout_bars = 0
+
 [regime]
 ma_long = 200
 slope_lookback = 21
@@ -142,6 +192,7 @@ max_new_entries_per_day = 2
 max_position_pct_stock = 0.20
 max_position_pct_etf = 0.30
 max_position_pct_crypto = 0.30
+max_position_pct_macro = 0.50
 max_position_pct_crypto_alt = 0.10
 max_gross_exposure = 1.0
 max_leverage = 1.0
@@ -239,6 +290,25 @@ regime_crypto_symbol = "BTC"
 min_price_usd = 5.0
 min_history_bars = 300
 max_candidates_for_llm = 8
+
+macro_benchmark_symbol = "XAUUSD"
+
+[universe.macro_symbols]
+EURUSD = "EURUSD=X"
+GBPUSD = "GBPUSD=X"
+USDJPY = "JPY=X"
+AUDUSD = "AUDUSD=X"
+USDCAD = "CAD=X"
+USDCHF = "CHF=X"
+NZDUSD = "NZDUSD=X"
+EURJPY = "EURJPY=X"
+GBPJPY = "GBPJPY=X"
+EURGBP = "EURGBP=X"
+XAUUSD = "GC=F"
+XAGUSD = "SI=F"
+US500 = "ES=F"
+NAS100 = "NQ=F"
+US30 = "YM=F"
 
 [operator]
 enabled = true

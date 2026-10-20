@@ -12,7 +12,7 @@ import pandas as pd
 
 from hive.data.bars import BAR_COLUMNS, normalize_bars
 
-ASSET_CLASSES = ("stock", "etf", "crypto", "index")
+ASSET_CLASSES = ("stock", "etf", "crypto", "index", "macro")
 
 
 def _safe_symbol(symbol: str) -> str:

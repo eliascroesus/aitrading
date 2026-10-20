@@ -31,8 +31,14 @@ ALPACA_CRYPTO = CostModel(commission_pct=0.0025, slippage_bps=10.0, name="alpaca
 # Hyperliquid perps base tier: 0.045% taker / 0.015% maker. Assume taker.
 HYPERLIQUID_PERPS = CostModel(commission_pct=0.00045, slippage_bps=5.0, name="hyperliquid_perps")
 
+# Forex, metals and index CFDs at a typical prop-firm or ECN account: about a pip of spread
+# on the majors (folded into slippage) plus a small commission. Overnight swap is not
+# charged; the continuous futures used for metals and indices carry it in their roll.
+MACRO_CFD = CostModel(commission_pct=0.00005, slippage_bps=1.5, name="macro_cfd")
+
 VENUE_COSTS = {
     "alpaca_stocks": ALPACA_STOCKS,
     "alpaca_crypto": ALPACA_CRYPTO,
     "hyperliquid_perps": HYPERLIQUID_PERPS,
+    "macro_cfd": MACRO_CFD,
 }

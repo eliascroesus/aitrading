@@ -68,6 +68,19 @@ def data_refresh(days: int = typer.Option(400, help="Lookback for the network re
     rprint(counts)
 
 
+@data_app.command("macro")
+def data_macro(days: int = typer.Option(30, help="Lookback for markets already in the cache")) -> None:
+    """Forex, metals and index futures from Yahoo: the whole history for a market not yet cached
+    (2000 onwards, for the lab), else the last few days. Best effort."""
+    from hive.data.refresh import refresh_macro
+    from hive.data.store import BarStore
+
+    setup_logging()
+    s = get_settings()
+    counts = refresh_macro(BarStore(s.hive_data_dir / "cache"), StrategyConfig.load(), days=days)
+    rprint(counts)
+
+
 @data_app.command("status")
 def data_status() -> None:
     from hive.data.store import BarStore

@@ -24,6 +24,51 @@ from hive.survival.ledger import SurvivalLedger
 
 log = logging.getLogger(__name__)
 
+MACRO_DESK_ID = "macro-desk"
+
+
+def needs_engine(child: Child) -> bool:
+    """A book the primary's venue cannot trade (forex, metals, index futures, or any short: the
+    Alpaca account trades long stocks and spot crypto only) is paper traded on the lab's own
+    simulator instead, one new day at a time, on its own $100 book."""
+    if child.sleeve == "macro":
+        return True
+    return any(k.endswith(".direction") and str(v) != "long" for k, v in (child.overrides or {}).items())
+
+
+def _run_engine_child(settings: Settings, cfg: StrategyConfig, child: Child, cdir: Path, journal: Journal,
+                      run_date: date, inputs_cache: dict[str, dict]) -> float:
+    """Paper trading on the backtester: the child's rules run from the day it was seated to this
+    run date, on bars that did not exist when it was chosen, with the lab's fills (the next open,
+    stops on the day's range) and costs. Nothing is liquidated: the mark is the open book."""
+    from hive.backtest.engine import Backtester
+    from hive.operator.iterate import default_inputs
+    from hive.operator.lab import downsample
+
+    ccfg = _apply_overrides(cfg, child.overrides or {})
+    sleeve = child.sleeve if child.sleeve in ("stocks", "crypto", "macro") else "stocks"
+    if sleeve not in inputs_cache:
+        inputs_cache[sleeve] = default_inputs(settings, ccfg, sleeve)
+    inp = inputs_cache[sleeve]
+    start_cash = cfg.survival.starting_bankroll_usd
+    res = Backtester(inp["bars"], inp["bench"], ccfg, inp["cost"], asset_class_by_symbol=inp["classes"],
+                     initial_equity=start_cash, start=child.born or run_date.isoformat(), end=run_date.isoformat(),
+                     universe=inp.get("universe"), vix=inp.get("vix"), calendar=inp.get("calendar"),
+                     liquidate_at_end=False).run()
+    eq = float(res.equity.iloc[-1]) if len(res.equity) else start_cash
+    rd = run_date.isoformat()
+    SurvivalLedger(cdir / "ledger.jsonl", cfg.survival).append("equity_mark", eq, {"label": f"child-{child.id}", "date": rd})
+    trades = res.trades.tail(25).to_dict("records") if not res.trades.empty else []
+    latest = {"ts": datetime.now(UTC).isoformat(timespec="seconds"), "run_date": rd, "equity": eq, "start_cash": start_cash,
+              "since": child.born, "markets": len(inp["bars"]), "positions": res.open_positions,
+              "trades": [{k: (str(v)[:10] if k.endswith("_date") else v) for k, v in t.items()} for t in trades],
+              "n_trades": int(len(res.trades)), "curve": downsample(res.equity) if len(res.equity) > 1 else {}}
+    cdir.mkdir(parents=True, exist_ok=True)
+    (cdir / "latest.json").write_text(json.dumps(latest, default=str))
+    journal.write("engine_book", {"equity": eq, "open": len(res.open_positions), "trades": int(len(res.trades)),
+                                  "since": child.born})
+    return eq
+
 
 def _classes_for_sleeve(classes: dict[str, str], sleeve: str) -> dict[str, str]:
     if sleeve == "stocks":
@@ -54,6 +99,16 @@ def run_children(
                              hypothesis="the firm's crypto rules on Hyperliquid's most traded perps; public prices, "
                                         "1x, taker fee and funding charged; paper only, own $100 book"),
                        led.tier(led.status(parent_equity, on=run_date).equity_net), force=True)
+    # the forex & gold desk joins once the cache has those markets
+    if (settings.hive_mode != "backtest" and not is_replay and store.symbols("macro")
+            and not any(c.id == MACRO_DESK_ID for c in registry.children)):
+        led = SurvivalLedger(settings.hive_state_dir / "ledger.jsonl", cfg.survival)
+        registry.spawn(Child(id=MACRO_DESK_ID, name="Forex & gold desk", kind="scout", sleeve="macro",
+                             hypothesis="the firm's macro rules on the major forex pairs, gold, silver and three index "
+                                        "futures, long and short, no leverage; paper on the lab's simulator, own $100 book",
+                             born=rd),
+                       led.tier(led.status(parent_equity, on=run_date).equity_net), force=True)
+    inputs_cache: dict[str, dict] = {}
     for child in registry.active():
         cdir = settings.hive_state_dir / "children" / child.id
         journal = Journal(settings.hive_state_dir / "journal", f"{rd}-child-{child.id}")
@@ -72,6 +127,8 @@ def run_children(
                     journal.write("perps_skip", {"reason": "replay: no historical public prices"})
                     continue
                 eq = run_perps_desk(settings, cfg, child, cdir, journal, run_date, store, kill)
+            elif needs_engine(child):
+                eq = _run_engine_child(settings, cfg, child, cdir, journal, run_date, inputs_cache)
             elif child.sleeve == "trench":
                 latest = cdir / "latest.json"
                 eq = float(json.loads(latest.read_text()).get("equity")) if latest.exists() else cfg.trench.starting_cash_usd
