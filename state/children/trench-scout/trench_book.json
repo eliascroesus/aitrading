@@ -1,5 +1,5 @@
 {
-  "cash": 77.5323034007593,
+  "cash": 85.58228731432723,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -10,28 +10,6 @@
       "entered_at": "2026-10-20T14:15:41.774834+00:00",
       "cost_usd": 5.0,
       "took_half": false,
-      "misses": 0
-    },
-    "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump": {
-      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
-      "symbol": "COLLECTOOOR",
-      "qty": 16389.788506169116,
-      "entry_price": 0.0002878,
-      "peak_price": 0.000296,
-      "entered_at": "2026-10-20T14:15:41.774834+00:00",
-      "cost_usd": 5.0,
-      "took_half": false,
-      "misses": 0
-    },
-    "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP": {
-      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
-      "symbol": "WiSP",
-      "qty": 37019.15815472823,
-      "entry_price": 6.371e-05,
-      "peak_price": 0.0001996,
-      "entered_at": "2026-10-20T14:15:41.774834+00:00",
-      "cost_usd": 5.0,
-      "took_half": true,
       "misses": 0
     },
     "87sEXKPMBeoryaqFQQnq1Yq6mUvjeNzhiFGxJbRjpump": {
@@ -50,7 +28,7 @@
       "symbol": "pika",
       "qty": 82709.2652884142,
       "entry_price": 5.939e-05,
-      "peak_price": 6.014e-05,
+      "peak_price": 6.117e-05,
       "entered_at": "2026-10-20T14:39:34.197919+00:00",
       "cost_usd": 5.206829461407655,
       "took_half": false,
@@ -128,6 +106,26 @@
       "notional": 5.206829461407655,
       "liquidity_usd": 19499.05,
       "age_hours": 1.0152139825439452
+    },
+    {
+      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
+      "symbol": "COLLECTOOOR",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 0.0002011,
+      "proceeds": 3.098227280475173,
+      "pnl_approx": -1.901772719524827,
+      "age_hours": 0.6530509066666667
+    },
+    {
+      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
+      "symbol": "WiSP",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001423,
+      "proceeds": 4.9517566330927565,
+      "pnl_approx": 2.4517566330927565,
+      "age_hours": 0.6530509066666667
     }
   ]
 }
