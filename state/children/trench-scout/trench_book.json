@@ -1,5 +1,5 @@
 {
-  "cash": 41.70117918890649,
+  "cash": 38.557829181181624,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -17,7 +17,7 @@
       "symbol": "ONEPIECE",
       "qty": 78653.28717129104,
       "entry_price": 4.071e-05,
-      "peak_price": 6.201e-05,
+      "peak_price": 6.335e-05,
       "entered_at": "2026-10-20T21:08:44.823531+00:00",
       "cost_usd": 3.394093839987854,
       "took_half": false,
@@ -28,7 +28,7 @@
       "symbol": "DTC",
       "qty": 1986.0285323117578,
       "entry_price": 0.001492,
-      "peak_price": 0.001831,
+      "peak_price": 0.001894,
       "entered_at": "2026-10-20T21:55:07.597343+00:00",
       "cost_usd": 3.1409438444216913,
       "took_half": false,
@@ -39,7 +39,7 @@
       "symbol": "DACAT",
       "qty": 13263.89691230592,
       "entry_price": 0.0002234,
-      "peak_price": 0.0002527,
+      "peak_price": 0.0003637,
       "entered_at": "2026-10-20T21:55:07.597343+00:00",
       "cost_usd": 3.1409438444216913,
       "took_half": false,
@@ -50,9 +50,20 @@
       "symbol": "air",
       "qty": 17163.056902384888,
       "entry_price": 0.0001647,
-      "peak_price": 0.0001647,
+      "peak_price": 0.0002303,
       "entered_at": "2026-10-20T22:10:52.842315+00:00",
       "cost_usd": 2.9963608001321584,
+      "took_half": false,
+      "misses": 0
+    },
+    "GBv35e9EEpHEdeL4g2TGEXBoEvdk6Yw72sSMHtw6pump": {
+      "mint": "GBv35e9EEpHEdeL4g2TGEXBoEvdk6Yw72sSMHtw6pump",
+      "symbol": "DOGGY",
+      "qty": 26012.495926223633,
+      "entry_price": 0.000114,
+      "peak_price": 0.000114,
+      "entered_at": "2026-10-20T22:18:27.183454+00:00",
+      "cost_usd": 3.143350007724864,
       "took_half": false,
       "misses": 0
     }
@@ -959,6 +970,15 @@
       "notional": 2.9963608001321584,
       "liquidity_usd": 33965.38,
       "age_hours": 0.5870475858561198
+    },
+    {
+      "mint": "GBv35e9EEpHEdeL4g2TGEXBoEvdk6Yw72sSMHtw6pump",
+      "symbol": "DOGGY",
+      "event": "entry",
+      "price": 0.000114,
+      "notional": 3.143350007724864,
+      "liquidity_usd": 31581.64,
+      "age_hours": 0.338542472805447
     }
   ]
 }
