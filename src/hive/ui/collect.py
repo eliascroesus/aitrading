@@ -290,6 +290,8 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
     data["social"] = _read_json(state / "social" / "latest.json") or {}
     data["schedule"] = _schedule()
     data["rules"] = _rules(cfg, settings)
+    data["prop"] = (_read_json(state / "prop_readiness.json") or {}) | {"rules": cfg.prop.model_dump(),
+                                                                        "objective": cfg.operator.objective}
     data["agents"] = _agents(data)
     return data
 
@@ -309,6 +311,7 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
         read_status,
         read_tests,
     )
+    from hive.operator.sweep import rank_key
 
     tests = read_tests(ldir, with_curves=False)          # oldest first, metrics only
     today = datetime.now(UTC).date().isoformat()
@@ -320,8 +323,8 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
     for sl in ("stocks", "crypto"):
         seen_sig: dict[tuple, str] = {}
         rows_: list = []
-        for t in sorted((t for t in ran if t.get("sleeve") == sl), key=lambda t: -t["oos_cagr"]):
-            sig = tuple(round(float(t.get(k) or 0.0), 6) for k in ("oos_cagr", "oos_dd", "is_cagr", "is_dd"))
+        for t in sorted((t for t in ran if t.get("sleeve") == sl), key=lambda t: rank_key(t, cfg.operator.objective)):
+            sig = tuple(round(float(t.get(k) or 0.0), 6) for k in ("oos_cagr", "oos_dd", "is_cagr", "is_dd", "oos_prop"))
             if sig in seen_sig:            # a different setting with identical results: an inert knob
                 equivalents[seen_sig[sig]] = equivalents.get(seen_sig[sig], 1) + 1
                 continue
@@ -351,7 +354,7 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
         if not t.get("overrides"):
             row["name"] = t.get("name")
         row["verdict"] = (t.get("verdict") or "")[:110]
-        for k in ("is_cagr", "oos_cagr", "is_dd", "oos_dd", "parent_oos_cagr"):
+        for k in ("is_cagr", "oos_cagr", "is_dd", "oos_dd", "parent_oos_cagr", "oos_prop", "parent_oos_prop"):
             row[k] = r5(t.get(k))
         row["oos"] = {k: r5((t.get("outofsample") or {}).get(k)) for k in metric_keys if k in ("sharpe", "n_trades")}
         row["child_status"] = child_status.get(t.get("child_id")) if t.get("child_id") else None
@@ -399,6 +402,7 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
         pass
     tl = [{"ts": (t.get("ts") or "")[:16].replace("T", " "), "who": "lab", "kind": t.get("by") or "test",
            "text": f"{t.get('name')}: " + (f"OOS {t['oos_cagr']:.1%}" if t.get("oos_cagr") is not None else "no result")
+                   + (f", prop pass {t['oos_prop']:.0%}" if t.get("oos_prop") is not None else "")
                    + (f" vs parent {t['parent_oos_cagr']:.1%}" if t.get("parent_oos_cagr") is not None else "")
                    + f" — {(t.get('verdict') or '')[:90]}"} for t in cells[-40:]]
     return {"tests": rows[::-1][:LAB_ROWS], "curves": curves, "cals": cals, "parents": parents,
@@ -484,9 +488,14 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
                                                        + (", close-only" if t["close_only"] else "") for t in tiers),
          "who": "owner", "what": "what equity unlocks: sub-agent seats, risk multiplier, research budget"},
     ]
+    beat = ("OOS prop pass rate > parent (equal: higher OOS CAGR)" if op.objective == "prop" else "OOS CAGR > parent")
     search_rows = [
-        {"key": "verdict", "value": f"OOS CAGR > parent · IS CAGR ≥ 0 · OOS drawdown no worse than parent × {op.max_drawdown_tolerance:g}",
+        {"key": "operator.objective", "value": op.objective, "who": "owner",
+         "what": "what the lab climbs: prop = the simulated prop-firm pass rate, growth = the growth rate"},
+        {"key": "verdict", "value": f"{beat} · IS CAGR ≥ 0 · OOS drawdown no worse than parent × {op.max_drawdown_tolerance:g}",
          "who": "owner", "what": "what a backtested cell must show to take a paper seat"},
+        {"key": "prop.retire_on_breach", "value": "on" if cfg.prop.retire_on_breach else "off", "who": "owner",
+         "what": "a variant whose own paper book breaks the prop daily or total loss limit is retired that day"},
         {"key": "survival.child_shadow_days", "value": sv.child_shadow_days, "who": "owner",
          "what": "paper days a sub-agent must out-grow the parent before promotion"},
         {"key": "operator.promote_min_voi", "value": op.promote_min_voi, "who": "owner",
@@ -526,8 +535,23 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
         {"key": "DEX memecoins (Jupiter)", "value": "refuses to construct", "who": "owner",
          "what": "live swaps need a dedicated wallet, an RPC, pre-trade rug checks and simulated sells; the meme and trench scouts are paper only"},
     ]
+    pr = cfg.prop
+    prop_rows = [
+        {"key": "prop.profit_target_pct", "value": pr.profit_target_pct, "who": "owner", "what": "profit target of an evaluation"},
+        {"key": "prop.max_daily_loss_pct", "value": pr.max_daily_loss_pct, "who": "owner",
+         "what": "daily loss limit (close to close): breaking it fails the evaluation"},
+        {"key": "prop.max_total_loss_pct", "value": pr.max_total_loss_pct, "who": "owner",
+         "what": "total loss limit, " + ("trailing the peak" if pr.trailing_total_loss else "from the starting balance")},
+        {"key": "prop.min_trading_days", "value": pr.min_trading_days, "who": "owner", "what": "trading days before a pass counts"},
+        {"key": "prop.eval_horizon_days / eval_step_days", "value": f"{pr.eval_horizon_days} days / every {pr.eval_step_days}",
+         "who": "owner", "what": "each backtest is scored by evaluations this long, one starting every few days"},
+        {"key": "prop.ready_min_forward_days", "value": pr.ready_min_forward_days, "who": "owner",
+         "what": "paper trading days a book needs before it can be called ready"},
+        {"key": "prop.ready_min_backtest_pass_rate", "value": pr.ready_min_backtest_pass_rate, "who": "owner",
+         "what": "out-of-sample simulated pass rate a book needs before it can be called ready"},
+    ]
     return {"objective": prompts.OBJECTIVE, "risk": risk_rows, "survival": survival_rows, "search": search_rows,
-            "code": code_rows, "venues": venue_rows}
+            "prop": prop_rows, "code": code_rows, "venues": venue_rows}
 
 
 def _ts_of(s: Any) -> str | None:

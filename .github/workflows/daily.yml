@@ -24,6 +24,7 @@ on:
 permissions:
   contents: write
   actions: write              # to restart the always-on lab when this run is done
+  issues: write               # to announce, once, that a book is ready for a prop-firm evaluation
 
 concurrency:
   group: hive-state          # shared with weekly.yml: never two commits to state/ at once
@@ -66,6 +67,15 @@ jobs:
         run: .venv/bin/hive sweep --cells 3 || echo "lab skipped"
       - name: Heartbeat (live positions and prices for the dashboard)
         run: .venv/bin/hive watch || echo "heartbeat skipped"
+      - name: Prop-firm readiness (opens one issue the first time a book clears the checklist)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          .venv/bin/hive prop --notify-file "$RUNNER_TEMP/prop_ready.md" || { echo "readiness check skipped"; exit 0; }
+          if [ -s "$RUNNER_TEMP/prop_ready.md" ]; then
+            gh issue create --title "HIVE is ready for a prop-firm evaluation" --body-file "$RUNNER_TEMP/prop_ready.md" \
+              && .venv/bin/hive prop --mark-notified
+          fi
       - name: Rebuild the dashboard
         run: .venv/bin/hive ui build
       - uses: actions/configure-pages@v5

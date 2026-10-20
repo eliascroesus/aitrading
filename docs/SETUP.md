@@ -124,17 +124,29 @@ hive status
 
 ## 5. How the hive grows (the one rule)
 
-* **The one rule** (config 2.0.0): grow the bankroll as much and as fast as
-  possible, net of every cost. Death is the only hard stop. A backtested cell
-  earns a paper seat when it grows faster than the parent out of sample and
-  made money in sample (today's code still also rejects a cell whose
-  out-of-sample drawdown is more than 10% worse than the parent's; removing
-  that check is listed under the owner's pending decisions in
-  `docs/REVIEW_LOG.md`); a sub-agent is promoted into the live configuration
-  as soon as it has out-grown the parent for the shadow period, and retired as
-  soon as it has lagged it for the same period.
-  Sizing and concentration (`risk.*` in `config/bounds.toml`) are levers the
-  lab searches like any other; leverage is not available at this size.
+* **The objective** (config 2.1.0): pass prop-firm evaluations. Every backtest
+  is also run as a series of simulated evaluations (one starting every 5 days:
+  reach +10% within 60 trading days, at least 4 of them, without a day worse
+  than −5% or a fall of 10% below the start), and the lab ranks and judges
+  cells by the share they pass out of sample, growth breaking ties. A cell
+  earns a paper seat when its pass rate beats the parent's and it made money
+  in sample (today's code still also rejects a cell whose out-of-sample
+  drawdown is more than 10% worse than the parent's; see the owner's pending
+  decisions in `docs/REVIEW_LOG.md`). Set `objective = "growth"` under
+  `[operator]` to go back to ranking by growth alone.
+* **Punishment** follows the same rules: a sub-agent whose own paper book
+  breaks the daily or total loss limit is retired that day, as a firm would
+  close the account; one that lags the parent for 10 days is retired; one
+  down 75% dies.
+* **Sizing is the evidence's** (config 2.2.0): risk per trade, the largest
+  position in a stock, ETF, coin or DOGE/SHIB/PEPE (up to 1.0, which is no cap),
+  open risk, the volatility target, the halt and the crypto sleeve are lab
+  levers in `config/bounds.toml`, and so is *how* risk per trade is set:
+  a fixed share, or `sizing_mode = "edge"`, where each book risks a fraction
+  of the Kelly bet its own last 50 closed trades imply (between 0.25% and a
+  ceiling the lab also picks). The starting values are where they were; they
+  move only when a cell that moves them wins. Leverage is not available at
+  this size.
 * **Tiers** cap how many paper sub-agents may run at once: hospice 0, survival
   2, base 4, growth ($250+, 30 net-positive days) 6, hive ($1k+, 60 days) 8.
   Paper sub-agents cost nothing but compute, so the firm can start iterating on
@@ -150,14 +162,51 @@ hive status
   and monitors, read every journal, recommend. Budgets and the universe are
   code's; promotion is the evidence rule's. Nothing in the firm needs a person.
 
+## 5b. Prop-firm readiness: how the firm tells you it is ready
+
+Every daily cycle runs `hive prop`, which reads each book (the primary, and
+every active sub-agent) as a prop-firm evaluation that began when its strategy
+last changed, and checks four things:
+
+1. at least 30 trading days of paper record;
+2. never broke the daily or total loss limit, before or after reaching the
+   target (a funded account keeps the same limits);
+3. reached the profit target on paper;
+4. its strategy passes at least 50% of simulated evaluations out of sample
+   (the primary uses its weaker sleeve, since one account carries both).
+
+The result is in `state/prop_readiness.json` and in the hub's **Prop**
+section. The first time a book clears all four, the daily workflow opens a
+GitHub issue titled "HIVE is ready for a prop-firm evaluation" with the
+book's record and checklist. GitHub emails you about it if you watch the
+repository (**Watch → All activity**, or **Custom → Issues**). Deposits recorded
+with `hive capital-in` are taken out of the record, so a deposit never counts
+as a gain.
+
+When the issue arrives:
+
+1. Pick a firm that funds what HIVE trades (US stocks and ETFs, or crypto) and
+   allows automated trading. Most firms trade futures or forex; check the
+   instruments and the automation policy before paying.
+2. Copy that firm's exact rules into `[prop]` in `config/strategy.toml`
+   (target, daily and total loss, trailing or static, minimum days). The lab
+   rescores its best cells under the new rules within a session; if the book
+   still clears the checklist, it is ready for that firm.
+3. Buy the evaluation yourself. HIVE has no connection to any prop firm: how
+   orders reach the firm's platform is a follow-up once a firm is chosen.
+
+The simulator sees daily closes only. An intraday breach the closes do not
+show is invisible to it, so a real evaluation is somewhat harder than the
+paper one.
+
 ## 6. Sleeves and what "live" means for each
 
 | Sleeve | Paper | Live | Notes |
 |---|---|---|---|
 | Stocks/ETFs | `PaperBroker` | Alpaca | fractional from $1; the core of the study |
-| Crypto (BTC/ETH/SOL) | `PaperBroker` | Alpaca spot (Hyperliquid perps adapter exists in `hive/execution/hyperliquid.py` but is **not routed**: the daily run sends every order to the one primary broker; wiring a second venue is an owner decision, see §6b) | regime gated by BTC's 200DMA; up to 30% per position, 40% sleeve |
-| Memecoin majors (DOGE/SHIB/PEPE) | `PaperBroker` | Alpaca spot | same trend rules and BTC regime gate; 10% cap per position; they rarely sit above a rising 200-day MA, so entries are rare by design |
-| Memecoins | scout on DexScreener prices | **not wired** (`hive/execution/jupiter.py` lists the four prerequisites) | ≤ 1%/token, ≤ 3% total, ≤ 3 open, −40% stop, 35% trail, 72h time stop; expected to go to zero |
+| Crypto (BTC/ETH/SOL) | `PaperBroker` | Alpaca spot (Hyperliquid perps adapter exists in `hive/execution/hyperliquid.py` but is **not routed**: the daily run sends every order to the one primary broker; wiring a second venue is an owner decision, see §6b) | regime gated by BTC's 200DMA; position cap and sleeve size are lab levers (start 30% and 40%, ranges up to 100%) |
+| Memecoin majors (DOGE/SHIB/PEPE) | `PaperBroker` | Alpaca spot | same trend rules and BTC regime gate; position cap is a lab lever (start 10%, range 2% to 100%); they rarely sit above a rising 200-day MA, so entries are rare by design |
+| Memecoins | scout on DexScreener prices | **not wired** (`hive/execution/jupiter.py` lists the four prerequisites) | ≤ 1%/token, ≤ 3% total, ≤ 3 open, −40% stop, 35% trail, 72h time stop; expected to go to zero. pump.fun-sized launches and X are deferred by the owner (2026-10-20) |
 
 ## 6b. Paper-trading everything: what runs today, and what each venue needs from you
 

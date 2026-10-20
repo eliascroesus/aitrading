@@ -21,7 +21,7 @@ real evaluation is somewhat harder than the simulated one.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -89,16 +89,37 @@ def prop_metrics(equity: pd.Series, rules: PropRules) -> dict[str, float]:
 
 
 def forward_status(marks: list[tuple[str, float]], rules: PropRules) -> dict[str, Any]:
-    """A live paper record read as one evaluation that began on its first mark."""
+    """A live paper record read as one evaluation that began on its first mark. ``passed``:
+    the target was reached before any breach. ``breached``: a daily or total loss limit was
+    broken at any point, before or after passing (a funded account keeps the same limits)."""
     if len(marks) < 2:
-        return {"days": len(marks), "outcome": "open", "ret": 0.0, "worst_day": 0.0, "max_loss": 0.0,
-                "breached": False, "passed": False, "start": marks[0][0] if marks else None}
+        return {"days": max(len(marks) - 1, 0), "outcome": "open", "ret": 0.0, "worst_day": 0.0, "max_loss": 0.0,
+                "breached": False, "breach_day": None, "passed": False, "passed_on": None,
+                "start": marks[0][0] if marks else None, "last": marks[-1][0] if marks else None}
     eq = np.asarray([m[1] for m in marks], dtype=float)
-    ev = _walk(eq, 0, rules, horizon=None)
-    d = asdict(ev)
-    d.update({"breached": ev.outcome.startswith("failed"), "passed": ev.outcome == "passed",
-              "start": marks[0][0], "last": marks[-1][0], "days": len(marks) - 1})
-    return d
+    ev = _walk(eq, 0, rules, horizon=None)                                        # the evaluation
+    full = _walk(eq, 0, rules.model_copy(update={"profit_target_pct": float("inf")}), horizon=None)   # every day
+    breached = full.outcome.startswith("failed")
+    passed = ev.outcome == "passed"
+    return {"outcome": full.outcome if breached else ev.outcome, "days": len(marks) - 1,
+            "ret": float(eq[-1] / eq[0] - 1.0), "worst_day": full.worst_day, "max_loss": full.max_loss,
+            "breached": breached, "breach_day": full.days if breached else None,
+            "passed": passed, "passed_on": marks[ev.days][0] if passed else None,
+            "start": marks[0][0], "last": marks[-1][0]}
+
+
+def time_weighted(marks: list[tuple[str, float]], flows: list[tuple[str, float]]) -> list[tuple[str, float]]:
+    """Equity marks with deposits taken out: each day's return is (equity - money added that
+    day) / previous equity, chained from the first mark, so a deposit is not a gain."""
+    if not marks or not flows:
+        return list(marks)
+    out = [marks[0]]
+    level = marks[0][1]
+    for (d0, e0), (d1, e1) in zip(marks, marks[1:], strict=False):
+        added = sum(a for d, a in flows if d0 < d <= d1)
+        level *= (e1 - added) / e0 if e0 > 0 else 1.0
+        out.append((d1, level))
+    return out
 
 
 def readiness(*, forward: dict[str, Any], backtest_pass_rate: float | None, rules: PropRules) -> dict[str, Any]:
@@ -116,3 +137,89 @@ def readiness(*, forward: dict[str, Any], backtest_pass_rate: float | None, rule
          "value": "—" if backtest_pass_rate is None else f"{backtest_pass_rate:.0%}"},
     ]
     return {"ready": all(c["ok"] for c in checks), "checks": checks}
+
+
+def readiness_report(settings: Any, cfg: Any, registry: Any, lab_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Every book that could sit a prop evaluation (the primary, and each active variant), run
+    through the readiness checklist. A book's record starts when its strategy last changed: the
+    primary's at its last promotion or reversion, a variant's when it was seated. The simulated
+    pass rate is the lab's out-of-sample one: the parent's for the primary (the weaker sleeve,
+    since one account carries both), the cell's own for a variant."""
+    from datetime import UTC, datetime
+
+    from hive.hive.governance import read_promoted
+    from hive.operator.lab import cell_key
+    from hive.survival.ledger import SurvivalLedger
+
+    rules = cfg.prop
+    state = settings.hive_state_dir
+    latest: dict[str, float] = {}
+    parent: dict[str, float] = {}
+    for r in sorted(lab_rows, key=lambda r: str(r.get("ts") or r.get("date") or "")):
+        if r.get("oos_prop") is None:
+            continue
+        if r.get("by") == "parent":
+            parent[str(r.get("sleeve"))] = float(r["oos_prop"])
+        elif r.get("sleeve") and r.get("overrides"):
+            latest[cell_key(r["sleeve"], r["overrides"])] = float(r["oos_prop"])
+
+    def marks_of(path: Any, since: str | None) -> list[tuple[str, float]]:
+        if not path.exists():
+            return []
+        try:
+            led = SurvivalLedger(path, cfg.survival)
+        except ValueError:
+            return []
+        flows = [(e.day, float(e.amount_usd)) for e in led.entries if e.kind == "capital_in"]
+        marks = time_weighted(led.equity_marks(), flows)
+        return [m for m in marks if since is None or m[0] >= since]
+
+    books: list[dict[str, Any]] = []
+    hist = read_promoted(settings).get("history") or []
+    since = str(hist[-1].get("date")) if hist else None
+    sleeves = {sl: v for sl, v in parent.items() if sl in ("stocks", "crypto")}
+    books.append({"id": "primary", "name": "the firm (primary book)", "kind": "primary", "sleeve": "stocks+crypto",
+                  "since": since, "marks": marks_of(state / "ledger.jsonl", since),
+                  "backtest_pass_rate": min(sleeves.values()) if sleeves else None, "backtest_by_sleeve": sleeves})
+    for c in registry.active():
+        if c.kind != "variant":
+            continue
+        books.append({"id": c.id, "name": c.name, "kind": "variant", "sleeve": c.sleeve, "since": c.born or None,
+                      "marks": marks_of(state / "children" / c.id / "ledger.jsonl", None),
+                      "backtest_pass_rate": latest.get(cell_key(c.sleeve, c.overrides), (c.metrics or {}).get("oos_prop"))})
+    out = []
+    for b in books:
+        fwd = forward_status(b.pop("marks"), rules)
+        chk = readiness(forward=fwd, backtest_pass_rate=b["backtest_pass_rate"], rules=rules)
+        out.append({**b, "forward": fwd, **chk, "n_ok": sum(c["ok"] for c in chk["checks"])})
+    out.sort(key=lambda b: (not b["ready"], b["kind"] != "primary", -b["n_ok"], -(b["forward"].get("ret") or 0.0)))
+    return {"ts": datetime.now(UTC).isoformat(timespec="seconds"), "rules": rules.model_dump(),
+            "ready": [f"{b['id']}@{b['since'] or 'start'}" for b in out if b["ready"]], "books": out}
+
+
+def notice(report: dict[str, Any], new: list[str]) -> str:
+    """The issue body: which book is ready, its checklist, and what the owner does next."""
+    r = report["rules"]
+    lines = ["HIVE's readiness check passed for a book. This is a paper result: nothing has been bought, "
+             "connected or traded with a prop firm.", ""]
+    for b in report["books"]:
+        if f"{b['id']}@{b['since'] or 'start'}" not in new:
+            continue
+        f = b["forward"]
+        lines += [f"### {b['name']} ({b['kind']}, {b['sleeve']})", "",
+                  f"Paper record since {f.get('start')}: {f.get('days')} trading days, {f.get('ret', 0):+.1%}, "
+                  f"worst day {f.get('worst_day', 0):+.1%}, deepest loss {f.get('max_loss', 0):+.1%}; "
+                  f"target reached on {f.get('passed_on')}.", ""]
+        lines += [f"- [x] {c['check']} ({c['value']})" for c in b["checks"]] + [""]
+    lines += ["### The rules it was judged by", "",
+              f"Profit target {r['profit_target_pct']:.0%}, daily loss limit {r['max_daily_loss_pct']:.0%}, total loss limit "
+              f"{r['max_total_loss_pct']:.0%} ({'trailing' if r['trailing_total_loss'] else 'static'}), at least "
+              f"{r['min_trading_days']} trading days; simulated evaluations over {r['eval_horizon_days']} days.", "",
+              "### What to do next", "",
+              "1. Pick a firm that funds the instruments HIVE trades (US stocks and ETFs, or crypto) and allows automated trading.",
+              "2. Copy that firm's exact rules into `[prop]` in `config/strategy.toml` and let the lab rescore for a day: "
+              "if the book still clears the checklist under the real rules, it is ready for that firm.",
+              "3. Buy the evaluation yourself and decide how orders reach it; HIVE has no connection to any prop firm.",
+              "", "Daily closes only: an intraday breach the closes do not show is invisible to the simulator, so the "
+              "real evaluation is somewhat harder than the paper one."]
+    return "\n".join(lines) + "\n"

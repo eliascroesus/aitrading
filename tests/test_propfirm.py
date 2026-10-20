@@ -4,10 +4,18 @@ from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from hive.config import PropRules, Settings, StrategyConfig
 from hive.hive.children import retire_prop_failures
-from hive.hive.propfirm import forward_status, prop_metrics, readiness
+from hive.hive.propfirm import (
+    forward_status,
+    notice,
+    prop_metrics,
+    readiness,
+    readiness_report,
+    time_weighted,
+)
 from hive.hive.registry import Child, HiveRegistry
 from hive.survival.ledger import SurvivalLedger
 
@@ -68,3 +76,43 @@ def test_a_variant_that_breaches_is_retired(tmp_path):
     assert [r["id"] for r in out] == [bad.id] and "daily limit breached" in out[0]["verdict"]
     assert reg.get(bad.id).status == "retired" and reg.get(ok.id).status == "shadow"
     assert reg.get(scout.id).status == "shadow"                 # scouts are judged on their own book
+
+
+def test_a_breach_after_passing_still_counts_and_deposits_are_not_gains():
+    r = PropRules(min_trading_days=4)
+    marks = [("d0", 100.0), ("d1", 103.0), ("d2", 106.0), ("d3", 109.0), ("d4", 111.0), ("d5", 103.0)]
+    st = forward_status(marks, r)
+    assert st["passed"] and st["passed_on"] == "d4"
+    assert st["breached"] and st["outcome"] == "failed_daily" and st["breach_day"] == 5   # a funded account would close
+    deposit = [("2026-10-01", 100.0), ("2026-10-02", 101.0), ("2026-10-03", 202.0)]  # +$100 deposited on the 3rd
+    tw = time_weighted(deposit, [("2026-10-03", 100.0)])
+    assert tw[-1][1] == pytest.approx(101.0 * 102.0 / 101.0)                         # +1%, then +0.99%: no +100% day
+    assert time_weighted(deposit, []) == deposit
+
+
+def test_the_readiness_report_and_the_announcement(tmp_path):
+    cfg = StrategyConfig()
+    s = Settings(hive_state_dir=tmp_path, _env_file=None)
+    reg = HiveRegistry(tmp_path / "hive.json", cfg.survival)
+    tier = next(t for t in cfg.survival.tiers if t.name == "base")
+    v = reg.spawn(Child(id="", name="v", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 6.0}), tier)
+    d0 = date(2026, 9, 1)
+    main = SurvivalLedger(tmp_path / "ledger.jsonl", cfg.survival)
+    for i in range(36):                                          # +0.4% a day for 35 days, never a bad day
+        main.append("equity_mark", 100.0 * 1.004 ** i, {"date": (d0 + timedelta(days=i)).isoformat()})
+    child = SurvivalLedger(tmp_path / "children" / v.id / "ledger.jsonl", cfg.survival)
+    for i, x in enumerate([100.0, 101.0, 102.0]):
+        child.append("equity_mark", x, {"date": (d0 + timedelta(days=i)).isoformat()})
+    lab = [{"by": "parent", "sleeve": "stocks", "oos_prop": 0.62, "ts": "2026-10-01T00:00"},
+           {"by": "parent", "sleeve": "crypto", "oos_prop": 0.55, "ts": "2026-10-01T00:00"},
+           {"by": "parent", "sleeve": "crypto", "oos_prop": 0.40, "ts": "2026-09-01T00:00"},     # older: ignored
+           {"by": "sweep", "sleeve": "stocks", "overrides": {"stocks.trail_atr": 6.0}, "oos_prop": 0.7, "ts": "2026-10-02"}]
+    rep = readiness_report(s, cfg, reg, lab)
+    primary = next(b for b in rep["books"] if b["kind"] == "primary")
+    assert primary["ready"] and primary["backtest_pass_rate"] == 0.55          # the weaker sleeve
+    assert rep["ready"] == ["primary@start"]
+    var = next(b for b in rep["books"] if b["id"] == v.id)
+    assert not var["ready"] and var["backtest_pass_rate"] == 0.7 and var["forward"]["days"] == 2
+    body = notice(rep, rep["ready"])
+    assert "the firm (primary book)" in body and "- [x]" in body and "no connection to any prop firm" in body
+    assert notice(rep, []).count("###") == 2                                    # rules and next steps only

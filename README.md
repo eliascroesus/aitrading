@@ -73,6 +73,7 @@ hive allocate                           # weekly: capital moves toward the desk 
 hive watch                              # hourly heartbeat: live positions and prices into the dashboard
 hive sweep --minutes 7                  # the lab: backtest the next cells of the strategy space (no LLM)
 hive trench                             # one paper scan of brand-new Solana launches (keyless)
+hive prop                               # prop-firm readiness of every book (the daily run announces it)
 ```
 
 Full setup (accounts, keys, hosts, costs, go-live checklist): `docs/SETUP.md`.
@@ -97,10 +98,15 @@ due.
 ## The one rule, and the honesty rules of the record
 
 * The firm has one rule: grow the bankroll as much and as fast as possible, net
-  of every cost. Death (the floor, or −75% from the peak) is the only thing that
-  ends the game. Every other setting in `config/strategy.toml` is a lever: the
-  lab backtests levers around the clock, winners trade on paper beside the
-  parent, the faster grower is promoted and the slower one retired, by code.
+  of every cost, scored the way a prop firm scores a trader (since config
+  2.1.0): reach the profit target without breaking the daily or total loss
+  limit. Death (the floor, or −75% from the peak) is the only thing that ends
+  the game. Every other setting in `config/strategy.toml` is a lever, risk per
+  trade and position caps included: the lab backtests levers around the clock,
+  winners trade on paper beside the parent, the better one is promoted and the
+  worse one retired, by code. When a book has 30 paper days, no breach, the
+  target reached and a ≥ 50% simulated pass rate, a GitHub issue says it is
+  ready for a real evaluation (`docs/SETUP.md` §5b).
   `config/strategy.toml` is therefore the firm's *current* configuration, and
   every change to it is a commit with the evidence that earned it.
 * Three lines are published every day: buy-and-hold benchmark, rules-only

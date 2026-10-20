@@ -500,6 +500,34 @@ def pulse() -> None:
            f"{len(out['cross'])} names on more than one source; X {out['x_status']}")
 
 
+@app.command()
+def prop(notify_file: Path | None = typer.Option(None, help="Write an issue body here when a book is newly ready"),
+         mark_notified: bool = typer.Option(False, help="Record the books ready now as already announced")) -> None:
+    """Prop-firm readiness: is any book ready for a real evaluation? Writes state/prop_readiness.json."""
+    from hive.hive.propfirm import notice, readiness_report
+    from hive.hive.registry import HiveRegistry
+    from hive.operator.lab import lab_dir, read_tests
+
+    s = get_settings()
+    cfg = StrategyConfig.load()
+    path = s.hive_state_dir / "prop_readiness.json"
+    prev = json.loads(path.read_text()) if path.exists() else {}
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+    report = readiness_report(s, cfg, reg, read_tests(lab_dir(s), with_curves=False))
+    notified = set(prev.get("notified") or [])
+    if mark_notified:
+        notified |= set(report["ready"])
+    report["notified"] = sorted(notified)
+    path.write_text(json.dumps(report, indent=1, default=str))
+    new = [k for k in report["ready"] if k not in notified]
+    if notify_file is not None:
+        notify_file.write_text(notice(report, new) if new else "")
+    for b in report["books"][:6]:
+        rprint(f"{'READY' if b['ready'] else 'not yet'}  {b['name']}: {b['n_ok']}/{len(b['checks'])} checks; "
+               + "; ".join(f"{'ok' if c['ok'] else 'no'} {c['check']} ({c['value']})" for c in b["checks"]))
+    rprint(f"{len(report['ready'])} book(s) ready, {len(new)} not yet announced")
+
+
 @app.command("capital-in")
 def capital_in(amount: float = typer.Option(..., help="USD added to the bankroll (e.g. a venue deposit)"),
                note: str = typer.Option("", help="Where it went (e.g. 'Alpaca crypto deposit')")) -> None:

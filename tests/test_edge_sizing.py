@@ -38,8 +38,13 @@ def test_closed_r_multiples_reads_the_books_journal(tmp_path):
     b.write("reconcile", {"symbol": "CCC", "r_multiple_est": -1.0})
     b.write("fill", {"symbol": "DDD", "r_multiple": 9.0})                 # not a close
     b.write("exit", {"symbol": "EEE", "r_multiple": 0.5})
+    Journal(tmp_path, "2026-10-02-shadow").write("exit", {"symbol": "AAA", "r_multiple": 7.0})      # other books
+    kid = Journal(tmp_path, "2026-10-02-child-v1")
+    kid.write("exit", {"symbol": "AAA", "r_multiple": -3.0})
     assert closed_r_multiples(tmp_path, 10) == [2.0, -1.0, 0.5]
     assert closed_r_multiples(tmp_path, 2) == [-1.0, 0.5]
+    assert closed_r_multiples(tmp_path, 10, book="-child-v1") == [-3.0]
+    assert closed_r_multiples(tmp_path, 10, book="-shadow") == [7.0]
 
 
 def test_the_backtester_sizes_by_edge_and_still_accounts():

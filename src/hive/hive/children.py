@@ -162,7 +162,7 @@ def retire_prop_failures(settings: Settings, cfg: StrategyConfig, registry: Hive
         st = forward_status(marks, cfg.prop)
         if st["breached"]:
             why = (f"failed its prop evaluation: {st['outcome'].replace('failed_', '')} limit breached after "
-                   f"{st['days']} days (worst day {st['worst_day']:+.1%}, deepest loss {st['max_loss']:+.1%})")
+                   f"{st['breach_day']} days (worst day {st['worst_day']:+.1%}, deepest loss {st['max_loss']:+.1%})")
             registry.retire(c.id, why, on)
             registry.record_iteration({"date": on.isoformat(), "proposal": c.name, "kind": "retired",
                                        "overrides": c.overrides, "sleeve": c.sleeve, "cost_usd": 0.0, "verdict": why})

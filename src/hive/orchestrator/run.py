@@ -7,6 +7,7 @@ each row carries ``k = raw_close / close`` to convert ATRs and swing lows.
 
 from __future__ import annotations
 
+import glob
 import json
 import logging
 from collections.abc import Callable
@@ -83,11 +84,13 @@ def keep_pending(pos: OpenPosition, pending_symbols: set[str], pending_ids: set[
     return (run_date - placed).days <= grace_days
 
 
-def closed_r_multiples(journal_dir: Path, limit: int) -> list[float]:
+def closed_r_multiples(journal_dir: Path, limit: int, *, book: str = "") -> list[float]:
     """The book's last ``limit`` closed trades in R, oldest first, from its journal: managed
-    exits (``r_multiple``) and positions a resting stop closed (``r_multiple_est``)."""
+    exits (``r_multiple``) and positions a resting stop closed (``r_multiple_est``). Every book
+    writes to the same directory, one file a day: ``<date>.jsonl`` for the primary and
+    ``<date><book>.jsonl`` for the others (``-shadow``, ``-child-<id>``); only this book's count."""
     out: list[float] = []
-    for f in sorted(Path(journal_dir).glob("*.jsonl"), reverse=True):
+    for f in sorted(Path(journal_dir).glob(f"????-??-??{glob.escape(book)}.jsonl"), reverse=True):
         day: list[float] = []
         for e in Journal.read(f):
             pl = e.get("payload") or {}
@@ -406,8 +409,8 @@ class DailyRun:
         # --- sizing, risk, orders -------------------------------------------------------
         intents: list[OrderIntent] = []
         port_vol = self.ledger.portfolio_vol_ann() if self.ledger is not None else None
-        risk_pct = edge_risk_pct(closed_r_multiples(self.journal.path.parent, self.cfg.risk.edge_lookback_trades),
-                                 self.cfg.risk)
+        risk_pct = edge_risk_pct(closed_r_multiples(self.journal.path.parent, self.cfg.risk.edge_lookback_trades,
+                                                    book=self.journal.path.stem[len(rd):]), self.cfg.risk)
         if self.cfg.risk.sizing_mode == "edge":
             self.journal.write("sizing", {"mode": "edge", "risk_pct": risk_pct})
         for _, r in top.iterrows():

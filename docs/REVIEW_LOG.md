@@ -190,3 +190,38 @@ result it produced. Leaderboards collapse settings with identical results
 nothing. A caution recorded for the owner: after thousands of cells, the
 out-of-sample window is itself being searched, so the best lab numbers are
 partly luck; promotion still requires out-growing the parent live on paper.
+
+### Config 2.1.0 to 2.2.0: the prop-firm objective, evidence-chosen sizing, readiness
+
+The owner asked (2026-10-20) for the firm to optimise for prop-firm success,
+for the reward and punishment system to decide risk per trade and position
+size instead of fixed caps, and to say when it is ready for a real evaluation.
+pump.fun-sized memecoins and X were deferred by the owner.
+
+* **Objective.** Every backtest is also scored as rolling simulated
+  evaluations (`hive/hive/propfirm.py`, rules in `[prop]`): +10% target, −5%
+  daily and −10% total loss limits, 4 days minimum, 60-day horizon, one start
+  every 5 days. The lab ranks and judges cells by out-of-sample pass rate,
+  growth breaking ties; a rescore stage gives the best earlier cells a pass
+  rate. Every model's objective text now says the firm is scored this way.
+* **Punishment.** A variant whose own paper book breaks a prop loss limit is
+  retired that day, after passing too (a funded account keeps the limits).
+* **Sizing.** `sizing_mode = "edge"` sizes each trade from the book's own last
+  closed trades (a fraction of the Kelly bet, between a floor and a ceiling);
+  the position caps run to 1.0 (no cap). Both are lab levers, tested in the
+  grid in both sleeves, and the defaults are unchanged until a cell that moves
+  them wins. The prop objective is what keeps them honest: a setting that
+  risks too much fails its simulated evaluations. Exits now journal their R
+  (resting-stop closes an estimate at the stop), so a live book has a record
+  to size from.
+* **Readiness.** `hive prop`, run by the daily workflow, checks each book (30
+  trading days on paper, no breach, target reached, ≥ 50% simulated pass rate
+  out of sample) and opens one GitHub issue the first time a book clears all
+  four. Deposits are taken out of the record (time-weighted).
+* **Caveats.** The simulator sees daily closes, not intraday ones, so the real
+  evaluation is harder. Thousands of cells have now searched the
+  out-of-sample window, so pass rates near the top of the leaderboard are
+  partly luck; the 30-day paper record is the check that is not.
+* **Still pending, owner's decision** (refused by this session's permission
+  gate earlier, not retried): removing the drawdown-tolerance check from the
+  verdict, the operator prompt rewrite, and routing orders to Hyperliquid.
