@@ -1,5 +1,5 @@
 {
-  "cash": 40.73804556047446,
+  "cash": 45.85164258955966,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -26,23 +26,12 @@
     "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump": {
       "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
       "symbol": "DTC",
-      "qty": 3610.280472913443,
+      "qty": 1805.1402364567216,
       "entry_price": 0.0009142,
-      "peak_price": 0.001803,
+      "peak_price": 0.001842,
       "entered_at": "2026-10-20T20:07:38.739415+00:00",
       "cost_usd": 3.498549512837718,
-      "took_half": false,
-      "misses": 0
-    },
-    "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump": {
-      "mint": "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump",
-      "symbol": "ILLUSTRATOR",
-      "qty": 36864.71193827887,
-      "entry_price": 8.434e-05,
-      "peak_price": 8.434e-05,
-      "entered_at": "2026-10-20T21:01:09.877755+00:00",
-      "cost_usd": 3.295719993166907,
-      "took_half": false,
+      "took_half": true,
       "misses": 0
     },
     "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump": {
@@ -50,7 +39,7 @@
       "symbol": "ONEPIECE",
       "qty": 78653.28717129104,
       "entry_price": 4.071e-05,
-      "peak_price": 4.368e-05,
+      "peak_price": 4.632e-05,
       "entered_at": "2026-10-20T21:08:44.823531+00:00",
       "cost_usd": 3.394093839987854,
       "took_half": false,
@@ -877,6 +866,23 @@
       "notional": 3.26948075138772,
       "liquidity_usd": 40607.2,
       "age_hours": 0.543822426961263
+    },
+    {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "event": "take_half",
+      "price": 0.001842,
+      "proceeds": 3.1255642166200843
+    },
+    {
+      "mint": "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump",
+      "symbol": "ILLUSTRATOR",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 5.737e-05,
+      "proceeds": 1.9880328124651152,
+      "pnl_approx": -1.3076871807017918,
+      "age_hours": 0.6426995922222222
     }
   ]
 }
