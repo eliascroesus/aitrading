@@ -82,6 +82,13 @@ class PaperBroker:
         self.mark()
         return self._cash + sum(p.market_value for p in self._positions.values())
 
+    def adjust_cash(self, delta: float, reason: str) -> None:
+        """Book a cash flow that is not a fill (perp funding on the paper desk)."""
+        self._cash += float(delta)
+        self.fills.append({"event": "cash_adjustment", "delta": float(delta), "reason": reason,
+                           "ts": datetime.now(UTC).isoformat(timespec="seconds")})
+        self.save()
+
     def cash(self) -> float:
         return self._cash
 

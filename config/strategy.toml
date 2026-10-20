@@ -290,3 +290,14 @@ slippage_pct = 0.05
 fee_pct = 0.01
 max_scan = 90
 max_rugchecks = 10
+
+[perps]
+# Hyperliquid paper desk (public prices only; no account, no keys, no orders): the
+# firm's crypto rules on the most traded perps, own $100 paper book, taker fee and
+# hourly funding charged. Runs in the daily cycle.
+top_n = 25
+min_history_days = 300
+starting_cash_usd = 100.0
+max_positions = 5
+taker_fee_pct = 0.00045
+slippage_bps = 5.0

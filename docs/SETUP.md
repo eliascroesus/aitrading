@@ -167,7 +167,8 @@ hive status
 | BTC, ETH, SOL; DOGE, SHIB, PEPE | yes, Alpaca paper, every day including weekends | nothing more; for live, the Alpaca account must be crypto-enabled |
 | Established memecoins on Solana (meme scout) | yes, its own paper book, daily, keyless (DexScreener, GeckoTerminal, RugCheck) | nothing |
 | Brand-new launches, "the trenches" (trench scout) | yes, its own $100 paper book, every lab round (about every eight minutes while the lab runs), keyless | nothing |
-| Hyperliquid perps | **no** | see below |
+| Hyperliquid perps (Hyperliquid desk) | yes, its own $100 paper book, daily, on Hyperliquid's **public** prices (no account, no keys, no orders), 1x, taker fee and hourly funding charged | nothing |
+| Social pulse (StockTwits trending, Reddit cashtags, DexScreener boosts) | yes, every lab round, keyless | nothing; for X, add a paid X API bearer token as the `X_BEARER_TOKEN` secret |
 
 **The trench scout** discovers new Solana pools (GeckoTerminal new pools,
 DexScreener latest profiles and boosts), re-quotes them on DexScreener, and
@@ -183,7 +184,23 @@ observed price, not at the stop: the paper result is optimistic about gaps it
 cannot see. The scout is judged on its own book and dies at −75% like any
 sub-agent. Nothing in it can place a real order.
 
-**Hyperliquid on paper** has two routes, both needing a decision from you:
+**The Hyperliquid desk** joins the firm on its first daily cycle: it reads
+Hyperliquid's 25 most traded perps from the public `info` endpoint, keeps a
+separate price store, and runs the firm's crypto rules on the coins with a year
+of daily history, on its own $100 paper book at 1x, with Hyperliquid's 0.045%
+taker fee and the hourly funding a long would have paid. It is a scout: no
+seat, judged on its own book. It reads public data only and cannot place an
+order anywhere.
+
+**The social pulse** reads StockTwits' trending symbols, the hot posts of six
+Reddit communities and DexScreener's boosts every lab round and keeps only
+symbols and counts (no post text, so nothing it reads can carry instructions
+into a model). Names on two or more sources reach the operator's weekly
+context, where it can propose a news monitor for them. X is paid: with a
+bearer token from developer.x.com as the `X_BEARER_TOKEN` secret, the pulse
+adds the last day's X post counts for the names trending elsewhere.
+
+**Trading on Hyperliquid itself** (testnet or real) is a separate step:
 
 1. *Hyperliquid's own testnet* (real exchange mechanics, fake money). You
    create a wallet, make a small USDC deposit on mainnet (the testnet faucet
@@ -194,9 +211,9 @@ sub-agent. Nothing in it can place a real order.
    `HL_OPERATOR_NOT_RESTRICTED_PERSON=true` must be a true statement about
    you. The routing change that sends the crypto sleeve to it was refused by
    this session's permission gate; it needs to be allowed and asked for again.
-2. *A paper desk priced from Hyperliquid's public prices*: no account, no keys,
-   no orders, just the trend rules on Hyperliquid's listed coins with funding
-   charged. Not built yet.
+2. *Real money on Hyperliquid*: everything in route 1, then `HL_TESTNET=false`,
+   a deposit recorded with `hive capital-in`, and `HIVE_MODE=live` with the
+   confirmation phrase.
 
 **Live DEX memecoins** stay off: `hive/execution/jupiter.py` refuses to
 construct until a dedicated Solana wallet holding only the sleeve's money, an

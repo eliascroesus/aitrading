@@ -46,6 +46,7 @@ jobs:
       HIVE_MODE: ${{ secrets.HIVE_MODE || 'paper' }}
       ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
       ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+      X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}      # optional and paid: X post counts in the social pulse
     steps:
       - uses: actions/checkout@v4
         with:

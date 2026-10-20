@@ -225,6 +225,7 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
             if (state / "hive.json").exists() else []
     except Exception:
         hive["ready_ids"] = []
+    hive = {**hive, "iterations": (hive.get("iterations") or [])[-20:]}   # the lab log carries the full record
     data["hive"] = hive
     detail: dict[str, dict] = {}
     for c in hive.get("children", []):
@@ -285,6 +286,8 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
     data["timeline"] = timeline[-160:]
     data["config"] = cfg.model_dump()
     data["mode"] = settings.hive_mode
+    data["scouts"] = _scouts(state, hive)
+    data["social"] = _read_json(state / "social" / "latest.json") or {}
     data["schedule"] = _schedule()
     data["rules"] = _rules(cfg, settings)
     data["agents"] = _agents(data)
@@ -312,8 +315,21 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
     child_status = {c.get("id"): c.get("status") for c in hive.get("children", [])}
     cells = [t for t in tests if t.get("by") not in ("parent", "seat")]
     ran = [t for t in cells if t.get("oos_cagr") is not None and not str(t.get("verdict", "")).startswith("rejected: backtest failed")]
-    leaders = {sl: sorted((t for t in ran if t.get("sleeve") == sl), key=lambda t: -t["oos_cagr"])[:LAB_LEADERS]
-               for sl in ("stocks", "crypto")}
+    leaders: dict[str, list] = {}
+    equivalents: dict[str, int] = {}
+    for sl in ("stocks", "crypto"):
+        seen_sig: dict[tuple, str] = {}
+        rows_: list = []
+        for t in sorted((t for t in ran if t.get("sleeve") == sl), key=lambda t: -t["oos_cagr"]):
+            sig = tuple(round(float(t.get(k) or 0.0), 6) for k in ("oos_cagr", "oos_dd", "is_cagr", "is_dd"))
+            if sig in seen_sig:            # a different setting with identical results: an inert knob
+                equivalents[seen_sig[sig]] = equivalents.get(seen_sig[sig], 1) + 1
+                continue
+            seen_sig[sig] = t["id"]
+            rows_.append(t)
+            if len(rows_) >= LAB_LEADERS:
+                break
+        leaders[sl] = rows_
     best = sorted((t for t in ran if t.get("passed")), key=lambda t: -t["oos_cagr"])[:LAB_CURVES_BEST]
     keep = ({t["id"] for t in tests[-LAB_CURVES_NEWEST:]} | {t["id"] for t in best}
             | {t["id"] for rows in leaders.values() for t in rows})
@@ -326,11 +342,18 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
                 cals.setdefault(cid, {"dates": w.get("dates") or [], "benchmark": w.get("benchmark") or []})
                 cv[win] = {"cal": cid, "equity": w.get("equity") or []}
     metric_keys = ("cagr", "max_drawdown", "sharpe", "n_trades", "win_rate", "profit_factor")
+    def r5(v):
+        return round(float(v), 5) if isinstance(v, (int, float)) and v is not None else v
+
     rows = []
     for t in tests:
-        row = {k: t.get(k) for k in ("id", "ts", "by", "sleeve", "name", "overrides", "verdict", "passed",
-                                     "child_id", "is_cagr", "oos_cagr", "is_dd", "oos_dd", "parent_oos_cagr")}
-        row["oos"] = {k: (t.get("outofsample") or {}).get(k) for k in metric_keys}
+        row = {k: t.get(k) for k in ("id", "ts", "by", "sleeve", "overrides", "passed", "child_id")}
+        if not t.get("overrides"):
+            row["name"] = t.get("name")
+        row["verdict"] = (t.get("verdict") or "")[:110]
+        for k in ("is_cagr", "oos_cagr", "is_dd", "oos_dd", "parent_oos_cagr"):
+            row[k] = r5(t.get(k))
+        row["oos"] = {k: r5((t.get("outofsample") or {}).get(k)) for k in metric_keys if k in ("sharpe", "n_trades")}
         row["child_status"] = child_status.get(t.get("child_id")) if t.get("child_id") else None
         rows.append(row)
     parents = {}
@@ -379,7 +402,8 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
                    + (f" vs parent {t['parent_oos_cagr']:.1%}" if t.get("parent_oos_cagr") is not None else "")
                    + f" — {(t.get('verdict') or '')[:90]}"} for t in cells[-40:]]
     return {"tests": rows[::-1][:LAB_ROWS], "curves": curves, "cals": cals, "parents": parents,
-            "leaders": {sl: [t["id"] for t in rows_] for sl, rows_ in leaders.items()},
+            "leaders": {sl: [t["id"] for t in rows_] for sl, rows_ in leaders.items()}, "equivalents": equivalents,
+            "knobs": _knobs(ran),
             "progress": {"hours": [[h, b["stocks"], b["crypto"]] for h, b in sorted(hours.items())][-96:],
                          "best": best_so_far},
             "queue": queue, "n_queued": n_queued, "by_stage": by_stage, "grid_size": grid_size, "waiting": waiting,
@@ -580,6 +604,19 @@ def _agents(data: dict[str, Any]) -> list[dict[str, Any]]:
             f"scanned {sc.get('scanned', '—')}, {sc.get('n_candidates', 0)} passed, {sc.get('n_open', 0)} open" if sc else "no scan yet",
             nxt=(sched.get("daily") or [None])[0], cadence="daily",
             status="retired" if meme.get("status") not in ("shadow", "live") else None)
+    soc = data.get("social") or {}
+    add("social", "Social pulse", "what StockTwits, Reddit, DexScreener (and X, with a paid token) talk about", "desk",
+        _ts_of(soc.get("ts")), (f"{len(soc.get('stocktwits') or [])} trending on StockTwits, {soc.get('reddit_posts_read', 0)} Reddit posts read, "
+                                f"{len(soc.get('cross') or [])} names on two or more sources") if soc else "first pulse at the next lab round",
+        cadence="every lab round")
+    pd_ = next((c for c in hive.get("children", []) if c.get("sleeve") == "perps"), None)
+    if pd_:
+        lp = (cd.get(pd_["id"]) or {}).get("latest") or {}
+        add(pd_["id"], "Hyperliquid desk", "the firm's crypto rules on Hyperliquid perps, public prices, paper", "scout",
+            _ts_of(lp.get("ts")), (f"{lp.get('n_tradable', 0)} of {lp.get('n_listed', 0)} perps tradable, {len(lp.get('positions') or [])} open, "
+                                   f"paper ${lp.get('equity') or 0:,.2f}, funding paid ${lp.get('funding_paid_total') or 0:,.4f}") if lp else "first cycle tonight",
+            nxt=(sched.get("daily") or [None])[0], cadence="daily trading cycle",
+            status="retired" if pd_.get("status") not in ("shadow", "live") else None)
     add("heartbeat", "Heartbeat", "reads the broker's live positions and prices", "infra", _ts_of(hb.get("ts")),
         f"equity ${hb.get('equity') or 0:,.2f}, {len(hb.get('positions') or [])} positions, market {'open' if hb.get('market_open') else 'closed'}"
         if hb else "no heartbeat yet", cadence="every lab round")
@@ -605,7 +642,7 @@ def _agents(data: dict[str, Any]) -> list[dict[str, Any]]:
         _ts_of(alloc[-1].get("date")) if alloc else None, (alloc[-1].get("why") or "")[:100] if alloc else "no rebalance yet",
         nxt=(sched.get("weekly") or [None])[0], cadence="weekly")
     for c in hive.get("children", []):
-        if c.get("sleeve") in ("trench", "meme"):
+        if c.get("sleeve") in ("trench", "meme", "perps"):
             continue
         d = cd.get(c.get("id")) or {}
         active = c.get("status") in ("shadow", "live")
@@ -618,4 +655,86 @@ def _agents(data: dict[str, Any]) -> list[dict[str, Any]]:
             nxt=(sched.get("daily") or [None])[0] if active else None, cadence="daily trading cycle",
             status=None if active else c.get("status"))
     _ = ch
+    return out
+
+
+def _knobs(ran: list[dict[str, Any]], *, per_sleeve: int = 8, min_tests: int = 6) -> dict[str, list[dict[str, Any]]]:
+    """What the lab is learning: for each setting it has varied, every tested value against the
+    out-of-sample result it produced, ranked by how much the result moves with the setting
+    (spread between the best and worst average across up to five value buckets)."""
+    import statistics
+
+    out: dict[str, list[dict[str, Any]]] = {}
+    for sl in ("stocks", "crypto"):
+        pts: dict[str, list] = {}
+        for t in ran:
+            if t.get("sleeve") != sl:
+                continue
+            for k, v in (t.get("overrides") or {}).items():
+                pts.setdefault(k, []).append([round(v, 4) if isinstance(v, float) else v, round(t["oos_cagr"], 4),
+                                              bool(t.get("passed"))])
+        rows = []
+        for k, p in pts.items():
+            if len(p) < min_tests:
+                continue
+            categorical = any(isinstance(x[0], str) for x in p)
+            if categorical:
+                groups: dict[str, list[float]] = {}
+                for v, y, _ in p:
+                    groups.setdefault(str(v), []).append(y)
+                means = [statistics.fmean(g) for g in groups.values()]
+            else:
+                q = sorted(p, key=lambda x: float(x[0]))
+                n = len(q)
+                buckets = [q[i * n // 5:(i + 1) * n // 5] for i in range(5)]
+                means = [statistics.fmean(y for _, y, _ in b) for b in buckets if b]
+            if len(p) > 160:      # sample across the values tested, not just the latest ones
+                if categorical:
+                    per: dict[str, list] = {}
+                    for x in p:
+                        per.setdefault(str(x[0]), []).append(x)
+                    p = [x for g in per.values() for x in g[-max(8, 160 // len(per)):]]
+                else:
+                    q = sorted(p, key=lambda x: float(x[0]))
+                    p = [q[round(i * (len(q) - 1) / 159)] for i in range(160)]
+            rows.append({"knob": k, "categorical": categorical, "n": len(pts[k]), "spread": max(means) - min(means),
+                         "points": p})
+        out[sl] = sorted(rows, key=lambda r: -r["spread"])[:per_sleeve]
+    return out
+
+
+def _scouts(state: Path, hive: dict[str, Any]) -> dict[str, Any]:
+    """Each scout's paper equity over time, its recent trades, and (trench) the last scan's funnel."""
+    jdir = state / "journal"
+    out: dict[str, Any] = {}
+    for c in hive.get("children", []):
+        if c.get("kind") != "scout":
+            continue
+        cid = str(c.get("id"))
+        files = sorted(jdir.glob(f"*-child-{cid}.jsonl"))[-14:] if jdir.exists() else []
+        equity, trades = [], []
+        for f in files:
+            for e in Journal.read(f):
+                k, pl, ts = e["kind"], e["payload"], e.get("ts", "")
+                if k in ("trench_round", "meme_day", "perps_day") and pl.get("equity") is not None:
+                    equity.append([ts[:16].replace("T", " "), round(float(pl["equity"]), 4)])
+                elif k in ("meme_entry", "meme_exit", "meme_take_half"):
+                    trades.append({"ts": ts, "kind": k.replace("meme_", ""), "symbol": pl.get("symbol"), "price": pl.get("price"),
+                                   "usd": pl.get("notional") if k == "meme_entry" else pl.get("proceeds"),
+                                   "pnl": pl.get("pnl_approx"), "reason": pl.get("reason"), "age_hours": pl.get("age_hours")})
+                elif k == "order" and c.get("sleeve") == "perps":
+                    trades.append({"ts": ts, "kind": pl.get("side") or "order", "symbol": pl.get("symbol"),
+                                   "usd": pl.get("notional"), "reason": pl.get("message")})
+                elif k == "exit" and c.get("sleeve") == "perps":
+                    trades.append({"ts": ts, "kind": "exit", "symbol": pl.get("symbol"), "reason": pl.get("reason")})
+        latest = _read_json(state / "children" / cid / "latest.json") or {}
+        rej = latest.get("rejects") or {}
+        funnel = None
+        if c.get("sleeve") == "trench" and latest:
+            passed_filters = int(latest.get("passed") or 0) + int(rej.get("rugcheck") or 0) + int(rej.get("not rug-checked this scan") or 0)
+            funnel = [["launches quoted", int(latest.get("scanned") or 0)], ["passed the launch filters", passed_filters],
+                      ["rug-checked", int(latest.get("rugchecked") or 0)], ["passed RugCheck", int(latest.get("passed") or 0)],
+                      ["bought this scan", len(latest.get("entries") or [])]]
+        out[cid] = {"sleeve": c.get("sleeve"), "name": c.get("name"), "status": c.get("status"),
+                    "equity": equity[-400:], "trades": trades[-40:][::-1], "funnel": funnel}
     return out

@@ -16,7 +16,7 @@ from hive.config import Settings, StrategyConfig
 from hive.data.store import BarStore
 from hive.data.universe import PointInTimeUniverse
 from hive.execution.paper import PaperBroker
-from hive.hive.registry import HiveRegistry
+from hive.hive.registry import Child, HiveRegistry
 from hive.orchestrator.book import PositionBook
 from hive.orchestrator.journal import Journal
 from hive.orchestrator.run import DailyRun, SystemDeadError
@@ -43,6 +43,17 @@ def run_children(
     registry = HiveRegistry(settings.hive_state_dir / "hive.json", cfg.survival)
     results = []
     rd = run_date.isoformat()
+    is_replay = run_date < datetime.now(UTC).date() - timedelta(days=1)
+    # the Hyperliquid paper desk joins the first time the cycle runs live on the network
+    if (settings.hive_network_data and settings.hive_mode != "backtest" and not is_replay
+            and not any(c.sleeve == "perps" for c in registry.children)):
+        from hive.hive.perps_desk import DESK_ID
+
+        led = SurvivalLedger(settings.hive_state_dir / "ledger.jsonl", cfg.survival)
+        registry.spawn(Child(id=DESK_ID, name="Hyperliquid desk", kind="scout", sleeve="perps",
+                             hypothesis="the firm's crypto rules on Hyperliquid's most traded perps; public prices, "
+                                        "1x, taker fee and funding charged; paper only, own $100 book"),
+                       led.tier(led.status(parent_equity, on=run_date).equity_net), force=True)
     for child in registry.active():
         cdir = settings.hive_state_dir / "children" / child.id
         journal = Journal(settings.hive_state_dir / "journal", f"{rd}-child-{child.id}")
@@ -54,6 +65,13 @@ def run_children(
                 continue
             if child.sleeve == "meme":
                 eq = _run_meme_child(settings, cfg, child, cdir, journal, parent_equity, run_date)
+            elif child.sleeve == "perps":
+                from hive.hive.perps_desk import run_perps_desk
+
+                if is_replay:
+                    journal.write("perps_skip", {"reason": "replay: no historical public prices"})
+                    continue
+                eq = run_perps_desk(settings, cfg, child, cdir, journal, run_date, store, kill)
             elif child.sleeve == "trench":
                 latest = cdir / "latest.json"
                 eq = float(json.loads(latest.read_text()).get("equity")) if latest.exists() else cfg.trench.starting_cash_usd

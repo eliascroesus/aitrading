@@ -175,3 +175,18 @@ flat scout is no longer retired for lagging a stock book it does not trade.
 The dashboard is rebuilt as a live hub. Its *Rules in force* panel is generated
 from the configuration and lists every rule with its value and who can change
 it, including the objective text the models actually read.
+
+### The Hyperliquid desk, the social pulse, a hub that shows what the lab learns
+The Hyperliquid desk paper-trades the firm's crypto rules on Hyperliquid's most
+traded perps from public prices only (no account, no keys, no orders), with
+the taker fee and hourly funding charged; it needs neither the venue routing
+change this session's permission gate refused nor any key. The social pulse
+reads StockTwits, Reddit and DexScreener every lab round and keeps symbols and
+counts only; X is read only with the owner's paid token. The hub adds a live
+ticker, the trench funnel, equity and trades, the desk, the pulse, and "what
+the lab is learning": every setting the lab varied against the out-of-sample
+result it produced. Leaderboards collapse settings with identical results
+(inert knobs), which also shows where the lab spends tests on settings that do
+nothing. A caution recorded for the owner: after thousands of cells, the
+out-of-sample window is itself being searched, so the best lab numbers are
+partly luck; promotion still requires out-growing the parent live on paper.

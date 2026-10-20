@@ -144,6 +144,7 @@ def test_dashboard_renders_with_every_kind_of_sub_agent(tmp_path):
         n_nodes = page.locator("#net .node").count()
         n_tiles = page.locator(".gallery .gt").count()
         n_wire = page.locator(".wire li").count()
+        n_ticker = page.locator("#ticker .track > span").count()
         page.set_viewport_size({"width": 390, "height": 860})
         page.wait_for_timeout(400)
         phone_width = page.evaluate("document.documentElement.scrollWidth")
@@ -153,10 +154,11 @@ def test_dashboard_renders_with_every_kind_of_sub_agent(tmp_path):
                    "Live book", "Live wire", "staying selective", "Strategy lab", "Leaderboard", "Map: every test",
                    "Selected test", "Lab log", "Backtests", "Next up", "refine", "Trench scout", "FROGZ",
                    "Rules in force", "lab moves it", "owner edits config", "Enforced in code", "What every model is told",
-                   "Right now", "The firm, live"):
+                   "Right now", "The firm, live", "What the lab is learning", "Trench trades", "Hyperliquid desk",
+                   "Social pulse", "no account, no keys, no orders", "X_BEARER_TOKEN"):
         assert needle.lower() in text.lower(), needle
     assert n_dots == 2 and n_diamonds >= 1                             # two tests, one parent diamond
     assert "trail_atr=4.5" in curve_before and "template_cross" in curve_after and "in-sample" in curve_is
     assert visible == 1
-    assert n_nodes >= 10 and n_tiles == 2 and n_wire >= 1
+    assert n_nodes >= 10 and n_tiles == 2 and n_wire >= 1 and n_ticker >= 2
     assert phone_width <= 390                                          # no horizontal scroll on a phone

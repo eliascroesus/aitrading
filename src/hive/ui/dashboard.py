@@ -139,6 +139,21 @@ input.filter{font:inherit;font-size:12px;padding:5px 9px;border:1px solid var(--
 blockquote{margin:0;padding:10px 12px;border-left:3px solid var(--s1);background:var(--surface2);border-radius:0 8px 8px 0;font-size:13px;color:var(--ink2)}
 ul.plain{margin:0;padding-left:18px}ul.plain li{margin:0 0 5px}
 footer{max-width:1320px;margin:0 auto;padding:0 16px 24px;color:var(--muted);font-size:12px}
+.ticker{border-top:1px solid var(--border);overflow:hidden;white-space:nowrap;font-size:12px;color:var(--ink2);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.ticker .track{display:inline-flex;gap:28px;padding:5px 0;animation:tick 90s linear infinite}
+.ticker:hover .track{animation-play-state:paused}
+.ticker b{color:var(--ink);font-weight:600}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.funnel{display:grid;gap:6px;margin:4px 0 10px}
+.funnel .fr{display:grid;grid-template-columns:170px 1fr 44px;gap:8px;align-items:center;font-size:12px}
+.funnel .fb{height:14px;border-radius:0 4px 4px 0;background:var(--s1);min-width:2px}
+.knobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.knob{border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--surface2)}
+.knob .kh{display:flex;justify-content:space-between;gap:6px;font-size:12px}
+.knob svg{display:block;width:100%;height:auto;margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface2)}
+.chip b{font-variant-numeric:tabular-nums}
 @media (max-width:720px){.net{display:none}.nav{margin-left:0;width:100%}.brand span{display:none}.topin{gap:6px 10px}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -150,7 +165,7 @@ footer{max-width:1320px;margin:0 auto;padding:0 16px 24px;color:var(--muted);fon
   <span class="clock"><span id="clock"></span> · <span id="built"></span></span>
   <nav class="nav"><a href="#now">Now</a><a href="#agents">Firm</a><a href="#lab">Lab</a><a href="#trading">Trading</a><a href="#scouts">Scouts</a><a href="#rules">Rules</a><a href="#record">Record</a></nav>
   <div class="tools"><button id="theme">theme</button></div>
-</div></div>
+</div><div class="ticker" id="ticker"></div></div>
 <main id="main"></main>
 <footer id="foot"></footer>
 <script id="data" type="application/json">__DATA__</script>
@@ -329,7 +344,7 @@ function render(){
   const y=scrollY;
   const S=D.survival||{}, st=S.status||{}, E=D.equity||{dates:[],primary_net:[],shadow:{},cum_ai_cost:[]}, L=D.latest||{}, P=(L.primary||{}), H=D.hive||{};
   const LB=D.lab||{tests:[],curves:{},cals:{},parents:{},queue:[]}; const LT=LB.tests||[]; const C=D.config||{}; const OP=C.operator||{};
-  const HB=D.heartbeat||{}; const AG=D.agents||[]; const SC=D.schedule||{}; const LS=LB.status||{};
+  const HB=D.heartbeat||{}; const AG=D.agents||[]; const SC=D.schedule||{}; const LS=LB.status||{}; const CDx=D.children_detail||{};
   const tiers=S.tiers||[]; const tier=tiers.find(t=>t.name===st.tier)||{};
   const start=S.starting_bankroll, net=st.equity_net, gross=st.equity_gross; const days=(E.dates||[]).length;
   const retTot=(net!=null&&start)? net/start-1 : null; const burn=S.ai_cost_total||0;
@@ -339,6 +354,8 @@ function render(){
   const live=age<15?['LIVE','--good']:age<75?['DELAYED','--warn']:['STALE','--crit'];
   $('#livepill').innerHTML=`<span class="dot" style="background:${css(live[1])}"></span>${live[0]}`; $('#livepill').className='livepill'+(live[0]==='LIVE'?' live':'');
   $('#built').innerHTML=`build <span data-ago="${esc(D.generated_at)}">${agoTxt(D.generated_at)}</span> · ${esc(TZ)}`;
+  const TKS=(D.timeline||[]).slice(-24).reverse();
+  if(TKS.length){ const items=TKS.map(e=>`<span><span class="muted">${esc(lt(e.ts,false))}</span> <b>${esc(e.who)}</b> ${esc(String(e.text||'').slice(0,110))}</span>`).join(''); $('#ticker').innerHTML=`<div class="track">${items}${items}</div>`; }
   let html='';
   if(S.death){ html+=`<div class="banner"><b>The firm died on ${esc(S.death.date)}</b>: ${esc(S.death.reason)}. Final equity ${fmt$(S.death.equity)}. No restart.</div>`; }
 
@@ -353,7 +370,7 @@ function render(){
    <div class="nowc"><div class="k">${stateDot(running?'working':(LB.last_ts&&(Date.now()-parseTs(LB.last_ts))<15*60000?'working':'recent'),'')}Strategy lab</div>
      <div class="v">${running?`Backtesting · ${esc(roundTxt)}`:esc(roundTxt?`${roundTxt} done`:'between sessions')}</div>
      <div class="d">${LB.n_today||0} backtests today · ${LB.n_tests||0} on record · ${LB.n_passed||0} beat the parent</div>
-     <div class="d">${lastT?`last: <b>${esc(ovs(lastT.overrides)||lastT.name)}</b> → ${lastT.oos_cagr==null?'no result':spct(lastT.oos_cagr)} <span data-ago="${esc(lastT.ts)}">${agoTxt(lastT.ts)}</span>`:'no test yet'}</div>
+     <div class="d">${lastT?`last: <b>${esc((ovs(lastT.overrides)||lastT.name||'').slice(0,80))}${(ovs(lastT.overrides)||'').length>80?'…':''}</b> → ${lastT.oos_cagr==null?'no result':spct(lastT.oos_cagr)} <span data-ago="${esc(lastT.ts)}">${agoTxt(lastT.ts)}</span>`:'no test yet'}</div>
      <div class="bar"><i data-prog-start="${esc(running?LS.started||'':'')}" data-prog-min="${esc(LS.minutes||7)}" style="width:${running?0:100}%"></i></div></div>
    <div class="nowc"><div class="k">${stateDot('recent','')}Trading cycle</div>
      <div class="v"><span data-cd="${esc(nextDaily||'')}">${cdTxt(nextDaily)}</span></div>
@@ -367,6 +384,13 @@ function render(){
      <div class="v">${trA?esc(trA.doing.split(',').slice(-1)[0].trim()):'starts with the next lab round'}</div>
      <div class="d">${trA?esc(trA.doing.split(',').slice(0,3).join(',')):''}</div>
      <div class="d">${trA&&trA.last_ts?`scanned <span data-ago="${esc(trA.last_ts)}">${agoTxt(trA.last_ts)}</span>`:''}</div></div>
+   <div class="nowc"><div class="k">${stateDot((AG.find(a=>a.id==='social')||{}).state||'idle','')}Social pulse</div>
+     <div class="v">${(()=>{const c=((D.social||{}).cross||[]).slice(0,4).map(r=>esc(r.symbol)); return c.length?c.join(' · '):'—';})()}</div>
+     <div class="d">talked about on two or more sources · ${((D.social||{}).stocktwits||[]).length} trending on StockTwits · X ${esc(String((D.social||{}).x_status||'not connected').split(':')[0])}</div>
+     <div class="d">${(D.social||{}).ts?`<span data-ago="${esc(D.social.ts)}">${agoTxt(D.social.ts)}</span>`:'first pulse at the next lab round'}</div></div>
+   <div class="nowc"><div class="k">${stateDot((AG.find(a=>a.id==='hyperliquid-desk')||{}).state||'idle','')}Hyperliquid desk (paper)</div>
+     <div class="v">${(()=>{const l=((CDx['hyperliquid-desk']||{}).latest)||{}; return l.equity!=null?fmt$(l.equity):'first cycle tonight';})()}</div>
+     <div class="d">${(()=>{const l=((CDx['hyperliquid-desk']||{}).latest)||{}; return l.ts?`${l.n_tradable||0} of ${l.n_listed||0} perps tradable · ${(l.positions||[]).length} open · funding ${fmt$(l.funding_paid_total||0)}`:'public prices only: no account, no keys, no orders';})()}</div></div>
    <div class="nowc"><div class="k">${stateDot('idle','')}Operator, auditor, allocator</div>
      <div class="v"><span data-cd="${esc(nextWeekly||'')}">${cdTxt(nextWeekly)}</span></div>
      <div class="d">weekly research, review and capital allocation · ${esc(lt(nextWeekly))}</div></div>
@@ -405,7 +429,7 @@ function render(){
    <div class="small" style="margin-top:4px"><b>Next up:</b> ${lq.slice(0,5).map(esc).join(' · ')||'—'}</div>
    ${(LB.waiting||[]).length?`<div class="small" style="margin-top:4px"><b>Waiting for a seat</b> (best first): ${LB.waiting.slice(0,6).map(w=>`${esc(w.name)} (${spct(w.oos_cagr)})`).join(' · ')}</div>`:''}`);
   const leaderTable=(sl)=>{ const ids=((LB.leaders||{})[sl])||[]; const rows=ids.map(id=>byId[id]).filter(Boolean); const par=((LB.parents||{})[sl]||{}).outofsample||{};
-    return `<table><thead><tr><th>#</th><th>cell</th><th class="num">OOS CAGR</th><th class="num">OOS DD</th><th class="num">IS CAGR</th><th>result</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="labrow ${t.id===UI.labSel?'sel':''}" data-id="${esc(t.id)}"><td class="muted">${i+1}</td><td><code class="ov">${esc(ovs(t.overrides)||t.name)}</code></td><td class="num"><b>${spct(t.oos_cagr)}</b></td><td class="num">${pct(t.oos_dd)}</td><td class="num">${spct(t.is_cagr)}</td><td>${t.passed?'<span class="pill good">beat parent</span>':'<span class="pill">rejected</span>'}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">none yet</td></tr>'}</tbody></table><div class="small muted" style="margin-top:4px">parent: OOS ${spct(par.cagr)}, drawdown ${pct(par.max_drawdown)}</div>`; };
+    return `<table><thead><tr><th>#</th><th>cell</th><th class="num">OOS CAGR</th><th class="num">OOS DD</th><th class="num">IS CAGR</th><th>result</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="labrow ${t.id===UI.labSel?'sel':''}" data-id="${esc(t.id)}"><td class="muted">${i+1}</td><td><code class="ov">${esc(ovs(t.overrides)||t.name)}</code>${(LB.equivalents||{})[t.id]>1?` <span class="pill" title="other settings produced exactly the same result: those knobs do nothing here">×${(LB.equivalents||{})[t.id]} equivalent settings</span>`:''}</td><td class="num"><b>${spct(t.oos_cagr)}</b></td><td class="num">${pct(t.oos_dd)}</td><td class="num">${spct(t.is_cagr)}</td><td>${t.passed?'<span class="pill good">beat parent</span>':'<span class="pill">rejected</span>'}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">none yet</td></tr>'}</tbody></table><div class="small muted" style="margin-top:4px">parent: OOS ${spct(par.cagr)}, drawdown ${pct(par.max_drawdown)}</div>`; };
   html+=card('Leaderboard · stocks','c6',leaderTable('stocks'));
   html+=card('Leaderboard · crypto','c6',leaderTable('crypto'));
   html+=card('Map: every test, out-of-sample return vs drawdown','c6',legend([{name:'stocks',color:css('--s1')},{name:'crypto',color:css('--s2')},{name:'parent',color:css('--s3')}])+'<div class="small muted">filled = beat the parent · hollow = rejected · ◆ = parent · click a mark</div><div class="chart" id="labmap"></div>');
@@ -413,6 +437,15 @@ function render(){
   const best=(LB.progress||{}).best||{};
   html+=card('Best out-of-sample growth found so far','c6',legend([{name:'stocks',color:css('--s1')},{name:'crypto',color:css('--s2')}])+'<div class="chart" id="bestchart"></div>','bestchart');
   html+=card('Backtests per hour','c6',legend([{name:'stocks',color:css('--s1'),sq:true},{name:'crypto',color:css('--s2'),sq:true}])+'<div class="chart" id="rate"></div>');
+  const knobSvg=(k,sl)=>{ const P=k.points||[]; const par=(((LB.parents||{})[sl]||{}).outofsample||{}).cagr; const ys=P.map(p=>p[1]).concat(par!=null?[par]:[]); let y0=Math.min(0,...ys), y1=Math.max(...ys,0.01); const py=(y1-y0)*0.1; y0-=py; y1+=py;
+    const cats=k.categorical?[...new Set(P.map(p=>String(p[0])))]:null; const xsN=k.categorical?null:P.map(p=>Number(p[0])); const x0=k.categorical?0:Math.min(...xsN), x1=k.categorical?Math.max(1,cats.length-1):Math.max(...xsN);
+    const W=230,H=120,m={l:34,r:6,t:6,b:k.categorical?30:18}; const X=v=>m.l+(x1===x0?0.5:(v-x0)/(x1-x0))*(W-m.l-m.r); const Y=v=>m.t+(1-(v-y0)/(y1-y0))*(H-m.t-m.b);
+    const col=sl==='stocks'?css('--s1'):css('--s2');
+    const dots=P.map(p=>{ const xv=k.categorical?cats.indexOf(String(p[0])):Number(p[0]); const jit=k.categorical?((p[1]*997)%1-0.5)*0.25:0; return `<circle cx="${X(xv+jit).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="3" fill="${p[2]?col:css('--surface')}" stroke="${col}" stroke-width="1.5"><title>${esc(String(p[0]))} → ${spct(p[1])}${p[2]?' (beat the parent)':''}</title></circle>`; }).join('');
+    const xl=k.categorical?cats.map((c,i)=>`<text x="${X(i)}" y="${H-16}" font-size="9" text-anchor="middle" fill="${css('--muted')}">${esc(c.replace('_breakout','').replace('_threshold','').slice(0,10))}</text>`).join(''):`<text x="${m.l}" y="${H-4}" font-size="9" fill="${css('--muted')}">${esc(String(x0))}</text><text x="${W-m.r}" y="${H-4}" font-size="9" text-anchor="end" fill="${css('--muted')}">${esc(String(x1))}</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}"><line x1="${m.l}" x2="${W-m.r}" y1="${Y(0)}" y2="${Y(0)}" stroke="${css('--axis')}"/>${par!=null?`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(par)}" y2="${Y(par)}" stroke="${css('--s3')}" stroke-dasharray="4 4"/>`:''}<text x="${m.l-4}" y="${Y(y1)+8}" font-size="9" text-anchor="end" fill="${css('--muted')}">${pct(y1)}</text><text x="${m.l-4}" y="${Y(y0)}" font-size="9" text-anchor="end" fill="${css('--muted')}">${pct(y0)}</text>${dots}${xl}</svg>`; };
+  const KN=LB.knobs||{};
+  html+=card('What the lab is learning: each setting it has varied against the out-of-sample result','',`<div class="legend"><span><i style="background:${css('--s1')}"></i>stocks</span><span><i style="background:${css('--s2')}"></i>crypto</span><span><i style="background:${css('--s3')}"></i>parent (dashed)</span><span class="muted">filled = beat the parent · ranked by how much the result moves with the setting</span></div><div class="knobs">${['crypto','stocks'].flatMap(sl=>(KN[sl]||[]).map(k=>`<div class="knob"><div class="kh"><b>${esc(sl)} · ${esc(k.knob.replace(/^(stocks|crypto)\./,''))}</b><span class="muted">${k.n} tests</span></div><div class="small muted">results move ${pct(k.spread)} across its values</div>${knobSvg(k,sl)}</div>`)).join('')||'<div class="muted small">needs a few tests per setting</div>'}</div>`);
   const gal=LT.filter(t=>t.by!=='parent'&&t.by!=='seat'&&(LB.curves||{})[t.id]).slice(0,60);
   html+=card(`Every recent backtest, charted (${gal.length} newest; click any for its full curve)`,'',`<div class="legend"><span><i style="background:${css('--s1')}"></i>the cell (out of sample)</span><span><i style="background:${css('--axis')}"></i>parent</span></div><div class="gallery">${gal.map(t=>`<div class="gt ${t.id===UI.labSel?'sel':''}" data-id="${esc(t.id)}"><div class="n" title="${esc(ovs(t.overrides))}">${esc(t.by)} · ${esc(t.sleeve)} · ${esc(ovs(t.overrides)||t.name)}</div><div class="m"><b>${spct(t.oos_cagr)}</b>${t.passed?'<span class="pill good">beat</span>':'<span class="pill">rejected</span>'}</div>${miniSvg(curveOf(t.id,'outofsample'), parentCurve(t.sleeve,'outofsample'))}<div class="n muted">${esc(lt(t.ts))}</div></div>`).join('')||'<div class="muted small">no curves yet</div>'}</div>`);
   const stPill=t=>t.by==='parent'?'<span class="pill">reference</span>':t.by==='seat'?'<span class="pill good">seated</span>':t.passed?`<span class="pill good">${t.child_id?('seated · '+esc(t.child_status||'shadow')):'beat the parent'}</span>`:(t.verdict||'').startsWith('rejected: backtest failed')?'<span class="pill bad">failed</span>':'<span class="pill">rejected</span>';
@@ -441,9 +474,17 @@ function render(){
 
   // ---------- SUB-AGENTS AND SCOUTS ----------
   html+=sec('scouts','Sub-agents and scouts','each trades its own paper book; the record decides who lives');
+  const SCO=D.scouts||{}; const tr=SCO['trench-scout']; const trL=((CDx['trench-scout']||{}).latest)||{};
+  if(tr){ const F=tr.funnel||[]; const fmax=Math.max(1,...F.map(f=>f[1]));
+    html+=card(`Trenches · paper book ${fmt$(trL.equity)} (started $100)`,'c7',`<div class="small muted" style="margin-bottom:6px">brand-new Solana launches, scanned every lab round · last scan <span data-ago="${esc(trL.ts||'')}">${agoTxt(trL.ts)}</span> · ${trL.n_open||0} open · cash ${fmt$(trL.cash)}</div><b class="small">Last scan</b><div class="funnel">${F.map((f,i)=>`<div class="fr"><span>${esc(f[0])}</span><span><span class="fb" style="display:block;width:${Math.max(0.5,f[1]/fmax*100).toFixed(1)}%;opacity:${1-i*0.12}"></span></span><b class="num">${f[1]}</b></div>`).join('')}</div><div class="small muted" style="margin-bottom:6px">rejected for: ${Object.entries(trL.rejects||{}).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>`${esc(k)} ${v}`).join(' · ')||'—'}</div>${legend([{name:'trench paper equity',color:css('--s2')}])}<div class="chart" id="trencheq"></div>`,'trencheq');
+    html+=card('Trench trades (paper)','c5',`<div style="max-height:430px;overflow:auto"><table><thead><tr><th class="nw">when</th><th>event</th><th>token</th><th class="num">USD</th><th class="num">P&amp;L</th></tr></thead><tbody>${(tr.trades||[]).map(x=>`<tr><td class="small muted nw">${esc(lt(x.ts))}</td><td>${x.kind==='entry'?'<span class="pill">bought</span>':x.kind==='take_half'?'<span class="pill good">took half</span>':`<span class="pill ${String(x.reason||'').startsWith('rugged')||String(x.reason||'').startsWith('vanished')?'bad':''}">sold</span> <span class="small muted">${esc(x.reason||'')}</span>`}</td><td><b>${esc(x.symbol||'?')}</b></td><td class="num">${fmt$(x.usd)}</td><td class="num">${x.pnl==null?'—':fmt$(x.pnl)}</td></tr>`).join('')||'<tr><td colspan="5" class="muted">no trades yet</td></tr>'}</tbody></table></div><div class="small muted" style="margin-top:6px">${(trL.open||[]).length?'open: '+trL.open.map(p=>`${esc(p.symbol)} ${fmt$(p.value)}`).join(' · '):'nothing open'}</div>`); }
+  const hl=((CDx['hyperliquid-desk']||{}).latest)||{}; const hlS=SCO['hyperliquid-desk'];
+  html+=card(`Hyperliquid desk (paper) · ${hl.equity!=null?fmt$(hl.equity):'first cycle tonight'}`,'c6',`<div class="small muted" style="margin-bottom:6px">the firm's crypto rules on Hyperliquid's most traded perps, priced from its public data: no account, no keys, no orders; taker fee and hourly funding charged; own $100 paper book</div>${hl.ts?`<div class="chips" style="margin-bottom:8px"><span class="chip">${hl.n_tradable||0} of ${hl.n_listed||0} perps with a year of history</span><span class="chip">regime <b>${esc((hl.regime||{}).state||'—')}</b></span><span class="chip">funding paid <b>${fmt$(hl.funding_paid_total||0)}</b></span><span class="chip">orders on ${esc(hl.run_date||'')}: <b>${hl.orders||0}</b></span></div><table><thead><tr><th>perp</th><th class="num">value</th><th class="num">avg</th><th class="num">last</th></tr></thead><tbody>${(hl.positions||[]).map(p=>`<tr><td><b>${esc(p.symbol)}</b></td><td class="num">${fmt$(p.value)}</td><td class="num">${Number(p.avg).toPrecision(5)}</td><td class="num">${Number(p.last).toPrecision(5)}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">no open positions</td></tr>'}</tbody></table><div class="small muted" style="margin-top:6px">most traded: ${(hl.universe||[]).slice(0,10).map(u=>`${esc(u.coin)} (${spct((u.funding_hourly||0)*24*365)}/yr funding)`).join(' · ')}</div>`:'<div class="small">joins the firm on the next daily cycle (00:37 UTC) and trades from the cycle after it has a year of daily bars per coin.</div>'}${hlS&&hlS.equity&&hlS.equity.length>1?'<div class="chart" id="hleq" style="margin-top:8px"></div>':''}`);
+  const SO=D.social||{};
+  html+=card(`Social pulse${SO.ts?` · <span class="small muted" data-ago="${esc(SO.ts)}">${agoTxt(SO.ts)}</span>`:''}`,'c6',`<div class="small muted" style="margin-bottom:6px">every lab round; symbols and counts only (no post text is kept or passed to any model) · X: ${esc(SO.x_status||'not connected: add a paid X API bearer token as the X_BEARER_TOKEN secret')}</div><b class="small">On two or more sources</b><div class="chips" style="margin:4px 0 10px">${(SO.cross||[]).map(r=>`<span class="chip"><b>${esc(r.symbol)}</b> ${esc(r.sources.join('+'))}${r.reddit_mentions?` · ${r.reddit_mentions} posts`:''}${r.x_posts_24h?` · ${r.x_posts_24h} on X`:''}</span>`).join('')||'<span class="muted small">none yet</span>'}</div><div class="row" style="align-items:flex-start;gap:16px"><div style="flex:1;min-width:150px"><b class="small">Trending on StockTwits</b><div class="chips" style="margin-top:4px">${(SO.stocktwits||[]).slice(0,14).map(r=>`<span class="chip">${esc(r.symbol)}${r.crypto?' ·c':''}</span>`).join('')||'<span class="muted small">—</span>'}</div></div><div style="flex:1;min-width:150px"><b class="small">Cashtags on Reddit (${SO.reddit_posts_read||0} hot posts)</b><div class="chips" style="margin-top:4px">${(SO.reddit||[]).slice(0,14).map(r=>`<span class="chip">${esc(r.symbol)} <b>${r.mentions}</b></span>`).join('')||'<span class="muted small">—</span>'}</div></div></div><div class="small muted" style="margin-top:8px">DexScreener boosts (paid promotion, not a signal): ${(SO.dex_boosts||[]).length} tokens</div>`);
   const CD=D.children_detail||{}; const readyIds=new Set(H.ready_ids||[]);
   const spark=(marks)=>{ if(!marks||marks.length<2) return ''; const vs=marks.map(m=>m[1]); const lo=Math.min(...vs), hi=Math.max(...vs); const W=160,Hh=36; const pts=vs.map((v,i)=>`${(i/(vs.length-1)*W).toFixed(1)},${(Hh-2-(hi===lo?Hh/2:(v-lo)/(hi-lo)*(Hh-4))).toFixed(1)}`).join(' '); return `<svg class="spark" viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none"><polyline fill="none" stroke="${css('--s1')}" stroke-width="2" points="${pts}"/></svg>`; };
-  const agentCards=(H.children||[]).slice().sort((a,b)=>((b.status==='shadow'||b.status==='live')-(a.status==='shadow'||a.status==='live'))).map(c=>{const d=CD[c.id]||{}; const active=c.status==='shadow'||c.status==='live';
+  const agentCards=(H.children||[]).filter(c=>!['trench','perps'].includes(c.sleeve)).slice().sort((a,b)=>((b.status==='shadow'||b.status==='live')-(a.status==='shadow'||a.status==='live'))).map(c=>{const d=CD[c.id]||{}; const active=c.status==='shadow'||c.status==='live';
     const a=AG.find(x=>x.id===c.id)||{};
     const head=`<div class="head"><b>${esc(c.name)}</b><span class="pill">${esc(c.kind)}</span><span class="pill">${esc(c.sleeve)}</span>${stateDot(a.state||(active?'recent':c.status), active?(a.state||'recent'):c.status)}${readyIds.has(c.id)?'<span class="pill good">ready to promote</span>':''}<span class="muted small">${c.shadow_days||0} d</span></div>`;
     let body='';
@@ -490,6 +531,8 @@ function render(){
   tables.cost=lineChart($('#cost'),[{name:'AI + data cost',color:css('--s1'),points:(E.dates||[]).map((d,i)=>[d,E.cum_ai_cost[i]])}],{fmt:v=>fmt$(v),zero:true});
   const step=arr=>{ const out=[]; (arr||[]).forEach((p,i)=>{ const x=(p[0]||'').slice(0,16).replace('T',' '); if(i) out.push([x,arr[i-1][1]]); out.push([x,p[1]]); }); if(out.length){ const nowX=new Date().toISOString().slice(0,16).replace('T',' '); out.push([nowX,out[out.length-1][1]]); } return out; };
   tables.bestchart=lineChart($('#bestchart'),[{name:'stocks',color:css('--s1'),points:step(best.stocks)},{name:'crypto',color:css('--s2'),points:step(best.crypto)}],{fmt:v=>pct(v),xfmt:x=>lt(x),xname:'time',height:220});
+  if(tr&&tr.equity&&tr.equity.length) tables.trencheq=lineChart($('#trencheq'),[{name:'trench paper equity',color:css('--s2'),points:tr.equity}],{fmt:v=>fmt$(v),xfmt:x=>lt(x),xname:'time',height:200});
+  if(hlS&&hlS.equity&&hlS.equity.length>1) lineChart($('#hleq'),[{name:'desk paper equity',color:css('--s1'),points:hlS.equity}],{fmt:v=>fmt$(v),xfmt:x=>lt(x),height:160});
   barChart($('#rate'),((LB.progress||{}).hours||[]),[{name:'stocks',color:css('--s1')},{name:'crypto',color:css('--s2')}],{xfmt:h=>lt(h+':00'),height:220});
   const byCol={stocks:css('--s1'),crypto:css('--s2')};
   function drawLab(){

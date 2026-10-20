@@ -80,6 +80,8 @@ class Settings(BaseSettings):
 
     # --- optional data providers -------------------------------------------
     finnhub_api_key: SecretStr | None = None
+    # X (Twitter) is paid: with a bearer token the social pulse adds X post counts.
+    x_bearer_token: SecretStr | None = None
     # SEC EDGAR requires a descriptive User-Agent with contact info.
     sec_user_agent: str = "hive-research-bot contact@example.com"
 
@@ -379,6 +381,19 @@ class TrenchRules(BaseModel):
     max_rugchecks: int = 10
 
 
+class PerpsDeskRules(BaseModel):
+    """Hyperliquid paper desk: the firm's crypto rules on Hyperliquid's most traded perps, priced
+    from its public data, on its own paper book. No account, no keys, no orders: a read-only
+    simulation with Hyperliquid's taker fee and the hourly funding a long would have paid."""
+
+    top_n: int = 25                    # the most traded perps by day volume
+    min_history_days: int = 300        # the trend rules need about a year of daily bars
+    starting_cash_usd: float = 100.0
+    max_positions: int = 5
+    taker_fee_pct: float = 0.00045
+    slippage_bps: float = 5.0
+
+
 class UniverseConfig(BaseModel):
     stock_universe: Literal["sp500", "etfs", "custom"] = "sp500"
     custom_symbols: list[str] = Field(default_factory=list)
@@ -411,6 +426,7 @@ class StrategyConfig(BaseModel):
     operator: OperatorRules = Field(default_factory=OperatorRules)
     meme: MemeRules = Field(default_factory=MemeRules)
     trench: TrenchRules = Field(default_factory=TrenchRules)
+    perps: PerpsDeskRules = Field(default_factory=PerpsDeskRules)
 
     def rules_for(self, asset_class: str) -> TrendRules:
         return self.crypto if asset_class == "crypto" else self.stocks

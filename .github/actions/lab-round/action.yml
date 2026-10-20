@@ -34,6 +34,10 @@ runs:
         else
           echo "go=true" >> "$GITHUB_OUTPUT"
         fi
+    - name: Social pulse (round ${{ inputs.round }})
+      if: steps.gate.outputs.go == 'true'
+      shell: bash
+      run: .venv/bin/hive pulse || echo "social pulse skipped"
     - name: Trench scout (round ${{ inputs.round }})
       if: steps.gate.outputs.go == 'true'
       shell: bash
@@ -67,7 +71,7 @@ runs:
       run: |
         git config user.name "hive-bot"
         git config user.email "hive-bot@users.noreply.github.com"
-        git add state/hive.json state/research_log.jsonl reports/lab state/journal state/children/trench-scout 2>/dev/null || true
+        git add state/hive.json state/research_log.jsonl reports/lab state/journal state/children/trench-scout state/social 2>/dev/null || true
         git diff --cached --quiet || git commit -m "lab $(date -u +%FT%H:%MZ) (round ${{ inputs.round }}/${{ inputs.rounds }})"
         # the rebuilt dashboard, the heartbeat and the status file are not part of the record
         git checkout -- .

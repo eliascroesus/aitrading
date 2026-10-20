@@ -470,6 +470,28 @@ def trench() -> None:
            f"{len(out['exits'])} exits, {out['n_open']} open, paper equity ${out['equity']:.2f}")
 
 
+@app.command()
+def pulse() -> None:
+    """The social pulse: what StockTwits, Reddit, DexScreener (and X, with a paid token) are talking about."""
+    from hive.data.sources.social_pulse import pulse as _pulse
+
+    s = get_settings()
+    setup_logging()
+    if not (s.hive_network_data and s.hive_social_data):
+        rprint("social pulse skipped: network or social data disabled")
+        return
+    out = _pulse(x_token=s.x_bearer_token.get_secret_value() if s.x_bearer_token else None)
+    sdir = s.hive_state_dir / "social"
+    sdir.mkdir(parents=True, exist_ok=True)
+    (sdir / "latest.json").write_text(json.dumps(out, default=str))
+    compact = {"ts": out["ts"], "stocktwits": [r["symbol"] for r in out["stocktwits"][:10]],
+               "reddit": out["reddit"][:10], "cross": [r["symbol"] for r in out["cross"][:10]], "x": out["x"]}
+    with (sdir / "history.jsonl").open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(compact, default=str) + "\n")
+    rprint(f"social pulse: {len(out['stocktwits'])} trending on StockTwits, {out['reddit_posts_read']} Reddit posts read, "
+           f"{len(out['cross'])} names on more than one source; X {out['x_status']}")
+
+
 @app.command("capital-in")
 def capital_in(amount: float = typer.Option(..., help="USD added to the bankroll (e.g. a venue deposit)"),
                note: str = typer.Option("", help="Where it went (e.g. 'Alpaca crypto deposit')")) -> None:

@@ -219,6 +219,7 @@ def performance_context(registry: HiveRegistry, status: dict[str, Any] | None, p
             "momentum_threshold": "buy when vol-adjusted 12-1 momentum >= momentum_min with the breakout trigger",
         },
         "tested_variants": tested_variants(registry),
+        "social_trending": _social_trending(registry.path.parent),
         "research_log": research_log or [],
         "monitors": [{"name": c.name, "watch": c.watch, "born": c.born} for c in registry.active() if c.kind == "monitor"],
         "ready_to_promote": [{"name": c.name, "voi": c.voi, "shadow_days": c.shadow_days, "overrides": c.overrides}
@@ -236,6 +237,16 @@ def performance_context(registry: HiveRegistry, status: dict[str, Any] | None, p
                      "that improved both walk-forward windows was removing the SMA50 exit. Most of a trend "
                      "system's edge is in exits and sizing. Fees and turnover decide outcomes."),
     }
+
+
+def _social_trending(state_dir: Path) -> list[dict[str, Any]]:
+    """Names the social pulse found on more than one source (symbols and counts only), so the
+    operator can decide whether a monitor deserves a seat."""
+    p = state_dir / "social" / "latest.json"
+    try:
+        return (json.loads(p.read_text()).get("cross") or [])[:10] if p.exists() else []
+    except (ValueError, OSError):
+        return []
 
 
 def _get(cfg: StrategyConfig, dotted: str) -> Any:
