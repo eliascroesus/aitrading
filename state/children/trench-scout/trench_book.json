@@ -1,5 +1,5 @@
 {
-  "cash": 39.056813181284205,
+  "cash": 36.725265210141444,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -17,9 +17,20 @@
       "symbol": "SASONA",
       "qty": 53136.882848257366,
       "entry_price": 5.336e-05,
-      "peak_price": 7.642e-05,
+      "peak_price": 7.796e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
+      "took_half": false,
+      "misses": 0
+    },
+    "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump": {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "qty": 2195.18319129925,
+      "entry_price": 0.001002,
+      "peak_price": 0.001002,
+      "entered_at": "2026-10-20T23:43:22.701913+00:00",
+      "cost_usd": 2.33154797114276,
       "took_half": false,
       "misses": 0
     }
@@ -1127,6 +1138,15 @@
       "proceeds": 0.8682941819068299,
       "pnl_approx": -1.5901051244759377,
       "age_hours": 0.12184506777777777
+    },
+    {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "event": "entry",
+      "price": 0.001002,
+      "notional": 2.33154797114276,
+      "liquidity_usd": 92043.18,
+      "age_hours": 4.625948743353949
     }
   ]
 }
