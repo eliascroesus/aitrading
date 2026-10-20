@@ -394,7 +394,7 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
             by_stage[st] = by_stage.get(st, 0) + 1
         queue = [describe(sl, ov, stage=st) for sl, ov, st in q[:8]]
         waiting = [{"name": w["proposal"], "sleeve": w["sleeve"], "oos_cagr": w["oos_cagr"], "oos_dd": w["oos_dd"],
-                    "date": w["date"]} for w in waiting_list(reg, ldir)[:10]]
+                    "date": w["date"], "oos_prop": w.get("oos_prop")} for w in waiting_list(reg, ldir, cfg.operator.objective)[:10]]
     except Exception:
         pass
     tl = [{"ts": (t.get("ts") or "")[:16].replace("T", " "), "who": "lab", "kind": t.get("by") or "test",

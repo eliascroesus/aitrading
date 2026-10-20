@@ -26,7 +26,7 @@
 #                      Monitors (news-channel sub-agents) and the daily sweep.
 
 name = "trend-reset-v1"
-version = "2.0.0"
+version = "2.1.0"
 
 [stocks]
 entry_mode = "reset_breakout"
@@ -236,6 +236,7 @@ insample_start = "2001-01-01"
 insample_end = "2012-12-31"
 outofsample_start = "2013-01-01"
 max_drawdown_tolerance = 1.10
+objective = "prop"
 auto_promote = true
 promote_min_voi = 0.0
 demote_after_days = 21
@@ -301,3 +302,19 @@ starting_cash_usd = 100.0
 max_positions = 5
 taker_fee_pct = 0.00045
 slippage_bps = 5.0
+
+[prop]
+# A typical prop-firm evaluation (config 2.1.0). The lab climbs the simulated pass rate
+# out of sample; live paper records are read as evaluations: a variant that breaches is
+# retired, and the firm says it is ready only after a long clean paper record.
+# Copy a specific firm's rules in before relying on them.
+profit_target_pct = 0.10
+max_daily_loss_pct = 0.05
+max_total_loss_pct = 0.10
+trailing_total_loss = false
+min_trading_days = 4
+eval_horizon_days = 60
+eval_step_days = 5
+retire_on_breach = true
+ready_min_forward_days = 30
+ready_min_backtest_pass_rate = 0.5

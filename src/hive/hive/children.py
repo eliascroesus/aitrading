@@ -100,6 +100,8 @@ def run_children(
             journal.write("child_error", {"error": str(exc)[:300]})
     registry.auto_retire_losers(min_days=cfg.survival.child_retire_days, max_negative_voi=cfg.survival.child_retire_voi,
                                 max_drawdown=cfg.survival.child_max_drawdown_pct, on=run_date)
+    for rec in retire_prop_failures(settings, cfg, registry, run_date):
+        results.append(rec)
     registry.retire_expired_monitors(cfg.operator.monitor_ttl_days, on=run_date)
     # governance by evidence: promote what earned it, revert what the baseline beats
     from hive.hive.governance import demote_if_baseline_wins, promote_earned
@@ -136,3 +138,33 @@ def _run_meme_child(settings: Settings, cfg: StrategyConfig, child, cdir: Path, 
     book.save(cdir / "meme_book.json")
     journal.write("meme_day", {"n_candidates": sum(1 for c in cands if c.get("passes")), "scanned": len(cands), **out})
     return out["equity"]
+
+
+def retire_prop_failures(settings: Settings, cfg: StrategyConfig, registry: HiveRegistry, on: date) -> list[dict[str, Any]]:
+    """The prop firm's punishment: a variant whose own paper record breached the daily or total
+    loss limit failed its evaluation, and is retired the same day, as a firm would close the
+    account. Scouts and the baseline trade other things and are judged on their own books."""
+    from hive.hive.propfirm import forward_status
+
+    out: list[dict[str, Any]] = []
+    if not cfg.prop.retire_on_breach:
+        return out
+    for c in list(registry.active()):
+        if c.kind != "variant":
+            continue
+        lp = settings.hive_state_dir / "children" / c.id / "ledger.jsonl"
+        if not lp.exists():
+            continue
+        try:
+            marks = SurvivalLedger(lp, cfg.survival).equity_marks()
+        except ValueError:
+            continue
+        st = forward_status(marks, cfg.prop)
+        if st["breached"]:
+            why = (f"failed its prop evaluation: {st['outcome'].replace('failed_', '')} limit breached after "
+                   f"{st['days']} days (worst day {st['worst_day']:+.1%}, deepest loss {st['max_loss']:+.1%})")
+            registry.retire(c.id, why, on)
+            registry.record_iteration({"date": on.isoformat(), "proposal": c.name, "kind": "retired",
+                                       "overrides": c.overrides, "sleeve": c.sleeve, "cost_usd": 0.0, "verdict": why})
+            out.append({"id": c.id, "name": c.name, "kind": "retired", "verdict": why})
+    return out

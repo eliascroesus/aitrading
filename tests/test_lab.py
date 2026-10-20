@@ -141,8 +141,15 @@ def test_queue_interleaves_sleeves_and_grid_comes_first(tmp_path):
     assert all(c in q for c in grid())
     reg.record_iteration({"date": "2026-10-19", "proposal": "x", "overrides": {"stocks.entry_mode": "template_cross"},
                           "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17, "verdict": "spawned"})
+    staged2 = queue_staged(reg, cfg, bounds, tmp_path / "lab")
+    cell = ("stocks", {"stocks.entry_mode": "template_cross"})
+    # tested before prop scoring existed: re-tested once, first, to get its prop score
+    assert [(sl, ov) for sl, ov, st in staged2 if st == "rescore"] == [cell]
+    assert sum(1 for sl, ov, _ in staged2 if (sl, ov) == cell) == 1
+    reg.record_iteration({"date": "2026-10-20", "proposal": "x", "overrides": {"stocks.entry_mode": "template_cross"},
+                          "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17, "oos_prop": 0.2, "verdict": "spawned"})
     q2 = queue(reg, cfg, bounds, tmp_path / "lab")
-    assert len(q2) > len(grid()) and ("stocks", {"stocks.entry_mode": "template_cross"}) not in q2
+    assert len(q2) > len(grid()) and cell not in q2                    # scored: never again
     assert len(results_so_far(reg, tmp_path / "lab")) == 1
 
 

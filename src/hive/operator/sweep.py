@@ -48,7 +48,8 @@ REFINE_DIVISORS = (1, 2, 4)   # coarse steps first (a sixth of the range), then 
 EVOLVE_TOP = 8                # the evolve stage mutates the best EVOLVE_TOP cells per sleeve ...
 EVOLVE_PER_SLEEVE = 150       # ... into this many fresh candidates per call
 EVOLVE_MAX_KNOBS = 6          # a candidate never changes more than this many settings
-STAGES = ("sweep", "refine", "evolve")
+RESCORE_TOP = 15              # best cells per sleeve re-tested once to get their prop score
+STAGES = ("rescore", "sweep", "refine", "evolve")
 
 Cell = tuple[str, dict[str, Any]]
 
@@ -97,7 +98,8 @@ def results_so_far(registry: HiveRegistry, ldir=None) -> list[dict[str, Any]]:
             continue
         k = cell_key(it.get("sleeve") or "", ov)
         rows[k] = {"sleeve": it.get("sleeve") or "", "overrides": ov, "oos_cagr": it.get("oos_cagr"),
-                   "oos_dd": it.get("oos_dd"), "is_cagr": it.get("is_cagr"), "verdict": it.get("verdict") or ""}
+                   "oos_dd": it.get("oos_dd"), "is_cagr": it.get("is_cagr"), "verdict": it.get("verdict") or "",
+                   "oos_prop": it.get("oos_prop", (it.get("outofsample") or {}).get("prop_pass_rate"))}
     return list(rows.values())
 
 
@@ -115,6 +117,13 @@ def untested(registry: HiveRegistry, cells: list[Cell], ldir=None) -> list[Cell]
         mine.add(k)
         out.append(c)
     return out
+
+
+def rank_key(r: dict[str, Any], objective: str = "growth") -> tuple:
+    """Best first under the firm's objective: the simulated prop pass rate, then growth, then the
+    shallower drawdown (a cell scored before prop metrics existed ranks as a zero pass rate)."""
+    lead = -(float(r.get("oos_prop") or 0.0)) if objective == "prop" else 0.0
+    return (lead, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
 
 
 def _step(cur: float, lo: float, hi: float, div: int, sign: int, like: Any) -> Any:
@@ -145,7 +154,7 @@ def refine(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
     for sleeve in SLEEVES:
         rows = [r for r in results if r["sleeve"] == sleeve and r.get("oos_cagr") is not None
                 and not str(r.get("verdict", "")).startswith("rejected: backtest failed")]
-        rows.sort(key=lambda r: (-(r["oos_cagr"] or 0.0), -(r.get("oos_dd") or 0.0)))
+        rows.sort(key=lambda r: rank_key(r, cfg.operator.objective))
         best = rows[:top]
         if not best:
             continue
@@ -199,7 +208,7 @@ def evolve(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
     for sleeve in SLEEVES:
         rows = [r for r in results if r["sleeve"] == sleeve and r.get("oos_cagr") is not None
                 and not str(r.get("verdict", "")).startswith("rejected: backtest failed")]
-        rows.sort(key=lambda r: (-(r["oos_cagr"] or 0.0), -(r.get("oos_dd") or 0.0)))
+        rows.sort(key=lambda r: rank_key(r, cfg.operator.objective))
         best = [r["overrides"] for r in rows[:top]] or [{}]
         numeric, categorical = _sleeve_keys(bounds, sleeve)
         mode_key = f"{sleeve}.entry_mode"
@@ -244,7 +253,18 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
     cells, then refinements around the best cells, then mutations of the best cells (stage three
     never runs out), the sleeves interleaved so the cheap crypto cells never wait behind stocks."""
     results = results_so_far(registry, ldir)
-    staged: list[tuple[Cell, str]] = [(c, "sweep") for c in grid()]
+    staged: list[tuple[Cell, str]] = []
+    rescore: set[str] = set()
+    if cfg.operator.objective == "prop":
+        for sl in SLEEVES:
+            unscored = sorted((r for r in results if r["sleeve"] == sl and r.get("oos_prop") is None
+                               and r.get("oos_cagr") is not None
+                               and not str(r.get("verdict", "")).startswith("rejected: backtest failed")),
+                              key=lambda r: rank_key(r, "growth"))[:RESCORE_TOP]
+            for r in unscored:
+                staged.append(((sl, r["overrides"]), "rescore"))
+                rescore.add(cell_key(sl, r["overrides"]))
+    staged += [(c, "sweep") for c in grid()]
     if with_refine:
         staged += [(c, "refine") for c in refine(results, bounds, cfg)]
         staged += [(c, "evolve") for c in evolve(results, bounds, cfg, seed=len(results))]
@@ -252,8 +272,9 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
     pending: list[tuple[str, dict[str, Any], str]] = []
     for (sl, ov), stage in staged:
         k = cell_key(sl, ov)
-        if k in seen:
+        if k in seen and not (stage == "rescore" and k in rescore):
             continue
+        rescore.discard(k)
         seen.add(k)
         pending.append((sl, ov, stage))
     by_sleeve = {s: [c for c in pending if c[0] == s] for s in SLEEVES}
@@ -274,31 +295,36 @@ def describe(sleeve: str, overrides: dict[str, Any], *, stage: str = "sweep") ->
     return f"{stage} {sleeve}: " + ", ".join(f"{k.split('.')[-1]}={v}" for k, v in overrides.items())
 
 
-def waiting_list(registry: HiveRegistry, ldir=None) -> list[dict[str, Any]]:
+def waiting_list(registry: HiveRegistry, ldir=None, objective: str | None = None) -> list[dict[str, Any]]:
     """Cells that passed the verdict while every seat was taken, best out-of-sample return first,
     from the lab's complete record (the registry keeps only its last 200 iterations) and the
     registry; cells that were ever seated (any status) are left out."""
     seated = {cell_key(c.sleeve, c.overrides or {}) for c in registry.children}
     src = (read_tests(ldir, with_curves=False) if ldir is not None else []) + list(registry.iterations)
+    latest: dict[str, dict[str, Any]] = {}
+    for it in sorted(src, key=lambda r: str(r.get("ts") or r.get("date") or "")):
+        if it.get("overrides") and it.get("by") != "seat" and it.get("kind") != "seated":
+            latest[cell_key(it.get("sleeve") or "", it["overrides"])] = it      # a cell's latest verdict decides
     rows: dict[str, dict[str, Any]] = {}
-    for it in src:
-        if not str(it.get("verdict", "")).startswith("passed but not spawned") or not it.get("overrides"):
+    for key, it in latest.items():
+        if not str(it.get("verdict", "")).startswith("passed but not spawned"):
             continue
-        key = cell_key(it.get("sleeve") or "", it["overrides"])
         if key in seated:
             continue
         rows[key] = {"proposal": it.get("proposal") or it.get("name") or "waiting list", "overrides": it["overrides"],
+                     "oos_prop": it.get("oos_prop"),
                      "sleeve": it.get("sleeve") or "stocks", "hypothesis": it.get("hypothesis") or "",
                      "date": it.get("date"), "is_cagr": it.get("is_cagr"), "oos_cagr": it.get("oos_cagr"),
                      "oos_dd": it.get("oos_dd"), "parent_oos_cagr": it.get("parent_oos_cagr")}
-    return sorted(rows.values(), key=lambda r: (-(r["oos_cagr"] or 0.0), -(r["oos_dd"] or 0.0)))
+    objective = objective or "growth"
+    return sorted(rows.values(), key=lambda r: rank_key(r, objective))
 
 
-def seat_waiting(registry: HiveRegistry, tier: Tier, on: date, ldir=None) -> list[dict[str, Any]]:
+def seat_waiting(registry: HiveRegistry, tier: Tier, on: date, ldir=None, objective: str | None = None) -> list[dict[str, Any]]:
     """Seat the best waiting cells when seats are free. A cell is never seated twice."""
     out: list[dict[str, Any]] = []
     seated: set[str] = set()
-    for it in waiting_list(registry, ldir):
+    for it in waiting_list(registry, ldir, objective):
         key = cell_key(it["sleeve"], it["overrides"])
         if key in seated:
             continue
@@ -339,13 +365,14 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
         from hive.operator.lab import rollup
 
         rollup(ldir)
-    records: list[dict[str, Any]] = seat_waiting(registry, tier, on, ldir)
+    records: list[dict[str, Any]] = seat_waiting(registry, tier, on, ldir, cfg.operator.objective)
     todo = queue_staged(registry, cfg, bounds, ldir, with_refine=with_refine)
     inputs = dict(inputs_by_sleeve or {})
     parents: dict[str, Any] = {}
     started = datetime.now(UTC)
     n_done = 0
-    hypothesis = {"sweep": "systematic sweep of the strategy space",
+    hypothesis = {"rescore": "a top cell re-tested to score it on the prop objective",
+                  "sweep": "systematic sweep of the strategy space",
                   "refine": "refinement around the best cells found so far",
                   "evolve": "mutation of one of the best cells found so far"}
     for sleeve, ov, stage in todo:
@@ -381,10 +408,14 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
         parent = parents[sleeve]
         rec.update({"is_cagr": ev.insample["cagr"], "oos_cagr": ev.outofsample["cagr"],
                     "is_dd": ev.insample["max_drawdown"], "oos_dd": ev.outofsample["max_drawdown"],
-                    "parent_oos_cagr": parent.outofsample["cagr"]})
-        passed, why = verdict(parent, ev, cfg.operator.max_drawdown_tolerance)
+                    "parent_oos_cagr": parent.outofsample["cagr"],
+                    "oos_prop": ev.outofsample.get("prop_pass_rate"), "parent_oos_prop": parent.outofsample.get("prop_pass_rate")})
+        passed, why = verdict(parent, ev, cfg.operator.max_drawdown_tolerance, cfg.operator.objective)
         child_id = None
-        if passed:
+        seated_as = next((c.id for c in registry.children if cell_key(c.sleeve, c.overrides or {}) == cell_key(sleeve, ov)), None)
+        if passed and seated_as:
+            rec["verdict"] = f"passed; already a sub-agent ({seated_as}): {why}"
+        elif passed:
             can, reason = registry.can_spawn(tier)
             if can:
                 child = registry.spawn(Child(id="", name=rec["proposal"][:40], kind="variant", sleeve=sleeve,

@@ -152,6 +152,7 @@ def evaluate(cfg: StrategyConfig, overrides: dict[str, Any], inputs: dict[str, A
     """Backtest a variant in both windows on the cached data (``inputs`` from load_bars_for_backtest).
     With ``keep_curves`` the downsampled equity curve of each window (and the benchmark's buy & hold
     on the same dates) travels with the result, so the lab can show it."""
+    from hive.hive.propfirm import prop_metrics
     from hive.operator.lab import benchmark_on, downsample
 
     c = _apply_overrides(cfg, overrides)
@@ -162,6 +163,7 @@ def evaluate(cfg: StrategyConfig, overrides: dict[str, Any], inputs: dict[str, A
                          initial_equity=cfg.survival.starting_bankroll_usd, start=s, end=e,
                          universe=inputs.get("universe"), vix=inputs.get("vix")).run()
         out[label] = {k: float(res.metrics.get(k, 0.0)) for k in KEEP}
+        out[label].update(prop_metrics(res.equity, cfg.prop))
         if keep_curves:
             cv = downsample(res.equity)
             cv["benchmark"] = benchmark_on(cv["dates"], inputs.get("bench"), cfg.survival.starting_bankroll_usd)
@@ -169,14 +171,24 @@ def evaluate(cfg: StrategyConfig, overrides: dict[str, Any], inputs: dict[str, A
     return EvalResult(overrides, out["insample"], out["outofsample"], curves)
 
 
-def verdict(parent: EvalResult, child: EvalResult, tolerance: float) -> tuple[bool, str]:
+def verdict(parent: EvalResult, child: EvalResult, tolerance: float, objective: str = "growth") -> tuple[bool, str]:
+    """A cell earns a paper seat when it beats the parent out of sample on the firm's objective:
+    the simulated prop-firm pass rate (ties broken by growth) or, with "growth", CAGR; the
+    in-sample and drawdown checks below apply either way."""
     p, c = parent.outofsample, child.outofsample
-    if c["cagr"] <= p["cagr"]:
+    if objective == "prop":
+        pp, cp = float(p.get("prop_pass_rate") or 0.0), float(c.get("prop_pass_rate") or 0.0)
+        if cp < pp or (cp == pp and c["cagr"] <= p["cagr"]):
+            return False, f"OOS prop pass rate {cp:.0%} does not beat parent {pp:.0%}"
+    elif c["cagr"] <= p["cagr"]:
         return False, f"OOS CAGR {c['cagr']:.2%} does not beat parent {p['cagr']:.2%}"
     if c["max_drawdown"] < p["max_drawdown"] * tolerance:
         return False, f"OOS drawdown {c['max_drawdown']:.1%} worse than tolerated {p['max_drawdown'] * tolerance:.1%}"
     if child.insample["cagr"] < 0:
         return False, "negative in-sample return"
+    if objective == "prop":
+        return True, (f"beats parent on the prop objective out of sample (pass rate {float(c.get('prop_pass_rate') or 0):.0%} "
+                      f"vs {float(p.get('prop_pass_rate') or 0):.0%}) within the drawdown tolerance")
     return True, "beats parent out of sample within the drawdown tolerance"
 
 
@@ -345,8 +357,9 @@ def operate(
             continue
         rec.update({"is_cagr": ev.insample["cagr"], "oos_cagr": ev.outofsample["cagr"],
                     "is_dd": ev.insample["max_drawdown"], "oos_dd": ev.outofsample["max_drawdown"],
-                    "parent_oos_cagr": parent.outofsample["cagr"]})
-        passed, why = verdict(parent, ev, cfg.operator.max_drawdown_tolerance)
+                    "parent_oos_cagr": parent.outofsample["cagr"],
+                    "oos_prop": ev.outofsample.get("prop_pass_rate"), "parent_oos_prop": parent.outofsample.get("prop_pass_rate")})
+        passed, why = verdict(parent, ev, cfg.operator.max_drawdown_tolerance, cfg.operator.objective)
         if passed:
             can, reason = registry.can_spawn(tier)
             if can:

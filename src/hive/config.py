@@ -318,6 +318,9 @@ class OperatorRules(BaseModel):
     # keeps trading alongside, and if it beats the promoted configuration by
     # demote_min_lag over demote_after_days the promotion is reverted. The human
     # promote workflow remains as an override, never a requirement.
+    # What the lab climbs: "prop" ranks and seats cells by their simulated prop-firm pass rate
+    # out of sample (then growth); "growth" by out-of-sample CAGR.
+    objective: Literal["prop", "growth"] = "prop"
     auto_promote: bool = True
     promote_min_voi: float = 0.0
     demote_after_days: int = 21
@@ -381,6 +384,23 @@ class TrenchRules(BaseModel):
     max_rugchecks: int = 10
 
 
+class PropRules(BaseModel):
+    """A typical prop-firm evaluation (configurable; copy a specific firm's rules in before
+    relying on them). The lab climbs the simulated pass rate; live paper records are read
+    as evaluations for punishment and for readiness."""
+
+    profit_target_pct: float = 0.10
+    max_daily_loss_pct: float = 0.05      # from the previous close
+    max_total_loss_pct: float = 0.10      # from the start, or from the peak when trailing
+    trailing_total_loss: bool = False
+    min_trading_days: int = 4
+    eval_horizon_days: int = 60           # simulated evaluations end after this many days
+    eval_step_days: int = 5               # a new simulated evaluation starts every this many days
+    retire_on_breach: bool = True         # a variant whose paper record breaches is retired
+    ready_min_forward_days: int = 30
+    ready_min_backtest_pass_rate: float = 0.5
+
+
 class PerpsDeskRules(BaseModel):
     """Hyperliquid paper desk: the firm's crypto rules on Hyperliquid's most traded perps, priced
     from its public data, on its own paper book. No account, no keys, no orders: a read-only
@@ -416,7 +436,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "2.0.0"
+    version: str = "2.1.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     regime: RegimeRules = Field(default_factory=RegimeRules)
@@ -427,6 +447,7 @@ class StrategyConfig(BaseModel):
     meme: MemeRules = Field(default_factory=MemeRules)
     trench: TrenchRules = Field(default_factory=TrenchRules)
     perps: PerpsDeskRules = Field(default_factory=PerpsDeskRules)
+    prop: PropRules = Field(default_factory=PropRules)
 
     def rules_for(self, asset_class: str) -> TrendRules:
         return self.crypto if asset_class == "crypto" else self.stocks
