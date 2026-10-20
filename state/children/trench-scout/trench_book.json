@@ -1,12 +1,12 @@
 {
-  "cash": 59.67993493868336,
+  "cash": 61.041785910556456,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
       "symbol": "pika",
       "qty": 82709.2652884142,
       "entry_price": 5.939e-05,
-      "peak_price": 8.471e-05,
+      "peak_price": 9.019e-05,
       "entered_at": "2026-10-20T14:39:34.197919+00:00",
       "cost_usd": 5.206829461407655,
       "took_half": false,
@@ -39,7 +39,7 @@
       "symbol": "MONEYBIZ",
       "qty": 3389.2261465051824,
       "entry_price": 0.001403,
-      "peak_price": 0.001403,
+      "peak_price": 0.001414,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
       "took_half": false,
@@ -53,17 +53,6 @@
       "peak_price": 0.0002358,
       "entered_at": "2026-10-20T17:06:27.697056+00:00",
       "cost_usd": 4.934344521633669,
-      "took_half": false,
-      "misses": 0
-    },
-    "6ceuPfcE67PLs3Z6CbJpFpqNyAevVocP2zsDkbM1pump": {
-      "mint": "6ceuPfcE67PLs3Z6CbJpFpqNyAevVocP2zsDkbM1pump",
-      "symbol": "requests",
-      "qty": 50603.4799040248,
-      "entry_price": 9.429e-05,
-      "peak_price": 9.429e-05,
-      "entered_at": "2026-10-20T17:14:01.617318+00:00",
-      "cost_usd": 5.057686247359529,
       "took_half": false,
       "misses": 0
     },
@@ -403,6 +392,16 @@
       "notional": 5.057686247359529,
       "liquidity_usd": 24967.71,
       "age_hours": 14.89679429836697
+    },
+    {
+      "mint": "6ceuPfcE67PLs3Z6CbJpFpqNyAevVocP2zsDkbM1pump",
+      "symbol": "requests",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 2.863e-05,
+      "proceeds": 1.3618509718730962,
+      "pnl_approx": -3.6958352754864325,
+      "age_hours": 0.12635532861111112
     }
   ]
 }
