@@ -93,6 +93,6 @@ jobs:
           if [ "$n" -gt 0 ]; then
             echo "a trading, weekly or promotion run is waiting: it goes first; it restarts the lab when it is done"
           else
-            gh workflow run watch.yml --ref "$GITHUB_REF_NAME" -f minutes="$MINUTES" -f rounds="$ROUNDS"
+            gh workflow run watch.yml --ref "$GITHUB_REF_NAME"     # a default session, whatever this one was
             echo "next session dispatched"
           fi
