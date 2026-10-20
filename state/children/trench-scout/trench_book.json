@@ -1,5 +1,5 @@
 {
-  "cash": 33.55074686393926,
+  "cash": 32.749495221435325,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -34,25 +34,25 @@
       "took_half": false,
       "misses": 0
     },
-    "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump": {
-      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
-      "symbol": "DTC",
-      "qty": 1370.8577345875647,
-      "entry_price": 0.001717,
-      "peak_price": 0.001717,
-      "entered_at": "2026-10-20T23:20:12.211649+00:00",
-      "cost_usd": 2.4949884941040597,
-      "took_half": false,
-      "misses": 0
-    },
     "9vuGTtRoL6GeD4Gwt6mQBm7Bn1AzJWATBvjkiMQXpump": {
       "mint": "9vuGTtRoL6GeD4Gwt6mQBm7Bn1AzJWATBvjkiMQXpump",
       "symbol": "GEMMA",
       "qty": 40345.60730693947,
       "entry_price": 5.834e-05,
-      "peak_price": 5.834e-05,
+      "peak_price": 7.33e-05,
       "entered_at": "2026-10-20T23:20:12.211649+00:00",
       "cost_usd": 2.4949884941040597,
+      "took_half": false,
+      "misses": 0
+    },
+    "8tWatwDBrfVy7ebJmH6kDEzdF23Cicn9xXvQxYLepump": {
+      "mint": "8tWatwDBrfVy7ebJmH6kDEzdF23Cicn9xXvQxYLepump",
+      "symbol": "WIPD",
+      "qty": 20950.719319448854,
+      "entry_price": 0.0001107,
+      "peak_price": 0.0001107,
+      "entered_at": "2026-10-20T23:27:29.882477+00:00",
+      "cost_usd": 2.4583993063827676,
       "took_half": false,
       "misses": 0
     }
@@ -1111,6 +1111,25 @@
       "notional": 2.4949884941040597,
       "liquidity_usd": 19326.56,
       "age_hours": 0.448533551703559
+    },
+    {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.001286,
+      "proceeds": 1.6571476638788314,
+      "pnl_approx": -0.8378408302252283,
+      "age_hours": 0.12157522999999999
+    },
+    {
+      "mint": "8tWatwDBrfVy7ebJmH6kDEzdF23Cicn9xXvQxYLepump",
+      "symbol": "WIPD",
+      "event": "entry",
+      "price": 0.0001107,
+      "notional": 2.4583993063827676,
+      "liquidity_usd": 28571.09,
+      "age_hours": 1.4876254486083984
     }
   ]
 }
