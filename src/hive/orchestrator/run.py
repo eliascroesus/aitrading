@@ -12,6 +12,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -30,7 +31,7 @@ from hive.orchestrator.journal import Journal
 from hive.risk.engine import OrderIntent, PortfolioSnapshot, PositionInfo, RiskEngine
 from hive.signals.features import compute_features, initial_stop, rank_candidates
 from hive.signals.regime import class_multipliers, regime_at, regime_frame
-from hive.signals.sizing import size_position
+from hive.signals.sizing import edge_risk_pct, size_position
 from hive.survival.ledger import SurvivalLedger
 
 log = logging.getLogger(__name__)
@@ -80,6 +81,24 @@ def keep_pending(pos: OpenPosition, pending_symbols: set[str], pending_ids: set[
     except ValueError:
         return False
     return (run_date - placed).days <= grace_days
+
+
+def closed_r_multiples(journal_dir: Path, limit: int) -> list[float]:
+    """The book's last ``limit`` closed trades in R, oldest first, from its journal: managed
+    exits (``r_multiple``) and positions a resting stop closed (``r_multiple_est``)."""
+    out: list[float] = []
+    for f in sorted(Path(journal_dir).glob("*.jsonl"), reverse=True):
+        day: list[float] = []
+        for e in Journal.read(f):
+            pl = e.get("payload") or {}
+            r = pl.get("r_multiple") if e.get("kind") == "exit" else (
+                pl.get("r_multiple_est") if e.get("kind") == "reconcile" else None)
+            if r is not None:
+                day.append(float(r))
+        out = day + out
+        if len(out) >= limit:
+            break
+    return out[-limit:] if limit > 0 else []
 
 
 class BankrollMismatchError(RuntimeError):
@@ -387,6 +406,10 @@ class DailyRun:
         # --- sizing, risk, orders -------------------------------------------------------
         intents: list[OrderIntent] = []
         port_vol = self.ledger.portfolio_vol_ann() if self.ledger is not None else None
+        risk_pct = edge_risk_pct(closed_r_multiples(self.journal.path.parent, self.cfg.risk.edge_lookback_trades),
+                                 self.cfg.risk)
+        if self.cfg.risk.sizing_mode == "edge":
+            self.journal.write("sizing", {"mode": "edge", "risk_pct": risk_pct})
         for _, r in top.iterrows():
             sym = r["symbol"]
             action, inval = actions.get(sym, ("veto", "none"))
@@ -405,7 +428,7 @@ class DailyRun:
             cap = self.cfg.risk.max_position_pct_crypto_alt if sym in self.cfg.universe.crypto_alt_symbols else None
             d = size_position(equity=equity, price=price, stop_price=stop, risk=self.cfg.risk,
                               asset_class=ac, risk_multiplier=mult.get(ac, 0.0), portfolio_vol_ann=port_vol,
-                              cap_pct=cap)
+                              cap_pct=cap, risk_pct=risk_pct)
             if d.notional <= 0:
                 continue
             it = OrderIntent(sym, ac, "buy", d.notional, d.qty, price, stop,
@@ -482,7 +505,11 @@ class DailyRun:
                 continue
             if pos.meta.get("fill_pending") and keep_pending(pos, pending_symbols, pending_ids, self.run_date.date()):
                 continue  # still queued at the broker (orders placed after the close fill at the next open)
-            self.journal.write("reconcile", {"symbol": sym, "event": "closed_or_unfilled_at_broker"})
+            # Gone at the broker: a resting stop filled (or the order never did). The R is an
+            # estimate at the stop price, for the book's own sizing record.
+            self.journal.write("reconcile", {"symbol": sym, "event": "closed_or_unfilled_at_broker",
+                                             "r_multiple_est": None if pos.meta.get("fill_pending") or not pos.r_per_share
+                                             else (pos.stop_price - pos.entry_price) / pos.r_per_share})
             self.book.remove(sym)
         for sym, bp in held.items():
             if sym in self.book or bp.qty <= 0:
@@ -567,7 +594,9 @@ class DailyRun:
                        if res.ok and res.fill_price else None)
                 exits.append({"symbol": sym, "reason": reason, "ok": res.ok, "price": res.fill_price,
                               "bars_held": pos.bars_held, "message": res.message,
-                              "asset_class": pos.asset_class, "pnl_usd": pnl})
+                              "asset_class": pos.asset_class, "pnl_usd": pnl,
+                              "r_multiple": ((float(res.fill_price) - pos.entry_price) / pos.r_per_share
+                                             if res.ok and res.fill_price and pos.r_per_share else None)})
                 self.journal.write("exit", exits[-1])
                 if res.ok:
                     self.book.remove(sym)

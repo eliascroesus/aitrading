@@ -43,6 +43,9 @@ KNOB_FAMILY = {"breakout_lookback": "high_breakout", "pullback_touch_bars": "ma_
                "momentum_min": "momentum_threshold", "impulse_window": "reset_breakout",
                "impulse_min_z": "reset_breakout", "reset_period": "reset_breakout", "reset_z_max": "reset_breakout",
                "pullback_max_atr": "reset_breakout", "volume_max_ratio": "reset_breakout"}
+# Edge-sizing knobs only matter when the cell sizes by edge (config 2.2.0).
+EDGE_KNOBS = ("risk.edge_fraction", "risk.edge_min_trades", "risk.edge_lookback_trades",
+              "risk.edge_min_risk_pct", "risk.max_risk_per_trade_pct")
 REFINE_TOP = 3
 REFINE_DIVISORS = (1, 2, 4)   # coarse steps first (a sixth of the range), then finer
 EVOLVE_TOP = 8                # the evolve stage mutates the best EVOLVE_TOP cells per sleeve ...
@@ -76,11 +79,21 @@ def grid() -> list[Cell]:
         cells += [(sleeve, {"risk.target_annual_vol": v}) for v in (0.3, 0.45)]
         cells += [(sleeve, {"risk.max_drawdown_halt_pct": d}) for d in (0.4, 0.6)]
         cells += [(sleeve, {"risk.max_positions": n}) for n in (3, 8)]
+        cells += [(sleeve, {"risk.risk_per_trade_pct": 0.005})]
         if sleeve == "stocks":
             cells += [(sleeve, {"risk.max_position_pct_stock": c}) for c in (0.35, 0.5)]
+            no_caps = {"risk.max_position_pct_stock": 1.0, "risk.max_position_pct_etf": 1.0}
         else:
             cells += [(sleeve, {"risk.max_position_pct_crypto": c}) for c in (0.5, 0.8)]
             cells += [(sleeve, {"risk.crypto_sleeve_pct": c}) for c in (0.6, 1.0)]
+            cells += [(sleeve, {"risk.max_position_pct_crypto_alt": c}) for c in (0.3, 1.0)]
+            no_caps = {"risk.max_position_pct_crypto": 1.0, "risk.max_position_pct_crypto_alt": 1.0}
+        # no position caps at all, and risk per trade chosen by each book's own record (2.2.0)
+        edge = {"risk.sizing_mode": "edge"}
+        cells += [(sleeve, dict(no_caps)), (sleeve, dict(edge)),
+                  (sleeve, {**edge, "risk.edge_fraction": 0.5}),
+                  (sleeve, {**edge, "risk.max_risk_per_trade_pct": 0.1}),
+                  (sleeve, {**edge, **no_caps})]
     return cells
 
 
@@ -165,15 +178,11 @@ def refine(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
                 if ka & kb:
                     continue
                 add(sleeve, {**a["overrides"], **b["overrides"]})
-        keys = sorted(k for k, b in bounds.items()
-                      if (k.startswith(sleeve + ".") or k.startswith("risk.")) and not isinstance(b, list)
-                      and not (sleeve == "stocks" and "crypto" in k) and not (sleeve == "crypto" and "stock" in k))
+        keys = _sleeve_keys(bounds, sleeve)[0]
         for div in REFINE_DIVISORS:
             for r in best:
-                mode = r["overrides"].get(f"{sleeve}.entry_mode", _get(cfg, f"{sleeve}.entry_mode"))
                 for k in keys:
-                    knob = k.split(".", 1)[1]
-                    if k.startswith(sleeve + ".") and KNOB_FAMILY.get(knob, mode) != mode:
+                    if _inert(k, r["overrides"], cfg, sleeve):
                         continue
                     lo, hi = bounds[k]            # type: ignore[misc]
                     like = _get(cfg, k)
@@ -186,11 +195,22 @@ def refine(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
     return out
 
 
+def _inert(k: str, ov: dict[str, Any], cfg: StrategyConfig, sleeve: str) -> bool:
+    """A knob the cell's other settings make irrelevant (another entry family's knob, an edge
+    knob on a fixed-size cell): testing it would retest the same strategy under a new name."""
+    if k.startswith(sleeve + "."):
+        mode = ov.get(f"{sleeve}.entry_mode", _get(cfg, f"{sleeve}.entry_mode"))
+        return KNOB_FAMILY.get(k.split(".", 1)[1], mode) != mode
+    if k in EDGE_KNOBS:
+        return str(ov.get("risk.sizing_mode", cfg.risk.sizing_mode)) != "edge"
+    return False
+
+
 def _sleeve_keys(bounds: dict[str, Bound], sleeve: str) -> tuple[list[str], list[str]]:
     """(numeric knobs, categorical knobs) that apply to a sleeve: its own and the sizing levers."""
     own = [k for k in bounds if k.startswith(sleeve + ".")
            or (k.startswith("risk.") and not (sleeve == "stocks" and "crypto" in k)
-               and not (sleeve == "crypto" and "stock" in k))]
+               and not (sleeve == "crypto" and ("stock" in k or "etf" in k)))]
     return (sorted(k for k in own if not isinstance(bounds[k], list)),
             sorted(k for k in own if isinstance(bounds[k], list)))
 
@@ -212,6 +232,7 @@ def evolve(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
         best = [r["overrides"] for r in rows[:top]] or [{}]
         numeric, categorical = _sleeve_keys(bounds, sleeve)
         mode_key = f"{sleeve}.entry_mode"
+        other_cats = [k for k in categorical if k != mode_key]
         made, tries = 0, 0
         while made < per_sleeve and tries < per_sleeve * 20:
             tries += 1
@@ -220,6 +241,10 @@ def evolve(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
             for _ in range(rng.choice((1, 1, 2, 2, 3))):
                 if mode_key in categorical and rng.random() < 0.12:
                     ov[mode_key] = rng.choice(bounds[mode_key])          # type: ignore[arg-type]
+                    continue
+                if other_cats and rng.random() < 0.1:
+                    k = rng.choice(other_cats)
+                    ov[k] = rng.choice(bounds[k])                         # type: ignore[arg-type]
                     continue
                 if not numeric:
                     break
@@ -232,9 +257,7 @@ def evolve(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
                 ov[k] = coerce_types(cfg, {k: v})[k]
                 if isinstance(ov[k], float):
                     ov[k] = round(ov[k], 3)
-            mode = ov.get(mode_key, _get(cfg, mode_key))
-            ov = {k: v for k, v in ov.items()
-                  if not (k.startswith(sleeve + ".") and KNOB_FAMILY.get(k.split(".", 1)[1], mode) != mode)}
+            ov = {k: v for k, v in ov.items() if not _inert(k, ov, cfg, sleeve)}
             ov = {k: v for k, v in ov.items() if v != coerce_types(cfg, {k: _get(cfg, k)})[k]}   # defaults add nothing
             if not ov or len(ov) > EVOLVE_MAX_KNOBS or not validate_overrides(ov, bounds)[0]:
                 continue

@@ -1,13 +1,16 @@
 """Position sizing. Pure arithmetic; the LLM never produces these numbers.
 
-Fixed-fractional risk: risk ``risk_per_trade_pct`` of equity (times the regime
-and tier multipliers, and scaled down when portfolio vol exceeds target) to the
-initial stop. Then the per-asset-class position cap and the venue minimum
-notional apply. Position = min(risk-based, cap-based).
+Fixed-fractional risk: risk a share of equity (times the regime and tier
+multipliers, and scaled down when portfolio vol exceeds target) to the initial
+stop. The share is ``risk_per_trade_pct``, or, in ``sizing_mode = "edge"``, what
+the book's own closed trades justify (``edge_risk_pct``). Then the per-asset-class
+position cap and the venue minimum notional apply. Position = min(risk-based,
+cap-based).
 """
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from hive.config import RiskLimits
@@ -22,6 +25,32 @@ class SizeDecision:
     reason: str
 
 
+def edge_risk_pct(r_multiples: Sequence[float], risk: RiskLimits) -> float:
+    """The share of equity to risk on the next trade, chosen by the book's record.
+
+    In ``sizing_mode = "edge"``: ``edge_fraction`` of the Kelly bet W - (1 - W) / payoff
+    over the last ``edge_lookback_trades`` closed trades, in R, clamped to
+    [``edge_min_risk_pct``, ``max_risk_per_trade_pct``]. A book with a real edge
+    risks more, one without risks the floor. Until there are ``edge_min_trades``
+    closed trades (and always in "fixed" mode) it is ``risk_per_trade_pct``.
+    """
+    if risk.sizing_mode != "edge":
+        return risk.risk_per_trade_pct
+    recent = [float(r) for r in list(r_multiples)[-risk.edge_lookback_trades:]]
+    if len(recent) < max(risk.edge_min_trades, 1):
+        return risk.risk_per_trade_pct
+    wins = [r for r in recent if r > 0]
+    losses = [-r for r in recent if r < 0]
+    if not wins:
+        return risk.edge_min_risk_pct
+    if not losses:
+        return risk.max_risk_per_trade_pct
+    w = len(wins) / len(recent)
+    payoff = (sum(wins) / len(wins)) / (sum(losses) / len(losses))
+    kelly = w - (1 - w) / payoff
+    return min(max(risk.edge_fraction * kelly, risk.edge_min_risk_pct), risk.max_risk_per_trade_pct)
+
+
 def size_position(
     *,
     equity: float,
@@ -34,6 +63,7 @@ def size_position(
     fractional: bool = True,
     lot_size: float = 1.0,
     cap_pct: float | None = None,
+    risk_pct: float | None = None,
 ) -> SizeDecision:
     if equity <= 0 or price <= 0:
         return SizeDecision(0.0, 0.0, 0.0, 0.0, "no equity or bad price")
@@ -46,7 +76,7 @@ def size_position(
     scale = risk_multiplier
     if portfolio_vol_ann and portfolio_vol_ann > risk.target_annual_vol:
         scale *= risk.target_annual_vol / portfolio_vol_ann
-    risk_dollars = equity * risk.risk_per_trade_pct * scale
+    risk_dollars = equity * (risk.risk_per_trade_pct if risk_pct is None else risk_pct) * scale
     qty = risk_dollars / r
     # The regime/tier multiplier scales the position cap too, so "half risk"
     # is half risk even when the cap (not the stop) is what binds.

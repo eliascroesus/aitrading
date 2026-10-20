@@ -448,13 +448,17 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
 
     r, sv, op = cfg.risk, cfg.survival, cfg.operator
     risk_rows = [
-        lever("risk.risk_per_trade_pct", r.risk_per_trade_pct, "equity risked per trade (entry to stop)"),
+        lever("risk.sizing_mode", r.sizing_mode, "how risk per trade is set: fixed share, or edge (each book's own record)"),
+        lever("risk.risk_per_trade_pct", r.risk_per_trade_pct, "equity risked per trade (entry to stop); edge books start here"),
+        lever("risk.edge_fraction", r.edge_fraction, "edge sizing: share of the Kelly bet its closed trades imply"),
+        lever("risk.edge_min_trades", r.edge_min_trades, "edge sizing: closed trades before the record decides"),
+        lever("risk.max_risk_per_trade_pct", r.max_risk_per_trade_pct, "edge sizing: most a book may risk on one trade"),
         lever("risk.max_positions", r.max_positions, "open positions at once"),
         lever("risk.max_new_entries_per_day", r.max_new_entries_per_day, "new entries per day"),
-        lever("risk.max_position_pct_stock", r.max_position_pct_stock, "largest single stock, share of equity"),
-        lever("risk.max_position_pct_etf", r.max_position_pct_etf, "largest single ETF, share of equity"),
-        lever("risk.max_position_pct_crypto", r.max_position_pct_crypto, "largest single coin, share of equity"),
-        lever("risk.max_position_pct_crypto_alt", r.max_position_pct_crypto_alt, "largest DOGE/SHIB/PEPE position"),
+        lever("risk.max_position_pct_stock", r.max_position_pct_stock, "largest single stock, share of equity (1.0 = no cap)"),
+        lever("risk.max_position_pct_etf", r.max_position_pct_etf, "largest single ETF, share of equity (1.0 = no cap)"),
+        lever("risk.max_position_pct_crypto", r.max_position_pct_crypto, "largest single coin, share of equity (1.0 = no cap)"),
+        lever("risk.max_position_pct_crypto_alt", r.max_position_pct_crypto_alt, "largest DOGE/SHIB/PEPE position (1.0 = no cap)"),
         lever("risk.crypto_sleeve_pct", r.crypto_sleeve_pct, "share of equity crypto may use"),
         lever("risk.crypto_max_positions", r.crypto_max_positions, "coins held at once"),
         lever("risk.max_open_risk_pct", r.max_open_risk_pct, "total equity at risk across open stops"),

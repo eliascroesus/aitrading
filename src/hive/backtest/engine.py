@@ -16,7 +16,7 @@ from hive.data.bars import adjust_ohlc
 from hive.data.universe import PointInTimeUniverse
 from hive.signals.features import compute_features, initial_stop, rank_candidates
 from hive.signals.regime import class_multipliers, regime_frame
-from hive.signals.sizing import size_position
+from hive.signals.sizing import edge_risk_pct, size_position
 
 log = logging.getLogger(__name__)
 
@@ -298,6 +298,8 @@ class Backtester:
                 if self.candidate_filter is not None and not cands.empty:
                     cands = self.candidate_filter(day, cands)
                 gross_now = mv / equity if equity > 0 else 0.0
+                risk_pct = edge_risk_pct([t["r_multiple"] for t in trades[-cfg.risk.edge_lookback_trades:]],
+                                         cfg.risk)
                 taken = 0
                 for _, row in cands.iterrows():
                     if taken >= slots or gross_now >= cfg.risk.max_gross_exposure:
@@ -317,6 +319,7 @@ class Backtester:
                         risk_multiplier=mult.get(ac, 0.0), portfolio_vol_ann=port_vol,
                         fractional=self.fractional,
                         cap_pct=cfg.risk.max_position_pct_crypto_alt if sym in cfg.universe.crypto_alt_symbols else None,
+                        risk_pct=risk_pct,
                     )
                     if d.notional <= 0:
                         continue

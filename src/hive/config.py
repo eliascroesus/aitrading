@@ -225,6 +225,17 @@ class RiskLimits(BaseModel):
     max_gross_exposure: float = 1.0
     max_leverage: float = 1.0
     risk_per_trade_pct: float = 0.01
+    # How a book picks its risk per trade. "fixed" risks risk_per_trade_pct on every
+    # trade. "edge" lets the book's own closed trades decide: a fraction of the Kelly
+    # bet implied by its last edge_lookback_trades results (in R), between
+    # edge_min_risk_pct and max_risk_per_trade_pct; risk_per_trade_pct until it has
+    # edge_min_trades. Both are levers; the lab's evidence picks.
+    sizing_mode: Literal["fixed", "edge"] = "fixed"
+    edge_fraction: float = 0.25
+    edge_min_trades: int = 20
+    edge_lookback_trades: int = 50
+    edge_min_risk_pct: float = 0.0025
+    max_risk_per_trade_pct: float = 0.05
     max_open_risk_pct: float = 0.06
     target_annual_vol: float = 0.20
     portfolio_vol_lookback: int = 20
@@ -436,7 +447,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "2.1.0"
+    version: str = "2.2.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     regime: RegimeRules = Field(default_factory=RegimeRules)

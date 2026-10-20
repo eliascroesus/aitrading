@@ -1,8 +1,12 @@
 # The strategy space the lab searches and the operator proposes in. A proposal that
 # touches a parameter not listed here, or leaves its range, is rejected in code.
-# Since 2.0.0 the firm has one rule, the growth rate of the bankroll, so the sizing
-# and concentration levers under risk.* are in the space too and the evidence
-# decides them. Leverage is not: the backtester caps every order at cash, and the
+# Since 2.0.0 the sizing and concentration levers under risk.* are in the space and
+# the evidence decides them. Since 2.2.0 their ranges run to 1.0 (a cap of 1.0 is no
+# cap at all), and the lab also picks how risk per trade is set: a fixed share, or
+# "edge" sizing, where each book risks what its own closed trades justify. The
+# objective (a prop-firm pass rate, config [prop]) is what keeps these honest: a
+# setting that risks too much fails its simulated evaluations and loses.
+# Leverage is not in the space: the backtester caps every order at cash, and the
 # venue offers no margin at this size, so a leverage knob would test nothing real.
 
 ["stocks.entry_mode"]
@@ -118,20 +122,24 @@ max = 3
 # --- sizing and concentration (config 2.0.0: levers, not limits) --------------------
 
 ["risk.risk_per_trade_pct"]
-min = 0.005
-max = 0.05
+min = 0.0025
+max = 0.1
 
 ["risk.max_position_pct_stock"]
-min = 0.1
-max = 0.6
+min = 0.05
+max = 1.0
+
+["risk.max_position_pct_etf"]
+min = 0.05
+max = 1.0
 
 ["risk.max_position_pct_crypto"]
-min = 0.1
+min = 0.05
 max = 1.0
 
 ["risk.max_position_pct_crypto_alt"]
-min = 0.05
-max = 0.5
+min = 0.02
+max = 1.0
 
 ["risk.max_open_risk_pct"]
 min = 0.03
@@ -160,3 +168,20 @@ max = 63
 ["risk.max_daily_loss_pct"]
 min = 0.02
 max = 0.5
+
+# --- how risk per trade is chosen (config 2.2.0) ------------------------------------
+
+["risk.sizing_mode"]
+choices = ["fixed", "edge"]
+
+["risk.edge_fraction"]
+min = 0.1
+max = 1.0
+
+["risk.edge_min_trades"]
+min = 10
+max = 60
+
+["risk.max_risk_per_trade_pct"]
+min = 0.01
+max = 0.2
