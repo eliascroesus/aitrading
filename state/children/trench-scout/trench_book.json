@@ -1,5 +1,5 @@
 {
-  "cash": 64.7286885424752,
+  "cash": 59.67993493868336,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -28,20 +28,9 @@
       "symbol": "WiSP",
       "qty": 70593.08617473027,
       "entry_price": 6.722e-05,
-      "peak_price": 7.939e-05,
+      "peak_price": 8.203e-05,
       "entered_at": "2026-10-20T16:36:12.459507+00:00",
       "cost_usd": 5.029983287825291,
-      "took_half": false,
-      "misses": 0
-    },
-    "7gUDvf45et6627atavR45Md4BjgYqJHMZe9EPqeR9Sya": {
-      "mint": "7gUDvf45et6627atavR45Md4BjgYqJHMZe9EPqeR9Sya",
-      "symbol": "ARTEMI",
-      "qty": 39058.11664297884,
-      "entry_price": 0.0001199,
-      "peak_price": 0.0001895,
-      "entered_at": "2026-10-20T16:44:22.363984+00:00",
-      "cost_usd": 4.964052276622754,
       "took_half": false,
       "misses": 0
     },
@@ -61,9 +50,31 @@
       "symbol": "KAI",
       "qty": 26630.675066025156,
       "entry_price": 0.0001748,
-      "peak_price": 0.0001748,
+      "peak_price": 0.0002358,
       "entered_at": "2026-10-20T17:06:27.697056+00:00",
       "cost_usd": 4.934344521633669,
+      "took_half": false,
+      "misses": 0
+    },
+    "6ceuPfcE67PLs3Z6CbJpFpqNyAevVocP2zsDkbM1pump": {
+      "mint": "6ceuPfcE67PLs3Z6CbJpFpqNyAevVocP2zsDkbM1pump",
+      "symbol": "requests",
+      "qty": 50603.4799040248,
+      "entry_price": 9.429e-05,
+      "peak_price": 9.429e-05,
+      "entered_at": "2026-10-20T17:14:01.617318+00:00",
+      "cost_usd": 5.057686247359529,
+      "took_half": false,
+      "misses": 0
+    },
+    "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump": {
+      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
+      "symbol": "ONEPIECE",
+      "qty": 58638.34484638686,
+      "entry_price": 8.137e-05,
+      "peak_price": 8.137e-05,
+      "entered_at": "2026-10-20T17:14:01.617318+00:00",
+      "cost_usd": 5.057686247359529,
       "took_half": false,
       "misses": 0
     }
@@ -364,6 +375,34 @@
       "notional": 4.934344521633669,
       "liquidity_usd": 52286.28,
       "age_hours": 0.34675786363389755
+    },
+    {
+      "mint": "7gUDvf45et6627atavR45Md4BjgYqJHMZe9EPqeR9Sya",
+      "symbol": "ARTEMI",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.000138,
+      "proceeds": 5.066618890927216,
+      "pnl_approx": 0.1025666143044619,
+      "age_hours": 0.49423703722222223
+    },
+    {
+      "mint": "6ceuPfcE67PLs3Z6CbJpFpqNyAevVocP2zsDkbM1pump",
+      "symbol": "requests",
+      "event": "entry",
+      "price": 9.429e-05,
+      "notional": 5.057686247359529,
+      "liquidity_usd": 25151.42,
+      "age_hours": 0.4406355955674913
+    },
+    {
+      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
+      "symbol": "ONEPIECE",
+      "event": "entry",
+      "price": 8.137e-05,
+      "notional": 5.057686247359529,
+      "liquidity_usd": 24967.71,
+      "age_hours": 14.89679429836697
     }
   ]
 }
