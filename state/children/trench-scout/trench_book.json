@@ -1,5 +1,5 @@
 {
-  "cash": 76.7505974624832,
+  "cash": 71.8078098103304,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -42,6 +42,17 @@
       "peak_price": 0.0001492,
       "entered_at": "2026-10-20T15:10:34.332722+00:00",
       "cost_usd": 5.031967037187846,
+      "took_half": false,
+      "misses": 0
+    },
+    "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP": {
+      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
+      "symbol": "WiSP",
+      "qty": 75784.28764849785,
+      "entry_price": 6.153e-05,
+      "peak_price": 6.153e-05,
+      "entered_at": "2026-10-20T15:18:45.258009+00:00",
+      "cost_usd": 4.942787652152798,
       "took_half": false,
       "misses": 0
     }
@@ -184,6 +195,15 @@
       "notional": 5.031967037187846,
       "liquidity_usd": 32216.1,
       "age_hours": 0.39499854498969184
+    },
+    {
+      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
+      "symbol": "WiSP",
+      "event": "entry",
+      "price": 6.153e-05,
+      "notional": 4.942787652152798,
+      "liquidity_usd": 19997.76,
+      "age_hours": 1.6391312055121527
     }
   ]
 }
