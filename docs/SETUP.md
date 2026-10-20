@@ -192,8 +192,10 @@ taker fee and the hourly funding a long would have paid. It is a scout: no
 seat, judged on its own book. It reads public data only and cannot place an
 order anywhere.
 
-**The social pulse** reads StockTwits' trending symbols, the hot posts of six
-Reddit communities and DexScreener's boosts every lab round and keeps only
+**The social pulse** reads StockTwits' trending symbols, the hot posts of one
+of six Reddit communities in rotation (anonymous Reddit allows a cloud runner
+one read at a time, so each community is refreshed about once a session) and
+DexScreener's boosts every lab round, and keeps only
 symbols and counts (no post text, so nothing it reads can carry instructions
 into a model). Names on two or more sources reach the operator's weekly
 context, where it can propose a news monitor for them. X is paid: with a

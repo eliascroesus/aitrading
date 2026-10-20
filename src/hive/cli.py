@@ -486,10 +486,11 @@ def pulse() -> None:
     sdir.mkdir(parents=True, exist_ok=True)
     prev = json.loads((sdir / "latest.json").read_text()) if (sdir / "latest.json").exists() else {}
     known = prev.get("reddit_by_sub") or {}
-    # two communities a round, oldest read first, with a pause: Reddit rate-limits bursts
+    # one community a round, the one read longest ago: anonymous Reddit allows a cloud runner one
+    # read and refuses the next, so the rotation covers all six about once a session
     order = sorted(SUBREDDITS, key=lambda sub: (known.get(sub) or {}).get("ts") or "")
     out = _pulse(x_token=s.x_bearer_token.get_secret_value() if s.x_bearer_token else None,
-                 subreddits=tuple(order[:2]), known_reddit=known, pause_s=3.0)
+                 subreddits=tuple(order[:1]), known_reddit=known)
     (sdir / "latest.json").write_text(json.dumps(out, default=str))
     compact = {"ts": out["ts"], "stocktwits": [r["symbol"] for r in out["stocktwits"][:10]],
                "reddit": out["reddit"][:10], "cross": [r["symbol"] for r in out["cross"][:10]], "x": out["x"]}
