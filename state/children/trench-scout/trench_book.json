@@ -1,5 +1,5 @@
 {
-  "cash": 46.11821799083397,
+  "cash": 42.38054712943899,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -28,7 +28,7 @@
       "symbol": "COLLECTOOOR",
       "qty": 22734.50791558618,
       "entry_price": 0.0001816,
-      "peak_price": 0.0002061,
+      "peak_price": 0.0002134,
       "entered_at": "2026-10-20T18:16:06.951114+00:00",
       "cost_usd": 4.376301835718677,
       "took_half": false,
@@ -61,9 +61,20 @@
       "symbol": "VAGINA",
       "qty": 18445.67579446947,
       "entry_price": 0.0001852,
-      "peak_price": 0.0001852,
+      "peak_price": 0.0003142,
       "entered_at": "2026-10-20T19:28:10.977405+00:00",
       "cost_usd": 3.6211075065638902,
+      "took_half": false,
+      "misses": 0
+    },
+    "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "qty": 35664.04962295624,
+      "entry_price": 9.887e-05,
+      "peak_price": 9.887e-05,
+      "entered_at": "2026-10-20T19:35:42.405748+00:00",
+      "cost_usd": 3.7376708613949847,
       "took_half": false,
       "misses": 0
     }
@@ -649,6 +660,15 @@
       "notional": 3.6211075065638902,
       "liquidity_usd": 36291.57,
       "age_hours": 0.4521212927246094
+    },
+    {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "event": "entry",
+      "price": 9.887e-05,
+      "notional": 3.7376708613949847,
+      "liquidity_usd": 26606.31,
+      "age_hours": 2.550613899400499
     }
   ]
 }
