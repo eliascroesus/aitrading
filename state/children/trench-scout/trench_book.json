@@ -1,17 +1,6 @@
 {
-  "cash": 38.995359174252506,
+  "cash": 44.18416968139101,
   "positions": {
-    "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
-      "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
-      "symbol": "pika",
-      "qty": 82709.2652884142,
-      "entry_price": 5.939e-05,
-      "peak_price": 9.447e-05,
-      "entered_at": "2026-10-20T14:39:34.197919+00:00",
-      "cost_usd": 5.206829461407655,
-      "took_half": false,
-      "misses": 0
-    },
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
       "symbol": "MONEYBIZ",
@@ -61,20 +50,20 @@
       "symbol": "ILLUSTRATOR",
       "qty": 42778.70026657333,
       "entry_price": 7.93e-05,
-      "peak_price": 9.744e-05,
+      "peak_price": 0.000107,
       "entered_at": "2026-10-20T20:30:46.725653+00:00",
       "cost_usd": 3.595891987007622,
       "took_half": false,
       "misses": 0
     },
-    "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump": {
-      "mint": "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump",
-      "symbol": "SPACE",
-      "qty": 72618.74610389906,
-      "entry_price": 4.538e-05,
-      "peak_price": 4.538e-05,
-      "entered_at": "2026-10-20T20:38:36.663379+00:00",
-      "cost_usd": 3.4931650200866358,
+    "Bivugv4GNFUiqUabDhvFcepDskTcgPk7EtExV4mvpump": {
+      "mint": "Bivugv4GNFUiqUabDhvFcepDskTcgPk7EtExV4mvpump",
+      "symbol": "Xingxing",
+      "qty": 74956.81136240836,
+      "entry_price": 4.304e-05,
+      "peak_price": 4.304e-05,
+      "entered_at": "2026-10-20T20:46:05.059530+00:00",
+      "cost_usd": 3.41970963070034,
       "took_half": false,
       "misses": 0
     }
@@ -783,6 +772,35 @@
       "notional": 3.4931650200866358,
       "liquidity_usd": 17498.76,
       "age_hours": 0.38891842725965714
+    },
+    {
+      "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
+      "symbol": "pika",
+      "event": "exit",
+      "reason": "time_stop",
+      "price": 9.457e-05,
+      "proceeds": 7.352506305225811,
+      "pnl_approx": 2.1456768438181557,
+      "age_hours": 6.108572669722222
+    },
+    {
+      "mint": "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump",
+      "symbol": "SPACE",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 1.84e-05,
+      "proceeds": 1.256013832613038,
+      "pnl_approx": -2.237151187473598,
+      "age_hours": 0.12455448638888889
+    },
+    {
+      "mint": "Bivugv4GNFUiqUabDhvFcepDskTcgPk7EtExV4mvpump",
+      "symbol": "Xingxing",
+      "event": "entry",
+      "price": 4.304e-05,
+      "notional": 3.41970963070034,
+      "liquidity_usd": 16783.61,
+      "age_hours": 0.6985115091959635
     }
   ]
 }
