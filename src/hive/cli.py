@@ -480,9 +480,16 @@ def pulse() -> None:
     if not (s.hive_network_data and s.hive_social_data):
         rprint("social pulse skipped: network or social data disabled")
         return
-    out = _pulse(x_token=s.x_bearer_token.get_secret_value() if s.x_bearer_token else None)
+    from hive.data.sources.social_pulse import SUBREDDITS
+
     sdir = s.hive_state_dir / "social"
     sdir.mkdir(parents=True, exist_ok=True)
+    prev = json.loads((sdir / "latest.json").read_text()) if (sdir / "latest.json").exists() else {}
+    known = prev.get("reddit_by_sub") or {}
+    # two communities a round, oldest read first, with a pause: Reddit rate-limits bursts
+    order = sorted(SUBREDDITS, key=lambda sub: (known.get(sub) or {}).get("ts") or "")
+    out = _pulse(x_token=s.x_bearer_token.get_secret_value() if s.x_bearer_token else None,
+                 subreddits=tuple(order[:2]), known_reddit=known, pause_s=3.0)
     (sdir / "latest.json").write_text(json.dumps(out, default=str))
     compact = {"ts": out["ts"], "stocktwits": [r["symbol"] for r in out["stocktwits"][:10]],
                "reddit": out["reddit"][:10], "cross": [r["symbol"] for r in out["cross"][:10]], "x": out["x"]}

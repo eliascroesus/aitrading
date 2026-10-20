@@ -35,6 +35,7 @@ def test_pulse_offline_without_and_with_x():
 
     out = pulse(fetch_json=fj, fetch_text=lambda url, **kw: RSS)
     assert out["x"] == {} and out["x_status"].startswith("not connected")
+    assert set(out["reddit_by_sub"]) == {"wallstreetbets", "stocks", "CryptoCurrency", "SatoshiStreetBets", "solana", "memecoins"}
     assert not any("api.x.com" in u for u, _ in calls)
     assert {r["symbol"] for r in out["cross"]} >= {"NVDA", "SOL"}
     assert out["dex_boosts"][0]["boost"] == 500 and out["reddit_posts_read"] == 18
@@ -45,3 +46,21 @@ def test_pulse_offline_without_and_with_x():
     x_calls = [h for u, h in calls if "api.x.com" in u]
     assert x_calls and x_calls[0] == {"Authorization": "Bearer tok"} and out2["x"]["NVDA"] == 1234
     assert out2["x_status"].startswith("connected")
+
+
+def test_rotation_keeps_each_communitys_latest_read():
+    def fj(url, **kw):
+        return {"symbols": [{"symbol": "NVDA"}]} if "stocktwits" in url else []
+
+    def ft(url, **kw):
+        if "/r/stocks/" in url:
+            raise RuntimeError("429 Too Many Requests")
+        return RSS
+
+    known = {"memecoins": {"ts": "2026-10-20T15:00:00+00:00", "posts": 40, "counts": {"BONK": 5, "NVDA": 1}}}
+    out = pulse(fetch_json=fj, fetch_text=ft, subreddits=("wallstreetbets", "stocks"), known_reddit=known)
+    assert set(out["reddit_by_sub"]) == {"wallstreetbets", "memecoins"}           # the failed read keeps nothing new
+    mentions = {r["symbol"]: r["mentions"] for r in out["reddit"]}
+    assert mentions["BONK"] == 5 and mentions["NVDA"] == 3                          # 2 now + 1 from the earlier read
+    assert out["reddit_posts_read"] == 43 and any("r/stocks" in e for e in out["errors"])
+    assert out["cross"][0]["symbol"] == "NVDA"

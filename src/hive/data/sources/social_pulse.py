@@ -77,7 +77,21 @@ def cross_source(st: list[dict[str, Any]], reddit: Counter, x: dict[str, int]) -
     return sorted(rows, key=lambda r: (-len(r["sources"]), -r["reddit_mentions"]))[:20]
 
 
-def pulse(*, x_token: str | None = None, fetch_json=None, fetch_text=None) -> dict[str, Any]:
+def merge_reddit(by_sub: dict[str, dict[str, Any]]) -> Counter:
+    """Each community counted once, at its most recent read."""
+    total: Counter = Counter()
+    for v in by_sub.values():
+        total.update(v.get("counts") or {})
+    return total
+
+
+def pulse(*, x_token: str | None = None, fetch_json=None, fetch_text=None, subreddits: tuple[str, ...] = SUBREDDITS,
+          known_reddit: dict[str, dict[str, Any]] | None = None, pause_s: float = 0.0) -> dict[str, Any]:
+    """One pulse. ``subreddits`` are read now (Reddit rate-limits bursts, so the caller rotates
+    through a couple per round); ``known_reddit`` carries each community's most recent earlier
+    read, so the merged Reddit picture covers all of them."""
+    import time
+
     from hive.data.fetch import get_json, get_text
 
     fetch_json = fetch_json or get_json
@@ -88,13 +102,17 @@ def pulse(*, x_token: str | None = None, fetch_json=None, fetch_text=None) -> di
         st = parse_stocktwits_trending(fetch_json(STOCKTWITS_TRENDING, timeout=20, retries=1) or {})
     except Exception as exc:
         errors.append(f"stocktwits: {str(exc)[:80]}")
-    titles: list[str] = []
-    for sub in SUBREDDITS:
+    by_sub: dict[str, dict[str, Any]] = dict(known_reddit or {})
+    now_iso = datetime.now(UTC).isoformat(timespec="seconds")
+    for i, sub in enumerate(subreddits):
+        if i and pause_s:
+            time.sleep(pause_s)
         try:
-            titles += parse_reddit_titles(fetch_text(REDDIT_HOT.format(sub=sub), timeout=20, retries=1))
+            t = parse_reddit_titles(fetch_text(REDDIT_HOT.format(sub=sub), timeout=20, retries=1))
+            by_sub[sub] = {"ts": now_iso, "posts": len(t), "counts": dict(cashtags(t))}
         except Exception as exc:
             errors.append(f"reddit r/{sub}: {str(exc)[:60]}")
-    reddit = cashtags(titles)
+    reddit = merge_reddit(by_sub)
     boosts: list[dict[str, Any]] = []
     try:
         boosts = parse_boosts(fetch_json(DEX_BOOSTS, timeout=20, retries=1) or [])
@@ -113,5 +131,6 @@ def pulse(*, x_token: str | None = None, fetch_json=None, fetch_text=None) -> di
                 errors.append(f"x {sym}: {str(exc)[:60]}")
         x_status = f"connected: {len(x)} names counted" if x else "connected, but every call failed (tier or quota?)"
     return {"ts": datetime.now(UTC).isoformat(timespec="seconds"), "stocktwits": st,
-            "reddit": [{"symbol": s, "mentions": n} for s, n in reddit.most_common(20)], "reddit_posts_read": len(titles),
+            "reddit": [{"symbol": s, "mentions": n} for s, n in reddit.most_common(20)],
+            "reddit_posts_read": sum(int(v.get("posts") or 0) for v in by_sub.values()), "reddit_by_sub": by_sub,
             "dex_boosts": boosts, "x": x, "x_status": x_status, "cross": cross_source(st, reddit, x), "errors": errors[:10]}
