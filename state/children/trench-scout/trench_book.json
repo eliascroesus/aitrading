@@ -1,5 +1,5 @@
 {
-  "cash": 44.18416968139101,
+  "cash": 49.960574598295906,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -9,17 +9,6 @@
       "peak_price": 0.001547,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
-      "took_half": false,
-      "misses": 0
-    },
-    "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump": {
-      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
-      "symbol": "ONEPIECE",
-      "qty": 55764.09224887985,
-      "entry_price": 7.124e-05,
-      "peak_price": 7.124e-05,
-      "entered_at": "2026-10-20T18:40:02.587129+00:00",
-      "cost_usd": 4.2109919677188135,
       "took_half": false,
       "misses": 0
     },
@@ -42,17 +31,6 @@
       "peak_price": 0.001285,
       "entered_at": "2026-10-20T20:07:38.739415+00:00",
       "cost_usd": 3.498549512837718,
-      "took_half": false,
-      "misses": 0
-    },
-    "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump": {
-      "mint": "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump",
-      "symbol": "ILLUSTRATOR",
-      "qty": 42778.70026657333,
-      "entry_price": 7.93e-05,
-      "peak_price": 0.000107,
-      "entered_at": "2026-10-20T20:30:46.725653+00:00",
-      "cost_usd": 3.595891987007622,
       "took_half": false,
       "misses": 0
     },
@@ -801,6 +779,26 @@
       "notional": 3.41970963070034,
       "liquidity_usd": 16783.61,
       "age_hours": 0.6985115091959635
+    },
+    {
+      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
+      "symbol": "ONEPIECE",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 4.872e-05,
+      "proceeds": 2.553816979903501,
+      "pnl_approx": -1.6571749878153126,
+      "age_hours": 2.2254866844444443
+    },
+    {
+      "mint": "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump",
+      "symbol": "ILLUSTRATOR",
+      "event": "exit",
+      "reason": "trail",
+      "price": 8.014e-05,
+      "proceeds": 3.2225879370013955,
+      "pnl_approx": -0.37330405000622635,
+      "age_hours": 0.37989265
     }
   ]
 }
