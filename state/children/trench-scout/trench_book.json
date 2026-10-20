@@ -1,12 +1,12 @@
 {
-  "cash": 75.0,
+  "cash": 79.69773116983501,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
       "symbol": "MONEYBIZ",
       "qty": 4698.188378561227,
       "entry_price": 0.001004,
-      "peak_price": 0.001064,
+      "peak_price": 0.001139,
       "entered_at": "2026-10-20T14:15:41.774834+00:00",
       "cost_usd": 5.0,
       "took_half": false,
@@ -37,12 +37,12 @@
     "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP": {
       "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
       "symbol": "WiSP",
-      "qty": 74038.31630945647,
+      "qty": 37019.15815472823,
       "entry_price": 6.371e-05,
-      "peak_price": 7.339e-05,
+      "peak_price": 0.000135,
       "entered_at": "2026-10-20T14:15:41.774834+00:00",
       "cost_usd": 5.0,
-      "took_half": false,
+      "took_half": true,
       "misses": 0
     },
     "87sEXKPMBeoryaqFQQnq1Yq6mUvjeNzhiFGxJbRjpump": {
@@ -102,6 +102,13 @@
       "notional": 5.0,
       "liquidity_usd": 24939.0,
       "age_hours": 23.979251666666666
+    },
+    {
+      "mint": "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP",
+      "symbol": "WiSP",
+      "event": "take_half",
+      "price": 0.000135,
+      "proceeds": 4.697731169835013
     }
   ]
 }
