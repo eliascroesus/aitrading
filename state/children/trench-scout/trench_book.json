@@ -1,5 +1,5 @@
 {
-  "cash": 42.38054712943899,
+  "cash": 44.77692085836844,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -42,17 +42,6 @@
       "peak_price": 7.124e-05,
       "entered_at": "2026-10-20T18:40:02.587129+00:00",
       "cost_usd": 4.2109919677188135,
-      "took_half": false,
-      "misses": 0
-    },
-    "F6Kw7crAAXQp4hjXVSe8ZuyvnaLyjvJDVBpcxGUFpump": {
-      "mint": "F6Kw7crAAXQp4hjXVSe8ZuyvnaLyjvJDVBpcxGUFpump",
-      "symbol": "DACITY",
-      "qty": 15963.26708941937,
-      "entry_price": 0.000214,
-      "peak_price": 0.000214,
-      "entered_at": "2026-10-20T19:28:10.977405+00:00",
-      "cost_usd": 3.6211075065638902,
       "took_half": false,
       "misses": 0
     },
@@ -669,6 +658,16 @@
       "notional": 3.7376708613949847,
       "liquidity_usd": 26606.31,
       "age_hours": 2.550613899400499
+    },
+    {
+      "mint": "F6Kw7crAAXQp4hjXVSe8ZuyvnaLyjvJDVBpcxGUFpump",
+      "symbol": "DACITY",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001597,
+      "proceeds": 2.3963737289294573,
+      "pnl_approx": -1.224733777634433,
+      "age_hours": 0.3985872922222222
     }
   ]
 }
