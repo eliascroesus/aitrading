@@ -2,8 +2,8 @@
   "primary": {
     "run_date": "2026-10-19",
     "label": "primary",
-    "equity_gross": 99.86,
-    "equity_net": 99.56346492,
+    "equity_gross": 99.84,
+    "equity_net": 99.54346492,
     "tier": "base",
     "regime": {
       "state": "green",
@@ -31,7 +31,7 @@
         "qty": 0.051422,
         "entry": 146.24,
         "stop": 136.6373,
-        "bars_held": 2,
+        "bars_held": 3,
         "source": "reconciled",
         "stop_armed": true,
         "fill_pending": false
@@ -41,7 +41,7 @@
         "qty": 0.044496,
         "entry": 387.0,
         "stop": 364.626,
-        "bars_held": 2,
+        "bars_held": 3,
         "source": "reconciled",
         "stop_armed": true,
         "fill_pending": false
@@ -51,8 +51,8 @@
   "shadow": {
     "run_date": "2026-10-19",
     "label": "shadow-rules",
-    "equity_gross": 100.42042727848414,
-    "equity_net": 100.42042727848414,
+    "equity_gross": 100.40385351900115,
+    "equity_net": 100.40385351900115,
     "tier": "base",
     "regime": {
       "state": "green",
@@ -80,7 +80,7 @@
         "qty": 0.0445,
         "entry": 387.1935,
         "stop": 364.5862,
-        "bars_held": 2,
+        "bars_held": 3,
         "source": "shadow-rules",
         "stop_armed": true,
         "fill_pending": false
@@ -90,7 +90,7 @@
         "qty": 0.074958,
         "entry": 223.9919448852539,
         "stop": 210.5941,
-        "bars_held": 2,
+        "bars_held": 3,
         "source": "shadow-rules",
         "stop_armed": true,
         "fill_pending": false
@@ -100,7 +100,7 @@
         "qty": 0.333827,
         "entry": 45.44270816802978,
         "stop": 42.3722,
-        "bars_held": 1,
+        "bars_held": 2,
         "source": "shadow-rules",
         "stop_armed": true,
         "fill_pending": false
@@ -108,17 +108,17 @@
     ]
   },
   "benchmarks": {
-    "SPY buy&hold": 100.61716478924419,
-    "BTC buy&hold": 100.91642679656556
+    "SPY buy&hold": 100.42318774566002,
+    "BTC buy&hold": 100.16237360690825
   },
   "survival": {
-    "equity_gross": 99.86,
-    "equity_net": 99.56346492,
+    "equity_gross": 99.84,
+    "equity_net": 99.54346492,
     "ai_cost_total": 0.29653508,
     "ai_cost_today": 0.018338979999999998,
-    "budget_today": 0.04978173246,
-    "budget_remaining": 0.03144275246,
-    "runway_days": 1760.1433679954494,
+    "budget_today": 0.04977173246,
+    "budget_remaining": 0.031432752460000005,
+    "runway_days": 1759.671248474211,
     "tier": "base",
     "dead": false,
     "death_reason": "",

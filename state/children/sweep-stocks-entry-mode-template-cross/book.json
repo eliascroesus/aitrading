@@ -1,40 +1,21 @@
 {
   "positions": {
-    "EEM": {
-      "symbol": "EEM",
-      "asset_class": "etf",
-      "qty": 0.47244094488188976,
-      "entry_price": 63.5,
-      "entry_date": "2026-10-19",
-      "r_per_share": 1.3736094794985476,
-      "stop_price": 62.12639052050145,
-      "highest_close": 63.5,
-      "bars_held": 0,
-      "invalidation_condition": "none",
-      "source": "child-sweep-stocks-entry-mode-template-cross",
-      "stop_order_id": "",
-      "below_mid_streak": 0,
-      "meta": {
-        "fill_pending": true,
-        "order_id": "child-sweep-stocks-entry-mode-template-cross-2026-10-19-EEM"
-      }
-    },
     "GOOG": {
       "symbol": "GOOG",
       "asset_class": "stock",
-      "qty": 0.058616645030670524,
-      "entry_price": 341.20001220703125,
+      "qty": 0.058772524799709666,
+      "entry_price": 340.2950625,
       "entry_date": "2026-10-19",
       "r_per_share": 9.95711229857801,
-      "stop_price": 331.24289990845324,
-      "highest_close": 341.20001220703125,
-      "bars_held": 0,
+      "stop_price": 330.33795020142196,
+      "highest_close": 340.2950625,
+      "bars_held": 1,
       "invalidation_condition": "none",
       "source": "child-sweep-stocks-entry-mode-template-cross",
-      "stop_order_id": "",
+      "stop_order_id": "stop-GOOG",
       "below_mid_streak": 0,
       "meta": {
-        "fill_pending": true,
+        "fill_pending": false,
         "order_id": "child-sweep-stocks-entry-mode-template-cross-2026-10-19-GOOG"
       }
     }

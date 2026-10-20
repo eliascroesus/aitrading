@@ -1,0 +1,42 @@
+{
+  "positions": {
+    "TRV": {
+      "symbol": "TRV",
+      "asset_class": "stock",
+      "qty": 0.04459722261149387,
+      "entry_price": 385.45001220703125,
+      "entry_date": "2026-10-19",
+      "r_per_share": 22.427955814737345,
+      "stop_price": 363.0220563922939,
+      "highest_close": 385.45001220703125,
+      "bars_held": 0,
+      "invalidation_condition": "none",
+      "source": "child-sweep-stocks-entry-mode-ma-pullback",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-19-TRV"
+      }
+    },
+    "TRGP": {
+      "symbol": "TRGP",
+      "asset_class": "stock",
+      "qty": 0.0512636633394028,
+      "entry_price": 292.79998779296875,
+      "entry_date": "2026-10-19",
+      "r_per_share": 19.51256842219476,
+      "stop_price": 273.287419370774,
+      "highest_close": 292.79998779296875,
+      "bars_held": 0,
+      "invalidation_condition": "none",
+      "source": "child-sweep-stocks-entry-mode-ma-pullback",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-19-TRGP"
+      }
+    }
+  }
+}

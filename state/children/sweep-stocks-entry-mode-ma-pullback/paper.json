@@ -1,0 +1,25 @@
+{
+  "cash": 100.0,
+  "positions": {},
+  "stops": {},
+  "pending": [
+    {
+      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-19-TRV",
+      "symbol": "TRV",
+      "side": "buy",
+      "qty": null,
+      "notional": 17.19,
+      "asset_class": "stock"
+    },
+    {
+      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-19-TRGP",
+      "symbol": "TRGP",
+      "side": "buy",
+      "qty": null,
+      "notional": 15.01,
+      "asset_class": "stock"
+    }
+  ],
+  "fills": [],
+  "saved_at": "2026-10-20T05:15:24+00:00"
+}

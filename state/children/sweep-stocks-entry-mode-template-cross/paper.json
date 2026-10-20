@@ -1,25 +1,56 @@
 {
-  "cash": 100.0,
-  "positions": {},
-  "stops": {},
+  "cash": 50.0,
+  "positions": {
+    "EEM": {
+      "asset_class": "etf",
+      "qty": 0.4698371613856909,
+      "avg_price": 63.85190969467163,
+      "current_price": 63.310001373291016,
+      "stop_price": null
+    },
+    "GOOG": {
+      "asset_class": "stock",
+      "qty": 0.058772524799709666,
+      "avg_price": 340.2950625,
+      "current_price": 340.1600036621094,
+      "stop_price": 330.33795020142196
+    }
+  },
+  "stops": {
+    "GOOG": [
+      0.058772524799709666,
+      330.33795020142196
+    ]
+  },
   "pending": [
     {
-      "id": "child-sweep-stocks-entry-mode-template-cross-2026-10-19-EEM",
+      "id": "7f10bbca1ed5",
       "symbol": "EEM",
-      "side": "buy",
-      "qty": null,
-      "notional": 30.0,
+      "side": "sell",
+      "qty": 0.4698371613856909,
+      "notional": null,
       "asset_class": "etf"
-    },
-    {
-      "id": "child-sweep-stocks-entry-mode-template-cross-2026-10-19-GOOG",
-      "symbol": "GOOG",
-      "side": "buy",
-      "qty": null,
-      "notional": 20.0,
-      "asset_class": "stock"
     }
   ],
-  "fills": [],
-  "saved_at": "2026-10-19T16:32:49+00:00"
+  "fills": [
+    {
+      "ts": "2026-10-20T05:15:10+00:00",
+      "symbol": "EEM",
+      "side": "buy",
+      "qty": 0.4698371613856909,
+      "price": 63.85190969467163,
+      "fee": 0.0,
+      "id": "child-sweep-stocks-entry-mode-template-cross-2026-10-19-EEM"
+    },
+    {
+      "ts": "2026-10-20T05:15:10+00:00",
+      "symbol": "GOOG",
+      "side": "buy",
+      "qty": 0.058772524799709666,
+      "price": 340.2950625,
+      "fee": 0.0,
+      "id": "child-sweep-stocks-entry-mode-template-cross-2026-10-19-GOOG"
+    }
+  ],
+  "saved_at": "2026-10-20T05:15:10+00:00"
 }
