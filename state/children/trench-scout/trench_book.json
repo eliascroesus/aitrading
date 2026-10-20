@@ -1,5 +1,5 @@
 {
-  "cash": 49.960574598295906,
+  "cash": 43.369134611962096,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -28,7 +28,7 @@
       "symbol": "DTC",
       "qty": 3610.280472913443,
       "entry_price": 0.0009142,
-      "peak_price": 0.001285,
+      "peak_price": 0.00136,
       "entered_at": "2026-10-20T20:07:38.739415+00:00",
       "cost_usd": 3.498549512837718,
       "took_half": false,
@@ -39,9 +39,31 @@
       "symbol": "Xingxing",
       "qty": 74956.81136240836,
       "entry_price": 4.304e-05,
-      "peak_price": 4.304e-05,
+      "peak_price": 4.398e-05,
       "entered_at": "2026-10-20T20:46:05.059530+00:00",
       "cost_usd": 3.41970963070034,
+      "took_half": false,
+      "misses": 0
+    },
+    "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump": {
+      "mint": "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump",
+      "symbol": "SPACE",
+      "qty": 68574.54355700134,
+      "entry_price": 4.534e-05,
+      "peak_price": 4.534e-05,
+      "entered_at": "2026-10-20T21:01:09.877755+00:00",
+      "cost_usd": 3.295719993166907,
+      "took_half": false,
+      "misses": 0
+    },
+    "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump": {
+      "mint": "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump",
+      "symbol": "ILLUSTRATOR",
+      "qty": 36864.71193827887,
+      "entry_price": 8.434e-05,
+      "peak_price": 8.434e-05,
+      "entered_at": "2026-10-20T21:01:09.877755+00:00",
+      "cost_usd": 3.295719993166907,
       "took_half": false,
       "misses": 0
     }
@@ -799,6 +821,24 @@
       "proceeds": 3.2225879370013955,
       "pnl_approx": -0.37330405000622635,
       "age_hours": 0.37989265
+    },
+    {
+      "mint": "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump",
+      "symbol": "SPACE",
+      "event": "entry",
+      "price": 4.534e-05,
+      "notional": 3.295719993166907,
+      "liquidity_usd": 17486.49,
+      "age_hours": 0.7648383713785807
+    },
+    {
+      "mint": "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump",
+      "symbol": "ILLUSTRATOR",
+      "event": "entry",
+      "price": 8.434e-05,
+      "notional": 3.295719993166907,
+      "liquidity_usd": 24857.08,
+      "age_hours": 2.0267828241644965
     }
   ]
 }
