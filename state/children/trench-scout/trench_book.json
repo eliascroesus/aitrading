@@ -1,5 +1,5 @@
 {
-  "cash": 41.320606612149206,
+  "cash": 37.822057099311486,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -72,9 +72,20 @@
       "symbol": "DACITY",
       "qty": 18026.597334096812,
       "entry_price": 0.0001859,
-      "peak_price": 0.0001859,
+      "peak_price": 0.0001867,
       "entered_at": "2026-10-20T19:59:50.503040+00:00",
       "cost_usd": 3.5522131110731134,
+      "took_half": false,
+      "misses": 0
+    },
+    "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump": {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "qty": 3610.280472913443,
+      "entry_price": 0.0009142,
+      "peak_price": 0.0009142,
+      "entered_at": "2026-10-20T20:07:38.739415+00:00",
+      "cost_usd": 3.498549512837718,
       "took_half": false,
       "misses": 0
     }
@@ -707,6 +718,15 @@
       "notional": 3.5522131110731134,
       "liquidity_usd": 37229.78,
       "age_hours": 1.4144702707926433
+    },
+    {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "event": "entry",
+      "price": 0.0009142,
+      "notional": 3.498549512837718,
+      "liquidity_usd": 84463.03,
+      "age_hours": 1.0303512775336372
     }
   ]
 }
