@@ -1,5 +1,5 @@
 {
-  "cash": 77.24401759257611,
+  "cash": 62.14310024847745,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -42,6 +42,39 @@
       "peak_price": 0.0001484,
       "entered_at": "2026-10-20T15:42:33.980761+00:00",
       "cost_usd": 5.092389729443731,
+      "took_half": false,
+      "misses": 0
+    },
+    "8T2nkC9HQkgd2yjxc7Yn1LAietmXyZKbv1vR4FXDbonk": {
+      "mint": "8T2nkC9HQkgd2yjxc7Yn1LAietmXyZKbv1vR4FXDbonk",
+      "symbol": "Bonnie",
+      "qty": 30518.741297834018,
+      "entry_price": 0.0001556,
+      "peak_price": 0.0001556,
+      "entered_at": "2026-10-20T15:49:49.143930+00:00",
+      "cost_usd": 5.033639114699551,
+      "took_half": false,
+      "misses": 0
+    },
+    "BjvruPbagrnmGKGbjWjSxVD3hYYeRE4VDSkfeysnpump": {
+      "mint": "BjvruPbagrnmGKGbjWjSxVD3hYYeRE4VDSkfeysnpump",
+      "symbol": "JARVIS",
+      "qty": 18607.82188849127,
+      "entry_price": 0.0002552,
+      "peak_price": 0.0002552,
+      "entered_at": "2026-10-20T15:49:49.143930+00:00",
+      "cost_usd": 5.033639114699551,
+      "took_half": false,
+      "misses": 0
+    },
+    "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump": {
+      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
+      "symbol": "COLLECTOOOR",
+      "qty": 31098.337563477227,
+      "entry_price": 0.0001527,
+      "peak_price": 0.0001527,
+      "entered_at": "2026-10-20T15:49:49.143930+00:00",
+      "cost_usd": 5.033639114699551,
       "took_half": false,
       "misses": 0
     }
@@ -229,6 +262,33 @@
       "notional": 5.092389729443731,
       "liquidity_usd": 32899.36,
       "age_hours": 0.7215471380615235
+    },
+    {
+      "mint": "8T2nkC9HQkgd2yjxc7Yn1LAietmXyZKbv1vR4FXDbonk",
+      "symbol": "Bonnie",
+      "event": "entry",
+      "price": 0.0001556,
+      "notional": 5.033639114699551,
+      "liquidity_usd": 36194.75,
+      "age_hours": 1.0796139494493273
+    },
+    {
+      "mint": "BjvruPbagrnmGKGbjWjSxVD3hYYeRE4VDSkfeysnpump",
+      "symbol": "JARVIS",
+      "event": "entry",
+      "price": 0.0002552,
+      "notional": 5.033639114699551,
+      "liquidity_usd": 43553.79,
+      "age_hours": 1.049058409966363
+    },
+    {
+      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
+      "symbol": "COLLECTOOOR",
+      "event": "entry",
+      "price": 0.0001527,
+      "notional": 5.033639114699551,
+      "liquidity_usd": 42903.86,
+      "age_hours": 20.844637720879447
     }
   ]
 }
