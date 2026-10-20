@@ -1,12 +1,12 @@
 {
-  "cash": 74.70342240466844,
+  "cash": 69.66303306410887,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
       "symbol": "pika",
       "qty": 82709.2652884142,
       "entry_price": 5.939e-05,
-      "peak_price": 8.283e-05,
+      "peak_price": 8.471e-05,
       "entered_at": "2026-10-20T14:39:34.197919+00:00",
       "cost_usd": 5.206829461407655,
       "took_half": false,
@@ -28,7 +28,7 @@
       "symbol": "WiSP",
       "qty": 70593.08617473027,
       "entry_price": 6.722e-05,
-      "peak_price": 6.964e-05,
+      "peak_price": 7.939e-05,
       "entered_at": "2026-10-20T16:36:12.459507+00:00",
       "cost_usd": 5.029983287825291,
       "took_half": false,
@@ -39,9 +39,20 @@
       "symbol": "ARTEMI",
       "qty": 39058.11664297884,
       "entry_price": 0.0001199,
-      "peak_price": 0.0001565,
+      "peak_price": 0.0001895,
       "entered_at": "2026-10-20T16:44:22.363984+00:00",
       "cost_usd": 4.964052276622754,
+      "took_half": false,
+      "misses": 0
+    },
+    "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
+      "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
+      "symbol": "MONEYBIZ",
+      "qty": 3389.2261465051824,
+      "entry_price": 0.001403,
+      "peak_price": 0.001403,
+      "entered_at": "2026-10-20T16:59:06.184877+00:00",
+      "cost_usd": 5.040389340559577,
       "took_half": false,
       "misses": 0
     }
@@ -324,6 +335,15 @@
       "proceeds": 5.86484251672555,
       "pnl_approx": 0.8648425167255498,
       "age_hours": 2.60073757
+    },
+    {
+      "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
+      "symbol": "MONEYBIZ",
+      "event": "entry",
+      "price": 0.001403,
+      "notional": 5.040389340559577,
+      "liquidity_usd": 106349.31,
+      "age_hours": 3.8563632097710503
     }
   ]
 }
