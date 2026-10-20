@@ -1,5 +1,5 @@
 {
-  "cash": 45.70123154681915,
+  "cash": 44.58335426018639,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -34,17 +34,6 @@
       "took_half": false,
       "misses": 0
     },
-    "4VPbDqHHoXtNVQcxeYJ5EjUduh6ZkFD3cU1deoVMpump": {
-      "mint": "4VPbDqHHoXtNVQcxeYJ5EjUduh6ZkFD3cU1deoVMpump",
-      "symbol": "BULLRUN",
-      "qty": 98347.42196405485,
-      "entry_price": 4.302e-05,
-      "peak_price": 4.852e-05,
-      "entered_at": "2026-10-20T17:30:03.991883+00:00",
-      "cost_usd": 4.4847604584672585,
-      "took_half": false,
-      "misses": 0
-    },
     "CcfmQBZ6o3suCyd638CbjCVZtdsYHSwYnkHbPbSgpump": {
       "mint": "CcfmQBZ6o3suCyd638CbjCVZtdsYHSwYnkHbPbSgpump",
       "symbol": "CUMROCKET",
@@ -61,7 +50,7 @@
       "symbol": "TIMQ",
       "qty": 23224.361026469018,
       "entry_price": 0.0001829,
-      "peak_price": 0.0002316,
+      "peak_price": 0.0002434,
       "entered_at": "2026-10-20T18:08:18.621807+00:00",
       "cost_usd": 4.502599769645655,
       "took_half": false,
@@ -86,6 +75,17 @@
       "peak_price": 0.0001816,
       "entered_at": "2026-10-20T18:16:06.951114+00:00",
       "cost_usd": 4.376301835718677,
+      "took_half": false,
+      "misses": 0
+    },
+    "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "qty": 32185.521467645376,
+      "entry_price": 0.000123,
+      "peak_price": 0.000123,
+      "entered_at": "2026-10-20T18:24:21.807800+00:00",
+      "cost_usd": 4.196348288951604,
       "took_half": false,
       "misses": 0
     }
@@ -537,6 +537,25 @@
       "notional": 4.376301835718677,
       "liquidity_usd": 47129.47,
       "age_hours": 23.283102183363173
+    },
+    {
+      "mint": "4VPbDqHHoXtNVQcxeYJ5EjUduh6ZkFD3cU1deoVMpump",
+      "symbol": "BULLRUN",
+      "event": "exit",
+      "reason": "trail",
+      "price": 3.33e-05,
+      "proceeds": 3.078471002318845,
+      "pnl_approx": -1.4062894561484134,
+      "age_hours": 0.9049488658333333
+    },
+    {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "event": "entry",
+      "price": 0.000123,
+      "notional": 4.196348288951604,
+      "liquidity_usd": 29967.0,
+      "age_hours": 1.361655942179362
     }
   ]
 }
