@@ -1,17 +1,6 @@
 {
-  "cash": 48.04564613575389,
+  "cash": 47.763137598464965,
   "positions": {
-    "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
-      "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
-      "symbol": "MONEYBIZ",
-      "qty": 3389.2261465051824,
-      "entry_price": 0.001403,
-      "peak_price": 0.0016,
-      "entered_at": "2026-10-20T16:59:06.184877+00:00",
-      "cost_usd": 5.040389340559577,
-      "took_half": false,
-      "misses": 0
-    },
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
       "symbol": "GTAa",
@@ -28,20 +17,31 @@
       "symbol": "ONEPIECE",
       "qty": 78653.28717129104,
       "entry_price": 4.071e-05,
-      "peak_price": 5.19e-05,
+      "peak_price": 6.201e-05,
       "entered_at": "2026-10-20T21:08:44.823531+00:00",
       "cost_usd": 3.394093839987854,
       "took_half": false,
       "misses": 0
     },
-    "HukcUGZ7xNwD9kCxHhVUf5wLtG5rJmUgNTbi5iLqpump": {
-      "mint": "HukcUGZ7xNwD9kCxHhVUf5wLtG5rJmUgNTbi5iLqpump",
-      "symbol": "SXSI",
-      "qty": 15194.166518206712,
-      "entry_price": 0.000203,
-      "peak_price": 0.000231,
-      "entered_at": "2026-10-20T21:24:03.052827+00:00",
-      "cost_usd": 3.26948075138772,
+    "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump": {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "qty": 1986.0285323117578,
+      "entry_price": 0.001492,
+      "peak_price": 0.001492,
+      "entered_at": "2026-10-20T21:55:07.597343+00:00",
+      "cost_usd": 3.1409438444216913,
+      "took_half": false,
+      "misses": 0
+    },
+    "2gJBAZVtxFcQzj3NQDKgqKbpECh6epSoq8Mzu4Fupump": {
+      "mint": "2gJBAZVtxFcQzj3NQDKgqKbpECh6epSoq8Mzu4Fupump",
+      "symbol": "DACAT",
+      "qty": 13263.89691230592,
+      "entry_price": 0.0002234,
+      "peak_price": 0.0002234,
+      "entered_at": "2026-10-20T21:55:07.597343+00:00",
+      "cost_usd": 3.1409438444216913,
       "took_half": false,
       "misses": 0
     }
@@ -882,6 +882,44 @@
       "proceeds": 2.1940035461942284,
       "pnl_approx": 0.44472878977536956,
       "age_hours": 1.6611275775
+    },
+    {
+      "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
+      "symbol": "MONEYBIZ",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.001173,
+      "proceeds": 3.737028533659544,
+      "pnl_approx": -1.303360806900033,
+      "age_hours": 4.933725685000001
+    },
+    {
+      "mint": "HukcUGZ7xNwD9kCxHhVUf5wLtG5rJmUgNTbi5iLqpump",
+      "symbol": "SXSI",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001584,
+      "proceeds": 2.2623506178949064,
+      "pnl_approx": -1.0071301334928138,
+      "age_hours": 0.5179290322222222
+    },
+    {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "event": "entry",
+      "price": 0.001492,
+      "notional": 3.1409438444216913,
+      "liquidity_usd": 110675.51,
+      "age_hours": 2.821802555270725
+    },
+    {
+      "mint": "2gJBAZVtxFcQzj3NQDKgqKbpECh6epSoq8Mzu4Fupump",
+      "symbol": "DACAT",
+      "event": "entry",
+      "price": 0.0002234,
+      "notional": 3.1409438444216913,
+      "liquidity_usd": 39992.27,
+      "age_hours": 0.36037451972113715
     }
   ]
 }
