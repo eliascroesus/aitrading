@@ -150,3 +150,28 @@ to change", and the operator prompt in `hive/operator/iterate.py` still says
 the limits stay. The reviewer's position remains on record above: the evidence
 base is 2–4% a year, and concentration raises the chance of death as it raises
 the growth rate.
+
+### The hub, the always-on lab, the trench scout
+The lab now runs back to back around the clock: sessions of six rounds chain
+themselves with a `workflow_dispatch` at the end, every round yields to a
+waiting trading, weekly or promotion run, and the daily and weekly runs
+restart the chain when they finish. Every job checks out the branch head rather
+than the commit it was queued at, so a queued session never works from stale
+state. A safety-net daily run at 03:41 UTC trades the bar only if the 00:37 run
+never happened; marks are now idempotent per date, so a repeat run cannot age a
+sub-agent (manual reruns used to count extra shadow days).
+
+The search has a third stage, mutations of the best cells, so it never runs
+dry. Lab storage was resized for thousands of cells a day: curves share a
+calendar, rejected cells keep a lean out-of-sample curve, finished days roll
+into day files, and the sweep's research-log entry is one summary per round.
+The repository still grows by roughly a few megabytes a day of lab record;
+that is the price of keeping every test.
+
+The trench scout paper-trades brand-new Solana launches every lab round with
+its own $100 book (SETUP §6b). Scouts are judged on their own book only: a
+flat scout is no longer retired for lagging a stock book it does not trade.
+
+The dashboard is rebuilt as a live hub. Its *Rules in force* panel is generated
+from the configuration and lists every rule with its value and who can change
+it, including the objective text the models actually read.

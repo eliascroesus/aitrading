@@ -71,7 +71,8 @@ hive operate                            # the operator proposes variants, code b
 hive hive list | spawn | retire | promote <id> --approve   # promotion is always a human decision
 hive allocate                           # weekly: capital moves toward the desk that earned (bounded, no LLM)
 hive watch                              # hourly heartbeat: live positions and prices into the dashboard
-hive sweep --minutes 6                  # hourly: the lab backtests the next cells of the strategy space (no LLM)
+hive sweep --minutes 7                  # the lab: backtest the next cells of the strategy space (no LLM)
+hive trench                             # one paper scan of brand-new Solana launches (keyless)
 ```
 
 Full setup (accounts, keys, hosts, costs, go-live checklist): `docs/SETUP.md`.
@@ -86,11 +87,12 @@ every run before any order.
 US close and the crypto UTC day close (weekends and holidays trade the crypto
 sleeve only), and commits `state/` and `reports/` back to the repo so the public
 record is the git history itself. `weekly.yml` runs the auditor, the operator and
-the capital allocator on Sundays. `watch.yml` runs every hour for most of the
-hour: five rounds in which the lab backtests the next cells of the strategy
-space (committed to `reports/lab/`), the heartbeat reads the broker, and the
-dashboard is rebuilt and published, so the page moves every few minutes and the
-firm is never idle.
+the capital allocator on Sundays. `watch.yml` is the always-on lab: sessions
+of six rounds that chain themselves back to back, each round scanning the
+trenches on paper, backtesting the next cells of the strategy space (committed
+to `reports/lab/`), reading the broker and publishing the hub, so the page moves
+every few minutes around the clock and yields to the trading run whenever it is
+due.
 
 ## The one rule, and the honesty rules of the record
 

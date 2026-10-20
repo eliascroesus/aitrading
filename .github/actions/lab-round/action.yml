@@ -1,8 +1,9 @@
 name: lab-round
 description: >-
-  One round of the hourly lab: backtest cells for a few minutes, refresh the
-  heartbeat, rebuild the dashboard, publish it to Pages and commit the lab's
-  records, so the page and the record move every few minutes while the job runs.
+  One round of the always-on lab: yield if a trading or weekly run is waiting,
+  scan the trenches, backtest cells for a few minutes, refresh the heartbeat,
+  rebuild and publish the dashboard, and commit the round's records, so the
+  page and the record move every few minutes.
 inputs:
   minutes:
     description: Minutes of backtesting in this round
@@ -16,32 +17,59 @@ inputs:
 runs:
   using: composite
   steps:
+    - id: gate
+      name: Yield to a waiting trading or weekly run
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        n=0
+        for wf in daily.yml weekly.yml promote.yml; do
+          k=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$wf/runs?per_page=5" \
+                --jq '[.workflow_runs[] | select(.status != "completed" and .status != "in_progress")] | length' 2>/dev/null || echo 0)
+          n=$((n + k))
+        done
+        if [ "$n" -gt 0 ]; then
+          echo "go=false" >> "$GITHUB_OUTPUT"; echo "a trading, weekly or promotion run is waiting: this round yields"
+        else
+          echo "go=true" >> "$GITHUB_OUTPUT"
+        fi
+    - name: Trench scout (round ${{ inputs.round }})
+      if: steps.gate.outputs.go == 'true'
+      shell: bash
+      run: .venv/bin/hive trench || echo "trench scan skipped"
     - name: The lab (round ${{ inputs.round }} of ${{ inputs.rounds }})
+      if: steps.gate.outputs.go == 'true'
       shell: bash
       run: .venv/bin/hive sweep --minutes ${{ inputs.minutes }} --round ${{ inputs.round }} --rounds ${{ inputs.rounds }} || echo "lab round skipped"
     - name: Heartbeat
+      if: steps.gate.outputs.go == 'true'
       shell: bash
       run: .venv/bin/hive watch || echo "heartbeat skipped"
     - name: Rebuild the dashboard
+      if: steps.gate.outputs.go == 'true'
       shell: bash
       run: .venv/bin/hive ui build
     - uses: actions/upload-pages-artifact@v3
+      if: steps.gate.outputs.go == 'true'
       with:
         path: reports/dashboard
         name: lab-round-${{ inputs.round }}
     - name: Publish this round's dashboard
+      if: steps.gate.outputs.go == 'true'
       uses: actions/deploy-pages@v4
       continue-on-error: true
       with:
         artifact_name: lab-round-${{ inputs.round }}
-    - name: Commit the lab's records
+    - name: Commit the round's records
+      if: steps.gate.outputs.go == 'true'
       shell: bash
       run: |
         git config user.name "hive-bot"
         git config user.email "hive-bot@users.noreply.github.com"
-        git add state/hive.json state/research_log.jsonl reports/lab
+        git add state/hive.json state/research_log.jsonl reports/lab state/journal state/children/trench-scout 2>/dev/null || true
         git diff --cached --quiet || git commit -m "lab $(date -u +%FT%H:%MZ) (round ${{ inputs.round }}/${{ inputs.rounds }})"
-        # the rebuilt dashboard, the heartbeat and the session file are not part of the record
+        # the rebuilt dashboard, the heartbeat and the status file are not part of the record
         git checkout -- .
         git pull --rebase origin "$GITHUB_REF_NAME"
         git push

@@ -1,14 +1,15 @@
 name: hourly-lab-and-heartbeat
 
-# Every hour, for most of the hour: the lab backtests the next cells of the
-# strategy space in rounds of a few minutes (grid, then refinements around the
-# best cells; no LLM, so it costs the firm nothing). After every round the
-# heartbeat reads the broker, the dashboard is rebuilt and published, and the
-# lab's records (reports/lab/, state/hive.json, state/research_log.jsonl) are
-# committed, so the page and the record move every few minutes and the search
-# continues where it stopped. GitHub's schedule can fire late; rounds keep the
-# firm busy whenever the run actually starts. The daily and weekly runs share
-# the hive-state group and queue behind a running session.
+# The always-on lab. A session is six rounds of seven minutes; each round scans
+# the trenches (paper), backtests the next cells of the strategy space (grid,
+# refinements around the best cells, then mutations of the best cells, which
+# never run out; no LLM, so it costs the firm nothing), refreshes the
+# heartbeat, publishes the dashboard and commits its records. At the end the
+# session dispatches the next one, so sessions run back to back around the
+# clock; the hourly schedule only restarts the chain if it ever breaks. A round
+# yields whenever a trading, weekly or promotion run is waiting, and the chain
+# is not continued while one is, so the trading cycle never waits more than a
+# round. Runner minutes are free for a public repository.
 on:
   schedule:
     - cron: "7 * * * *"
@@ -16,28 +17,29 @@ on:
     inputs:
       minutes:
         description: "Minutes of backtesting per round"
-        default: "8"
+        default: "7"
       rounds:
-        description: "Rounds this session (max 5 here)"
-        default: "5"
+        description: "Rounds this session (1-6)"
+        default: "6"
 
 permissions:
   contents: write
   pages: write
   id-token: write
+  actions: write
 
 concurrency:
-  group: hive-state          # shared with daily.yml and weekly.yml: never two commits to state/ at once
+  group: hive-state          # shared with daily.yml, weekly.yml and promote.yml: one writer to state/ at a time
   cancel-in-progress: false
 
 env:
-  MINUTES: ${{ github.event.inputs.minutes || '8' }}
-  ROUNDS: ${{ github.event.inputs.rounds || '5' }}
+  MINUTES: ${{ github.event.inputs.minutes || '7' }}
+  ROUNDS: ${{ github.event.inputs.rounds || '6' }}
 
 jobs:
   lab:
     runs-on: ubuntu-latest
-    timeout-minutes: 58
+    timeout-minutes: 62
     environment:
       name: github-pages
     env:
@@ -46,6 +48,8 @@ jobs:
       ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}     # the branch head now, not the commit the run was queued at
       - uses: astral-sh/setup-uv@v5
         with:
           cache-dependency-glob: pyproject.toml
@@ -73,3 +77,22 @@ jobs:
       - uses: ./.github/actions/lab-round
         if: ${{ env.ROUNDS >= 5 }}
         with: { minutes: "${{ env.MINUTES }}", round: "5", rounds: "${{ env.ROUNDS }}" }
+      - uses: ./.github/actions/lab-round
+        if: ${{ env.ROUNDS >= 6 }}
+        with: { minutes: "${{ env.MINUTES }}", round: "6", rounds: "${{ env.ROUNDS }}" }
+      - name: Chain the next session (unless a trading, weekly or promotion run is waiting)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=0
+          for wf in daily.yml weekly.yml promote.yml; do
+            k=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$wf/runs?per_page=5" \
+                  --jq '[.workflow_runs[] | select(.status != "completed" and .status != "in_progress")] | length' 2>/dev/null || echo 0)
+            n=$((n + k))
+          done
+          if [ "$n" -gt 0 ]; then
+            echo "a trading, weekly or promotion run is waiting: it goes first; it restarts the lab when it is done"
+          else
+            gh workflow run watch.yml --ref "$GITHUB_REF_NAME" -f minutes="$MINUTES" -f rounds="$ROUNDS"
+            echo "next session dispatched"
+          fi

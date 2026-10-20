@@ -37,3 +37,6 @@ reports/*.html
 .DS_Store
 .idea/
 .vscode/
+
+# Dashboard build output that is published, not committed (recent curve chunks for the page)
+reports/dashboard/lab/

@@ -31,6 +31,7 @@ class Child:
     notes: list[str] = field(default_factory=list)
     metrics: dict[str, Any] = field(default_factory=dict)
     watch: list[str] = field(default_factory=list)   # monitors: topics or symbols to report on daily
+    last_mark: str | None = None                      # the run date of the last daily mark (one shadow day per date)
 
 
 class PromotionNeedsHumanError(PermissionError):
@@ -130,11 +131,16 @@ class HiveRegistry:
 
     # -- marks / value of information ---------------------------------------------------
     def mark(self, child_id: str, equity: float, parent_equity: float, *, on: date | None = None) -> Child:
+        """Mark a child's equity. With ``on``, a second mark for the same run date updates the
+        numbers but does not count another shadow day (a repeat daily run must not age a child)."""
         c = self.get(child_id)
         if c.start_equity is None:
             c.start_equity, c.parent_start_equity = equity, parent_equity
         c.equity = equity
-        c.shadow_days += 1
+        if on is None or c.last_mark != on.isoformat():
+            c.shadow_days += 1
+        if on is not None:
+            c.last_mark = on.isoformat()
         if c.start_equity and c.parent_start_equity:
             c.voi = (equity / c.start_equity - 1.0) - (parent_equity / c.parent_start_equity - 1.0)
         self.save()
@@ -153,6 +159,8 @@ class HiveRegistry:
                     and c.equity / c.start_equity - 1.0 <= -abs(max_drawdown)):
                 out.append(self.retire(c.id, f"dead: book down {c.equity / c.start_equity - 1.0:.1%} from its start", on))
                 continue
+            if c.kind == "scout":
+                continue   # scouts trade markets the parent does not; their own book is their only judge
             if c.shadow_days >= min_days and c.voi is not None and c.voi <= max_negative_voi:
                 out.append(self.retire(c.id, f"VOI {c.voi:+.1%} after {c.shadow_days} days", on))
         return out

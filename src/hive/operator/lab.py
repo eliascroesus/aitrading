@@ -6,6 +6,15 @@ out-of-sample metrics and downsampled equity curves. The store is append-only
 and code-only: the dashboard draws the whole map of what was tested, not just
 the winners, and the search never retests a cell it has a record for (the
 registry keeps only its last 200 iterations; the lab keeps everything).
+
+Storage is sized for a lab that runs around the clock (thousands of cells a
+day): a curve stores only its equity values and points at a shared calendar
+(``cal/<id>.json``: the dates and the benchmark, identical for every cell on
+the same data snapshot); a rejected cell keeps a lean out-of-sample curve, a
+winner keeps both windows at full resolution; and each finished UTC day is
+rolled from one file per record into ``days/<day>.jsonl`` (metrics) and
+``days/<day>.curves.jsonl`` (curves), so listings stay small and reading the
+metrics never touches a curve. Rolling up moves records; it never edits one.
 """
 
 from __future__ import annotations
@@ -29,7 +38,10 @@ log = logging.getLogger(__name__)
 
 LAB_DIR = "lab"
 CURVE_POINTS = 160
+LEAN_POINTS = 100
 PARENT_PREFIX = "parent-"
+CAL_DIR = "cal"
+DAYS_DIR = "days"
 
 
 def lab_dir(settings: Settings) -> Path:
@@ -79,6 +91,60 @@ def data_fingerprint(inputs: dict[str, Any]) -> dict[str, Any]:
             "last_bar": pd.Timestamp(max(lasts)).strftime("%Y-%m-%d") if lasts else None}
 
 
+# --- curves: equity values plus a shared calendar ------------------------------------------------
+
+def _cal_id(dates: list, bench: list) -> str:
+    return hashlib.sha1(json.dumps([dates, bench], default=str).encode()).hexdigest()[:12]
+
+
+def compact_curves(ldir: Path, curves: dict[str, Any] | None, *, lean: bool) -> dict[str, Any]:
+    """{window: {dates, equity, benchmark}} -> {window: {cal, equity}}; the calendar (dates and
+    benchmark) is written once to ``cal/``. A lean curve keeps the out-of-sample window only,
+    at LEAN_POINTS. Curves already compact pass through."""
+    out: dict[str, Any] = {}
+    for win, cv in (curves or {}).items():
+        if lean and win != "outofsample":
+            continue
+        if not cv or "cal" in cv:
+            if cv:
+                out[win] = cv
+            continue
+        dates, eq = list(cv.get("dates") or []), list(cv.get("equity") or [])
+        bench = list(cv.get("benchmark") or [None] * len(dates))
+        if lean and len(dates) > LEAN_POINTS:
+            idx = sorted(set(np.linspace(0, len(dates) - 1, LEAN_POINTS).round().astype(int).tolist()))
+            dates, eq, bench = [dates[i] for i in idx], [eq[i] for i in idx], [bench[i] for i in idx]
+        cid = _cal_id(dates, bench)
+        cp = ldir / CAL_DIR / f"{cid}.json"
+        if not cp.exists():
+            cp.parent.mkdir(parents=True, exist_ok=True)
+            cp.write_text(json.dumps({"dates": dates, "benchmark": bench}, default=str))
+        out[win] = {"cal": cid, "equity": eq}
+    return out
+
+
+def expand_curves(ldir: Path, curves: dict[str, Any] | None, cache: dict[str, Any] | None = None) -> dict[str, Any]:
+    """The inverse of compact_curves: {window: {dates, equity, benchmark}}."""
+    cache = {} if cache is None else cache
+    out: dict[str, Any] = {}
+    for win, cv in (curves or {}).items():
+        if not cv:
+            continue
+        if "cal" not in cv:
+            out[win] = cv
+            continue
+        cal = cache.get(cv["cal"])
+        if cal is None:
+            try:
+                cal = json.loads((ldir / CAL_DIR / f"{cv['cal']}.json").read_text())
+            except (ValueError, OSError):
+                cal = {"dates": [], "benchmark": []}
+            cache[cv["cal"]] = cal
+        out[win] = {"dates": cal.get("dates") or [], "equity": cv.get("equity") or [],
+                    "benchmark": cal.get("benchmark") or []}
+    return out
+
+
 def record_test(ldir: Path, rec: dict[str, Any]) -> Path:
     """Append one test record (never rewritten). Returns its path."""
     ldir.mkdir(parents=True, exist_ok=True)
@@ -87,6 +153,8 @@ def record_test(ldir: Path, rec: dict[str, Any]) -> Path:
     # the file name carries the write time to the microsecond, so a sorted listing is the write order
     rec.setdefault("id", f"{now.strftime('%Y%m%dT%H%M%S%f')}-{rec.get('sleeve') or 'x'}-"
                          f"{cell_id(rec.get('sleeve') or '', rec.get('overrides') or {})}")
+    if rec.get("curves"):
+        rec["curves"] = compact_curves(ldir, rec["curves"], lean=rec.get("by") != "parent" and not rec.get("passed"))
     p = ldir / f"{rec['id']}.json"
     while p.exists():  # never overwrite a record
         rec["id"] += "x"
@@ -95,22 +163,129 @@ def record_test(ldir: Path, rec: dict[str, Any]) -> Path:
     return p
 
 
+def _day_files(ldir: Path) -> list[Path]:
+    d = ldir / DAYS_DIR
+    return sorted(p for p in d.glob("*.jsonl") if not p.name.endswith(".curves.jsonl")) if d.exists() else []
+
+
+def _record_files(ldir: Path) -> list[Path]:
+    return sorted(p for p in ldir.glob("*.json") if not p.name.startswith(PARENT_PREFIX)) if ldir.exists() else []
+
+
 def read_tests(ldir: Path, *, with_curves: bool = True) -> list[dict[str, Any]]:
-    """Every test record, oldest first."""
+    """Every test record, oldest first. Metrics come from the day files and today's record
+    files; with ``with_curves`` each record carries its expanded curves."""
     if not ldir.exists():
         return []
-    out = []
-    for p in sorted(ldir.glob("*.json")):
-        if p.name.startswith(PARENT_PREFIX):
-            continue
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for p in _day_files(ldir):
+        for line in p.read_text().splitlines():
+            if not line.strip():
+                continue
+            try:
+                d = json.loads(line)
+            except ValueError:
+                continue
+            if d.get("id") in seen:
+                continue
+            seen.add(d.get("id"))
+            out.append(d)
+    for p in _record_files(ldir):
         try:
             d = json.loads(p.read_text())
         except (ValueError, OSError):
             continue
+        if d.get("id") in seen:
+            continue
+        seen.add(d.get("id"))
         if not with_curves:
             d.pop("curves", None)
         out.append(d)
+    out.sort(key=lambda r: (r.get("ts") or "", r.get("id") or ""))
+    if with_curves:
+        got = load_curves(ldir, out)
+        for r in out:
+            r["curves"] = got.get(r.get("id"), {})
     return out
+
+
+def load_curves(ldir: Path, records: list[dict[str, Any]], *, expand: bool = True) -> dict[str, dict[str, Any]]:
+    """Curves for the given records, read from their record file or their day's curves file;
+    expanded to {dates, equity, benchmark}, or as stored (compact) with ``expand=False``."""
+    cal: dict[str, Any] = {}
+    fn = expand_curves if expand else (lambda _ldir, curves, _cache: curves or {})
+    days: dict[str, dict[str, Any]] = {}
+    out: dict[str, dict[str, Any]] = {}
+    for r in records:
+        rid = r.get("id")
+        if not rid:
+            continue
+        if r.get("curves"):
+            out[rid] = fn(ldir, r["curves"], cal)
+            continue
+        fp = ldir / f"{rid}.json"
+        if fp.exists():
+            try:
+                out[rid] = fn(ldir, json.loads(fp.read_text()).get("curves"), cal)
+            except (ValueError, OSError):
+                pass
+            continue
+        day = (r.get("ts") or "")[:10]
+        if day not in days:
+            days[day] = {}
+            cp = ldir / DAYS_DIR / f"{day}.curves.jsonl"
+            if cp.exists():
+                for line in cp.read_text().splitlines():
+                    try:
+                        d = json.loads(line)
+                    except ValueError:
+                        continue
+                    days[day][d.get("id")] = d.get("curves")
+        if rid in days[day]:
+            out[rid] = fn(ldir, days[day][rid], cal)
+    return out
+
+
+def rollup(ldir: Path, *, today: str | None = None) -> int:
+    """Move every record of a finished UTC day from its own file into the day files. Idempotent:
+    a record already in its day file is not written twice. Returns how many records moved."""
+    today = today or datetime.now(UTC).date().isoformat()
+    by_day: dict[str, list[tuple[Path, dict[str, Any]]]] = {}
+    for p in _record_files(ldir):
+        try:
+            d = json.loads(p.read_text())
+        except (ValueError, OSError):
+            continue
+        day = (d.get("ts") or "")[:10]
+        if day and day < today:
+            by_day.setdefault(day, []).append((p, d))
+    moved = 0
+    for day, items in sorted(by_day.items()):
+        ddir = ldir / DAYS_DIR
+        ddir.mkdir(parents=True, exist_ok=True)
+        mp, cp = ddir / f"{day}.jsonl", ddir / f"{day}.curves.jsonl"
+        have = set()
+        if mp.exists():
+            for line in mp.read_text().splitlines():
+                try:
+                    have.add(json.loads(line).get("id"))
+                except ValueError:
+                    continue
+        with mp.open("a", encoding="utf-8") as fm, cp.open("a", encoding="utf-8") as fc:
+            for _, d in items:
+                if d.get("id") in have:
+                    continue
+                curves = d.pop("curves", None)
+                fm.write(json.dumps(d, default=str) + "\n")
+                if curves:
+                    lean = d.get("by") != "parent" and not d.get("passed")
+                    fc.write(json.dumps({"id": d.get("id"), "curves": compact_curves(ldir, curves, lean=lean)},
+                                        default=str) + "\n")
+                moved += 1
+        for p, _ in items:
+            p.unlink()
+    return moved
 
 
 def recorded_keys(ldir: Path) -> set[str]:
@@ -222,3 +397,42 @@ def read_status(state_dir: Path) -> dict[str, Any]:
         return json.loads(p.read_text())
     except (ValueError, OSError):
         return {}
+
+
+def load_cals(ldir: Path, ids: set[str]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for cid in ids:
+        try:
+            out[cid] = json.loads((ldir / CAL_DIR / f"{cid}.json").read_text())
+        except (ValueError, OSError):
+            continue
+    return out
+
+
+def export_recent_curves(ldir: Path, out_dir: Path, *, hours: int = 24) -> int:
+    """Publish the last ``hours`` of curves next to the dashboard (lab/h-<YYYYMMDDHH>.json plus the
+    calendars they use), so the page can draw any recent test on demand without carrying them all."""
+    import shutil
+    from datetime import timedelta
+
+    cutoff = (datetime.now(UTC) - timedelta(hours=hours)).isoformat()
+    recs = [r for r in read_tests(ldir, with_curves=False) if (r.get("ts") or "") >= cutoff]
+    got = load_curves(ldir, recs, expand=False)
+    chunks: dict[str, dict[str, Any]] = {}
+    cals: set[str] = set()
+    for r in recs:
+        cv = got.get(r.get("id"))
+        if not cv:
+            continue
+        key = (r.get("ts") or "")[:13].replace("-", "").replace("T", "")
+        chunks.setdefault(key, {})[r["id"]] = cv
+        cals |= {w.get("cal") for w in cv.values() if isinstance(w, dict) and w.get("cal")}
+    dest = out_dir / "lab"
+    if dest.exists():
+        shutil.rmtree(dest)
+    (dest / CAL_DIR).mkdir(parents=True, exist_ok=True)
+    for key, chunk in chunks.items():
+        (dest / f"h-{key}.json").write_text(json.dumps(chunk, default=str))
+    for cid, cal in load_cals(ldir, cals).items():
+        (dest / CAL_DIR / f"{cid}.json").write_text(json.dumps(cal, default=str))
+    return sum(len(c) for c in chunks.values())

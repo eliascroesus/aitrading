@@ -422,6 +422,54 @@ def _research_bonus(cfg: StrategyConfig, state_dir: Path) -> float:
     return min(1.0 + 0.25 * n, 2.0)
 
 
+@app.command()
+def trench() -> None:
+    """Trench scout: one paper scan of brand-new Solana launches (keyless; no wallet; no orders)."""
+    from datetime import UTC, datetime
+
+    from hive.hive.registry import Child, HiveRegistry
+    from hive.meme.scout import MemeBook
+    from hive.meme.trench import run_trench_round
+    from hive.orchestrator.journal import Journal
+    from hive.survival.ledger import SurvivalLedger
+
+    s = get_settings()
+    setup_logging()
+    cfg = StrategyConfig.load()
+    if not s.hive_network_data:
+        rprint("trench scout skipped: network data disabled")
+        return
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+    child = next((c for c in reg.children if c.kind == "scout" and c.sleeve == "trench"), None)
+    if child is None:
+        ledger = SurvivalLedger(s.hive_state_dir / "ledger.jsonl", cfg.survival)
+        tier = ledger.tier(ledger.status(ledger.last_equity_mark() or cfg.survival.starting_bankroll_usd).equity_net)
+        child = reg.spawn(Child(id="trench-scout", name="trench scout", kind="scout", sleeve="trench",
+                                hypothesis="brand-new Solana launches with live buyer flow; paper only, own $100 book"),
+                          tier, force=True)
+    if child.status not in ("shadow", "live"):
+        rprint(f"trench scout is {child.status}: {(child.notes or ['-'])[-1]}")
+        return
+    cdir = s.hive_state_dir / "children" / child.id
+    book = MemeBook.load(cdir / "trench_book.json", cfg.trench.starting_cash_usd)
+    now = datetime.now(UTC)
+    journal = Journal(s.hive_state_dir / "journal", f"{now.date().isoformat()}-child-{child.id}")
+    out = run_trench_round(book=book, rules=cfg.trench, now=now, journal=journal.write)
+    book.save(cdir / "trench_book.json")
+    journal.write("trench_round", {k: out[k] for k in ("ts", "scanned", "discovered", "passed", "rugchecked", "rejects",
+                                                       "equity", "cash", "n_open")}
+                  | {"n_entries": len(out["entries"]), "n_exits": len(out["exits"])})
+    (cdir / "latest.json").write_text(json.dumps(out, default=str))
+    child.equity = out["equity"]
+    if child.start_equity is None:
+        child.start_equity = cfg.trench.starting_cash_usd
+    reg.save()
+    reg.auto_retire_losers(min_days=cfg.survival.child_retire_days, max_negative_voi=cfg.survival.child_retire_voi,
+                           max_drawdown=cfg.survival.child_max_drawdown_pct, on=now.date())
+    rprint(f"trench scout: scanned {out['scanned']} launches, {out['passed']} passed, {len(out['entries'])} entries, "
+           f"{len(out['exits'])} exits, {out['n_open']} open, paper equity ${out['equity']:.2f}")
+
+
 @app.command("capital-in")
 def capital_in(amount: float = typer.Option(..., help="USD added to the bankroll (e.g. a venue deposit)"),
                note: str = typer.Option("", help="Where it went (e.g. 'Alpaca crypto deposit')")) -> None:

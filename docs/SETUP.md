@@ -82,19 +82,26 @@ hive status
 | weekly (Sunday, `weekly.yml`) | `hive allocate` | the crypto sleeve's share of equity moves ±5 points toward the desk that earned, within 20–60%, from realised P&L; no LLM |
 | weekly (Sunday, `weekly.yml`) | `hive review` | the auditor reads the journals and proposes changes (never applies them); paid, like `hive operate`, from the research pot that unspent daily budget accrues into |
 | weekly (Sunday, `weekly.yml`) | `hive operate` | the operator proposes ≤ 3 config variants inside `config/bounds.toml`, code backtests them in/out of sample, winners become shadow children if the tier allows |
-| every hour, for most of the hour (`watch.yml`) | `hive sweep --minutes 8 --round N --rounds 5` ×5 | **the lab**: five rounds of eight minutes of backtesting — the grid of entry families and exits first, then refinements around the best cells so far (one knob at a time, finer steps as the coarse ones run out, pairs of winners merged) — in- and out-of-sample against the parent; winners take a paper seat (best waiting cell first); every cell is kept in `reports/lab/` with its equity curves and committed after every round; no LLM |
-| after every lab round | `hive watch` + `hive ui build` + Pages deploy | heartbeat (live positions and prices) and a fresh dashboard every eight minutes or so; the open page refreshes itself in place within about ninety seconds of a new build and shows times in your own zone |
+| around the clock (`watch.yml`) | `hive trench` + `hive sweep --minutes 7 --round N --rounds 6`, six rounds a session | **the lab**: sessions of six seven-minute rounds that chain themselves back to back (the hourly schedule only restarts the chain); each round scans the trenches on paper and backtests the next cells of the strategy space (the grid of entry families, exits and sizing first, then refinements around the best cells, then mutations of the best cells, which never run out) in- and out-of-sample against the parent; winners take a paper seat (best waiting cell first); every cell is kept in `reports/lab/` and committed after every round; a round yields at once if a trading, weekly or promotion run is waiting; no LLM |
+| after every lab round | `hive watch` + `hive ui build` + Pages deploy | heartbeat (live positions and prices) and a fresh hub every eight minutes or so; the open page checks for a newer build every thirty seconds and re-renders in place, with every time in your own zone |
+| every day 03:41 UTC | `hive run` (safety net) | trades the bar only if the 00:37 run was dropped; otherwise the once-per-bar guard makes it a no-op for orders and for the sub-agents' shadow days |
 | every day after the cycle | `hive sweep --cells 3` | three more lab cells after the daily cycle |
 | automatic, any day | promotion by evidence | a sub-agent that beat the parent for 10 shadow days by ≥ 1% is promoted by the operator into the primary (`state/promoted_overrides.json`); a baseline sub-agent on the pre-registered rules reverts it if it wins back by ≥ 2% over 21 days. Actions → **promote-sub-agent** stays as a human override |
 | automatic, any day | punishment by evidence | a sub-agent 3% behind the parent after 10 days retires; one whose own paper book is down 15% from its start dies the same day; monitors expire after 28 days (config 1.5.0) |
 
 ## 4b. Watching it work
 
-* **Dashboard** (GitHub Pages): rebuilt and published after every lab round
-  (about every eight minutes while the hourly job runs) by
-  `hourly-lab-and-heartbeat`; the open page refreshes itself in place when a
-  newer build is up (the header shows how old the build is, and all times are
-  shown in your own time zone, named in the header). GitHub starts scheduled
+* **The hub** (GitHub Pages): rebuilt and published after every lab round
+  (about every eight minutes, around the clock); the open page re-renders in
+  place when a newer build is up, and every time on it is in your own zone.
+  The badge reads LIVE when the build is under 15 minutes old, DELAYED under
+  75, STALE beyond. *Right now* says what each part of the firm is doing; *The
+  firm, live* draws every agent, and a node pulses only when the record shows
+  it acted in the last twelve minutes; the *live wire* lists every test, trade
+  and scan as it lands; the lab shows leaderboards, a map of every test, the
+  curve of any test you click, the best result found over time, backtests per
+  hour and a gallery of the newest sixty curves; *Rules in force* lists every
+  setting, its value and who can change it, read from the config. GitHub starts scheduled
   jobs late by up to an hour at busy times; the rounds keep the firm busy for
   most of the hour whenever the job actually starts. The *Strategy lab*
   cards show every backtest the firm has ever run: a map of out-of-sample
@@ -152,29 +159,49 @@ hive status
 | Memecoin majors (DOGE/SHIB/PEPE) | `PaperBroker` | Alpaca spot | same trend rules and BTC regime gate; 10% cap per position; they rarely sit above a rising 200-day MA, so entries are rare by design |
 | Memecoins | scout on DexScreener prices | **not wired** (`hive/execution/jupiter.py` lists the four prerequisites) | ≤ 1%/token, ≤ 3% total, ≤ 3 open, −40% stop, 35% trail, 72h time stop; expected to go to zero |
 
-## 6b. Crypto and memecoins: what trades today and what each next step needs
+## 6b. Paper-trading everything: what runs today, and what each venue needs from you
 
-* **Trading now (paper, through Alpaca):** BTC, ETH, SOL and the large-cap
-  memecoins DOGE, SHIB and PEPE, under the trend rules, 24/7 including
-  weekends. `HIVE_MODE=live` with the confirmation phrase makes the same
-  orders real at Alpaca; the Alpaca account must be crypto-enabled.
-* **Hyperliquid perps:** the adapter is complete (agent wallet, testnet by
-  default, IOC market orders, reduce-only trigger stops, dead-man switch) but
-  nothing routes orders to it. To use it: (1) confirm you are not a US or
-  otherwise restricted person under Hyperliquid's terms; (2) create an API/agent
-  wallet at app.hyperliquid.xyz → More → API and fund the master account with
-  USDC on Arbitrum; (3) add the secrets `HL_AGENT_PRIVATE_KEY`, `HL_ACCOUNT_ADDRESS`,
-  `HL_OPERATOR_NOT_RESTRICTED_PERSON=true` and `HL_TESTNET=true` until you mean
-  it; (4) record the deposit with `hive capital-in --amount <usd> --note hyperliquid`
-  so the bankroll basis is honest; (5) have a venue router added so the crypto
-  sleeve's orders go there (`build_primary_broker` in `hive/orchestrator/app.py`
-  today returns one broker). Leverage stays at `risk.crypto_max_leverage`.
-* **DEX memecoins (the scout's picks):** `hive/execution/jupiter.py` lists the
-  four prerequisites and refuses to construct until they exist: a dedicated
-  Solana hot wallet holding only the sleeve's ≤ 3% plus SOL for fees; an RPC
-  endpoint (Helius/QuickNode free tiers) and the Jupiter swap API; a RugCheck
-  pass and a simulated sell before every buy; and a process that runs at least
-  hourly because exits are software stops. Until then the scout stays paper.
+| Market | Runs today on paper | What you need to do |
+|---|---|---|
+| Stocks and ETFs | yes, Alpaca paper, daily | nothing more |
+| BTC, ETH, SOL; DOGE, SHIB, PEPE | yes, Alpaca paper, every day including weekends | nothing more; for live, the Alpaca account must be crypto-enabled |
+| Established memecoins on Solana (meme scout) | yes, its own paper book, daily, keyless (DexScreener, GeckoTerminal, RugCheck) | nothing |
+| Brand-new launches, "the trenches" (trench scout) | yes, its own $100 paper book, every lab round (about every eight minutes while the lab runs), keyless | nothing |
+| Hyperliquid perps | **no** | see below |
+
+**The trench scout** discovers new Solana pools (GeckoTerminal new pools,
+DexScreener latest profiles and boosts), re-quotes them on DexScreener, and
+buys on paper only launches between 20 minutes and 24 hours old with at least
+$15k liquidity, $10k of volume and 40 buyers in the last hour, more buyers than
+sellers, no vertical candle and no dump in the last five minutes, that pass
+RugCheck. 5% of its book per token, at most eight open, half the book at most;
+exits are a 30% hard stop, a 25% trail from the peak, half taken at +100% and a
+six-hour time stop, plus exit at zero when liquidity is pulled (rugged) or the
+token stops quoting for three scans (vanished). Fills assume 5% slippage and
+1% fees each way. Exits are evaluated at each scan, so they fill at the next
+observed price, not at the stop: the paper result is optimistic about gaps it
+cannot see. The scout is judged on its own book and dies at −75% like any
+sub-agent. Nothing in it can place a real order.
+
+**Hyperliquid on paper** has two routes, both needing a decision from you:
+
+1. *Hyperliquid's own testnet* (real exchange mechanics, fake money). You
+   create a wallet, make a small USDC deposit on mainnet (the testnet faucet
+   requires one), create an API/agent wallet at app.hyperliquid.xyz → More →
+   API, and add the secrets `HL_AGENT_PRIVATE_KEY`, `HL_ACCOUNT_ADDRESS` and
+   `HL_TESTNET=true`. Hyperliquid's terms
+   exclude US persons and residents of some other countries, so
+   `HL_OPERATOR_NOT_RESTRICTED_PERSON=true` must be a true statement about
+   you. The routing change that sends the crypto sleeve to it was refused by
+   this session's permission gate; it needs to be allowed and asked for again.
+2. *A paper desk priced from Hyperliquid's public prices*: no account, no keys,
+   no orders, just the trend rules on Hyperliquid's listed coins with funding
+   charged. Not built yet.
+
+**Live DEX memecoins** stay off: `hive/execution/jupiter.py` refuses to
+construct until a dedicated Solana wallet holding only the sleeve's money, an
+RPC endpoint with the Jupiter swap API, pre-trade rug checks with a simulated
+sell, and an always-on process for software stops all exist.
 
 ## 7. Going live (checklist)
 

@@ -109,7 +109,17 @@ def test_dashboard_renders_with_every_kind_of_sub_agent(tmp_path):
                                         overrides={"crypto.trail_atr": 4.5}, ev=ev, parent=parent,
                                         verdict="rejected: OOS CAGR 1.0% does not beat parent 2.8%", on="2026-10-19",
                                         cfg=lcfg, elapsed_s=0.5))
+    # the trench scout's latest scan
+    tr = reg.spawn(Child(id="trench-scout", name="trench scout", kind="scout", sleeve="trench"), tier, force=True)
+    (cdir / tr.id).mkdir(parents=True)
+    (cdir / tr.id / "latest.json").write_text(json.dumps({
+        "ts": "2026-10-19T19:00:00+00:00", "scanned": 70, "passed": 3, "rugchecked": 3, "rejects": {"liquidity": 40},
+        "equity": 101.4, "cash": 90.0, "n_open": 1, "entries": [], "exits": [],
+        "open": [{"mint": "m", "symbol": "FROGZ", "entry": 0.0004, "last": 0.0005, "value": 6.2, "cost": 5.0}]}))
     out = build(s, cfg, tmp_path / "dash")
+    assert (tmp_path / "dash" / "version.json").exists()
+    chunks = list((tmp_path / "dash" / "lab").glob("h-*.json"))          # recent curves, fetched on demand
+    assert chunks and any(json.loads(c.read_text()) for c in chunks)
     with playwright.sync_playwright() as p:
         browser = _launch(p)
         page = browser.new_page(viewport={"width": 1280, "height": 900})
@@ -130,13 +140,23 @@ def test_dashboard_renders_with_every_kind_of_sub_agent(tmp_path):
         curve_is = page.inner_text("#labtitle")
         page.fill("#labfilter", "crypto")
         page.wait_for_timeout(100)
-        visible = page.locator("tr.labrow:visible").count()
+        visible = page.locator("#labtable tr.labrow:visible").count()
+        n_nodes = page.locator("#net .node").count()
+        n_tiles = page.locator(".gallery .gt").count()
+        n_wire = page.locator(".wire li").count()
+        page.set_viewport_size({"width": 390, "height": 860})
+        page.wait_for_timeout(400)
+        phone_width = page.evaluate("document.documentElement.scrollWidth")
         browser.close()
     assert errors == [], errors
     for needle in ("Sub-agents", "fed watch", "meme scout", "template_cross", "Operator's notes", "Auditor",
-                   "Live book", "Firm activity", "staying selective", "Strategy lab", "Lab map", "Lab curve",
-                   "Lab log", "Backtests in the lab", "Next in the queue", "refine crypto"):
-        assert needle in text, needle
+                   "Live book", "Live wire", "staying selective", "Strategy lab", "Leaderboard", "Map: every test",
+                   "Selected test", "Lab log", "Backtests", "Next up", "refine", "Trench scout", "FROGZ",
+                   "Rules in force", "lab moves it", "owner edits config", "Enforced in code", "What every model is told",
+                   "Right now", "The firm, live"):
+        assert needle.lower() in text.lower(), needle
     assert n_dots == 2 and n_diamonds >= 1                             # two tests, one parent diamond
-    assert "refine crypto" in curve_before and "template_cross" in curve_after and "in-sample" in curve_is
+    assert "trail_atr=4.5" in curve_before and "template_cross" in curve_after and "in-sample" in curve_is
     assert visible == 1
+    assert n_nodes >= 10 and n_tiles == 2 and n_wire >= 1
+    assert phone_width <= 390                                          # no horizontal scroll on a phone

@@ -23,7 +23,7 @@ def test_dashboard_builds_from_real_state(tmp_path):
     paths = build(s, cfg)
     html = paths["html"].read_text()
     data = json.loads(paths["data"].read_text())
-    assert "<title>HIVE dashboard</title>" in html and "prefers-color-scheme" in html
+    assert "<title>HIVE hub</title>" in html and "prefers-color-scheme" in html and "version.json" in html
     assert data["survival"]["chain_ok"] and data["survival"]["n_marks"] == 2
     assert len(data["equity"]["dates"]) == 2 and data["equity"]["shadow"]
     assert data["positions"]["primary"], "positions should show up on the dashboard"

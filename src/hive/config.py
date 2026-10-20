@@ -348,6 +348,37 @@ class MemeRules(BaseModel):
     fee_pct: float = 0.01
 
 
+class TrenchRules(BaseModel):
+    """Trench scout: brand-new Solana launches, paper only, its own paper bankroll so its results
+    read as percentages. Scans every lab round (every ten minutes or so while the lab runs);
+    exits are software stops evaluated at the next scan, so they fill at the observed price."""
+
+    chain: str = "solana"
+    min_age_minutes: float = 20.0      # skip the first minutes (snipers, bundles)
+    max_age_hours: float = 24.0        # older than a day is not a launch
+    min_liquidity_usd: float = 15_000.0
+    min_volume_1h_usd: float = 10_000.0
+    min_buys_1h: int = 40
+    min_buy_sell_ratio: float = 1.1    # more buyers than sellers in the last hour
+    max_chg_1h_pct: float = 400.0      # do not buy the vertical candle
+    min_chg_5m_pct: float = -10.0      # nor a token dumping right now
+    require_rugcheck: bool = True
+    rugged_liquidity_usd: float = 2_000.0   # liquidity this low on a held token: rugged, exit at zero
+    vanish_after_misses: int = 3            # a held token without a quote for this many scans: exit at zero
+    starting_cash_usd: float = 100.0
+    per_token_pct: float = 0.05
+    total_pct: float = 0.5
+    max_open: int = 8
+    hard_stop_pct: float = 0.30
+    trail_pct: float = 0.25
+    take_half_at_pct: float = 1.0
+    time_stop_hours: float = 6.0
+    slippage_pct: float = 0.05
+    fee_pct: float = 0.01
+    max_scan: int = 90
+    max_rugchecks: int = 10
+
+
 class UniverseConfig(BaseModel):
     stock_universe: Literal["sp500", "etfs", "custom"] = "sp500"
     custom_symbols: list[str] = Field(default_factory=list)
@@ -379,6 +410,7 @@ class StrategyConfig(BaseModel):
     universe: UniverseConfig = Field(default_factory=UniverseConfig)
     operator: OperatorRules = Field(default_factory=OperatorRules)
     meme: MemeRules = Field(default_factory=MemeRules)
+    trench: TrenchRules = Field(default_factory=TrenchRules)
 
     def rules_for(self, asset_class: str) -> TrendRules:
         return self.crypto if asset_class == "crypto" else self.stocks

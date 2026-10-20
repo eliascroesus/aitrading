@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
@@ -53,6 +54,9 @@ def run_children(
                 continue
             if child.sleeve == "meme":
                 eq = _run_meme_child(settings, cfg, child, cdir, journal, parent_equity, run_date)
+            elif child.sleeve == "trench":
+                latest = cdir / "latest.json"
+                eq = float(json.loads(latest.read_text()).get("equity")) if latest.exists() else cfg.trench.starting_cash_usd
             else:
                 # the baseline runs the pre-registered rules, never the promoted ones
                 ccfg = StrategyConfig.load() if child.kind == "baseline" else _apply_overrides(cfg, child.overrides)

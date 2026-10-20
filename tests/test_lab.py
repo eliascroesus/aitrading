@@ -127,8 +127,18 @@ def test_queue_interleaves_sleeves_and_grid_comes_first(tmp_path):
     cfg = StrategyConfig()
     bounds = load_bounds(REPO_ROOT / "config" / "bounds.toml")
     reg = HiveRegistry(tmp_path / "hive.json", cfg.survival)
+    from hive.operator.sweep import queue_staged
+
     q = queue(reg, cfg, bounds, tmp_path / "lab")
-    assert len(q) == len(grid()) and q[0][0] == "stocks" and q[1][0] == "crypto"
+    assert q[0][0] == "stocks" and q[1][0] == "crypto"
+    staged = queue_staged(reg, cfg, bounds, tmp_path / "lab")
+    stages = [st for _, _, st in staged]
+    for sleeve in ("stocks", "crypto"):                                 # per sleeve, the grid comes first ...
+        mine = [st for sl, _, st in staged if sl == sleeve]
+        n = sum(1 for sl, _ in grid() if sl == sleeve)
+        assert mine[:n] == ["sweep"] * n and "sweep" not in mine[n:]
+    assert "evolve" in stages and len(q) > len(grid())                  # ... and the search never runs dry
+    assert all(c in q for c in grid())
     reg.record_iteration({"date": "2026-10-19", "proposal": "x", "overrides": {"stocks.entry_mode": "template_cross"},
                           "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17, "verdict": "spawned"})
     q2 = queue(reg, cfg, bounds, tmp_path / "lab")
@@ -255,3 +265,54 @@ def test_sizing_levers_are_in_the_space_for_both_sleeves():
         ok, why = validate_overrides(ov, bounds)
         assert ok, (sleeve, ov, why)
         assert isinstance(ov.get("risk.max_positions", 3), int)
+
+
+def test_storage_is_compact_and_rolls_up_finished_days(tmp_path):
+    """Curves share a calendar; rejected cells keep a lean out-of-sample curve; a finished UTC day
+    rolls into day files and reads back identically, curves included."""
+    from hive.operator.lab import CAL_DIR, DAYS_DIR, load_curves, rollup
+
+    cfg, inputs = _cfg_and_inputs()
+    ldir = tmp_path / "lab"
+    ev = evaluate(cfg, {"stocks.trail_atr": 7.0}, inputs, keep_curves=True)
+    rej = lab_record(by="sweep", sleeve="stocks", name="rejected", overrides={"stocks.trail_atr": 7.0}, ev=ev,
+                     parent=None, verdict="rejected: no", on="2026-10-18") | {"ts": "2026-10-18T10:00:00+00:00"}
+    win = lab_record(by="sweep", sleeve="stocks", name="winner", overrides={"stocks.trail_atr": 6.0}, ev=ev,
+                     parent=None, verdict="spawned shadow child x: grows", on="2026-10-18") | {"ts": "2026-10-18T11:00:00+00:00"}
+    today = lab_record(by="sweep", sleeve="crypto", name="today", overrides={"crypto.trail_atr": 6.0}, ev=ev,
+                       parent=None, verdict="rejected: no", on="2026-10-19") | {"ts": "2026-10-19T09:00:00+00:00"}
+    for r in (rej, win, today):
+        record_test(ldir, r)
+    raw = json.loads(next(p for p in ldir.glob("*.json") if "today" not in p.read_text() and "rejected" in p.read_text()).read_text())
+    assert set(raw["curves"]) == {"outofsample"} and set(raw["curves"]["outofsample"]) == {"cal", "equity"}
+    assert len(raw["curves"]["outofsample"]["equity"]) <= 100
+    assert len(list((ldir / CAL_DIR).glob("*.json"))) >= 2              # lean and full calendars
+    before = read_tests(ldir)
+    assert rollup(ldir, today="2026-10-19") == 2 and rollup(ldir, today="2026-10-19") == 0
+    assert len(list(ldir.glob("2*.json"))) == 1                        # only today's record file is left
+    assert (ldir / DAYS_DIR / "2026-10-18.jsonl").exists() and (ldir / DAYS_DIR / "2026-10-18.curves.jsonl").exists()
+    after = read_tests(ldir)
+    assert [t["id"] for t in after] == [t["id"] for t in before]
+    assert [t["curves"] for t in after] == [t["curves"] for t in before]
+    winner = next(t for t in after if t["name"] == "winner")
+    assert set(winner["curves"]) == {"insample", "outofsample"} and winner["curves"]["outofsample"]["dates"]
+    assert load_curves(ldir, [{"id": winner["id"], "ts": winner["ts"]}])[winner["id"]] == winner["curves"]
+    assert summary(ldir, today="2026-10-19")["n_tests"] == 3
+
+
+def test_evolve_never_runs_dry_and_stays_in_bounds():
+    from hive.operator.sweep import evolve
+
+    cfg = StrategyConfig()
+    bounds = load_bounds(REPO_ROOT / "config" / "bounds.toml")
+    results = [{"sleeve": "stocks", "overrides": {"stocks.entry_mode": "ma_pullback"}, "oos_cagr": 0.07,
+                "oos_dd": -0.13, "verdict": "passed"}]
+    a = evolve(results, bounds, cfg, seed=7)
+    b = evolve(results, bounds, cfg, seed=8)
+    assert len(a) >= 100 and a != b and a == evolve(results, bounds, cfg, seed=7)   # fresh per seed, replayable
+    assert any(s == "crypto" for s, _ in a)                                          # untested sleeves mutate the parent
+    for sleeve, ov in a:
+        ok, why = validate_overrides(ov, bounds)
+        assert ok, (sleeve, ov, why)
+        assert ov and len(ov) <= 6
+        assert all(v != getattr(getattr(cfg, k.split(".")[0]), k.split(".")[1]) for k, v in ov.items())

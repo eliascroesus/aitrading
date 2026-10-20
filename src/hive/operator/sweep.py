@@ -14,6 +14,7 @@ works. No LLM is involved, so it costs nothing.
 from __future__ import annotations
 
 import logging
+import random
 from datetime import UTC, date, datetime
 from typing import Any
 
@@ -44,6 +45,10 @@ KNOB_FAMILY = {"breakout_lookback": "high_breakout", "pullback_touch_bars": "ma_
                "pullback_max_atr": "reset_breakout", "volume_max_ratio": "reset_breakout"}
 REFINE_TOP = 3
 REFINE_DIVISORS = (1, 2, 4)   # coarse steps first (a sixth of the range), then finer
+EVOLVE_TOP = 8                # the evolve stage mutates the best EVOLVE_TOP cells per sleeve ...
+EVOLVE_PER_SLEEVE = 150       # ... into this many fresh candidates per call
+EVOLVE_MAX_KNOBS = 6          # a candidate never changes more than this many settings
+STAGES = ("sweep", "refine", "evolve")
 
 Cell = tuple[str, dict[str, Any]]
 
@@ -172,21 +177,97 @@ def refine(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
     return out
 
 
-def queue(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, Bound], ldir=None, *,
-          with_refine: bool = True) -> list[Cell]:
-    """What the lab will test next, in order: untested grid cells, then refinements, the sleeves
-    interleaved so the cheap crypto cells never wait behind the stock ones."""
-    cells = grid()
-    if with_refine:
-        cells = cells + refine(results_so_far(registry, ldir), bounds, cfg)
-    pending = untested(registry, cells, ldir)
-    by_sleeve = {s: [c for c in pending if c[0] == s] for s in SLEEVES}
+def _sleeve_keys(bounds: dict[str, Bound], sleeve: str) -> tuple[list[str], list[str]]:
+    """(numeric knobs, categorical knobs) that apply to a sleeve: its own and the sizing levers."""
+    own = [k for k in bounds if k.startswith(sleeve + ".")
+           or (k.startswith("risk.") and not (sleeve == "stocks" and "crypto" in k)
+               and not (sleeve == "crypto" and "stock" in k))]
+    return (sorted(k for k in own if not isinstance(bounds[k], list)),
+            sorted(k for k in own if isinstance(bounds[k], list)))
+
+
+def evolve(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: StrategyConfig, *, seed: int,
+           top: int = EVOLVE_TOP, per_sleeve: int = EVOLVE_PER_SLEEVE) -> list[Cell]:
+    """Stage three, so the search never runs dry: mutations of the best cells found so far. Each
+    candidate starts from one of the ``top`` cells (better cells are picked more often), changes
+    one to three settings by a random step inside the bounds (sometimes the entry family), and is
+    kept only if it stays inside the bounds and uses knobs its entry family reads. The seed is the
+    number of tests on record, so every run explores new ground and any run can be replayed."""
+    rng = random.Random(seed)
     out: list[Cell] = []
+    seen: set[str] = set()
+    for sleeve in SLEEVES:
+        rows = [r for r in results if r["sleeve"] == sleeve and r.get("oos_cagr") is not None
+                and not str(r.get("verdict", "")).startswith("rejected: backtest failed")]
+        rows.sort(key=lambda r: (-(r["oos_cagr"] or 0.0), -(r.get("oos_dd") or 0.0)))
+        best = [r["overrides"] for r in rows[:top]] or [{}]
+        numeric, categorical = _sleeve_keys(bounds, sleeve)
+        mode_key = f"{sleeve}.entry_mode"
+        made, tries = 0, 0
+        while made < per_sleeve and tries < per_sleeve * 20:
+            tries += 1
+            base = best[min(int(rng.expovariate(0.6)), len(best) - 1)]
+            ov = dict(base)
+            for _ in range(rng.choice((1, 1, 2, 2, 3))):
+                if mode_key in categorical and rng.random() < 0.12:
+                    ov[mode_key] = rng.choice(bounds[mode_key])          # type: ignore[arg-type]
+                    continue
+                if not numeric:
+                    break
+                k = rng.choice(numeric)
+                lo, hi = bounds[k]                                        # type: ignore[misc]
+                like = _get(cfg, k)
+                cur = float(ov.get(k, like))
+                width = (hi - lo) * rng.choice((0.04, 0.1, 0.2, 0.35))
+                v = min(max(cur + rng.uniform(-width, width), lo), hi)
+                ov[k] = coerce_types(cfg, {k: v})[k]
+                if isinstance(ov[k], float):
+                    ov[k] = round(ov[k], 3)
+            mode = ov.get(mode_key, _get(cfg, mode_key))
+            ov = {k: v for k, v in ov.items()
+                  if not (k.startswith(sleeve + ".") and KNOB_FAMILY.get(k.split(".", 1)[1], mode) != mode)}
+            ov = {k: v for k, v in ov.items() if v != coerce_types(cfg, {k: _get(cfg, k)})[k]}   # defaults add nothing
+            if not ov or len(ov) > EVOLVE_MAX_KNOBS or not validate_overrides(ov, bounds)[0]:
+                continue
+            key = cell_key(sleeve, ov)
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append((sleeve, ov))
+            made += 1
+    return out
+
+
+def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, Bound], ldir=None, *,
+                 with_refine: bool = True) -> list[tuple[str, dict[str, Any], str]]:
+    """What the lab will test next, in order, with the stage each cell comes from: untested grid
+    cells, then refinements around the best cells, then mutations of the best cells (stage three
+    never runs out), the sleeves interleaved so the cheap crypto cells never wait behind stocks."""
+    results = results_so_far(registry, ldir)
+    staged: list[tuple[Cell, str]] = [(c, "sweep") for c in grid()]
+    if with_refine:
+        staged += [(c, "refine") for c in refine(results, bounds, cfg)]
+        staged += [(c, "evolve") for c in evolve(results, bounds, cfg, seed=len(results))]
+    seen = {cell_key(r["sleeve"], r["overrides"]) for r in results}
+    pending: list[tuple[str, dict[str, Any], str]] = []
+    for (sl, ov), stage in staged:
+        k = cell_key(sl, ov)
+        if k in seen:
+            continue
+        seen.add(k)
+        pending.append((sl, ov, stage))
+    by_sleeve = {s: [c for c in pending if c[0] == s] for s in SLEEVES}
+    out: list[tuple[str, dict[str, Any], str]] = []
     while any(by_sleeve.values()):
         for s in SLEEVES:
             if by_sleeve[s]:
                 out.append(by_sleeve[s].pop(0))
     return out
+
+
+def queue(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, Bound], ldir=None, *,
+          with_refine: bool = True) -> list[Cell]:
+    return [(sl, ov) for sl, ov, _ in queue_staged(registry, cfg, bounds, ldir, with_refine=with_refine)]
 
 
 def describe(sleeve: str, overrides: dict[str, Any], *, stage: str = "sweep") -> str:
@@ -254,21 +335,25 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
     on = on or date.today()
     ldir = ldir if ldir is not None else (lab_dir(settings) if settings is not None else None)
     bounds = load_bounds(REPO_ROOT / cfg.operator.bounds_file)
+    if ldir is not None:
+        from hive.operator.lab import rollup
+
+        rollup(ldir)
     records: list[dict[str, Any]] = seat_waiting(registry, tier, on, ldir)
-    todo = queue(registry, cfg, bounds, ldir, with_refine=with_refine)
+    todo = queue_staged(registry, cfg, bounds, ldir, with_refine=with_refine)
     inputs = dict(inputs_by_sleeve or {})
     parents: dict[str, Any] = {}
     started = datetime.now(UTC)
     n_done = 0
-    for sleeve, ov in todo:
+    hypothesis = {"sweep": "systematic sweep of the strategy space",
+                  "refine": "refinement around the best cells found so far",
+                  "evolve": "mutation of one of the best cells found so far"}
+    for sleeve, ov, stage in todo:
         elapsed = (datetime.now(UTC) - started).total_seconds()
         if (budget_s is not None and elapsed >= budget_s) or (budget_s is None and n_done >= n_cells):
             break
-        stage = "sweep" if (sleeve, ov) in grid() else "refine"
         rec: dict[str, Any] = {"date": on.isoformat(), "proposal": describe(sleeve, ov, stage=stage), "kind": "sweep",
-                               "stage": stage,
-                               "hypothesis": ("systematic sweep of the pre-registered strategy space" if stage == "sweep"
-                                              else "refinement around the best cells found so far"),
+                               "stage": stage, "hypothesis": hypothesis[stage],
                                "overrides": ov, "sleeve": sleeve, "cost_usd": 0.0}
         ok, why = validate_overrides(ov, bounds)
         if not ok:
@@ -324,9 +409,15 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
                                           data=data_fingerprint(inputs[sleeve])))
         log.info("lab: %s -> %s", rec["proposal"], rec["verdict"])
     if records:
+        # one compact line per run: the operator reads the last dozen, so it gets the gist, not the flood
+        ran = [r for r in records if r.get("kind") == "sweep"]
+        won = [r for r in ran if str(r.get("verdict", "")).startswith(("spawned", "passed"))]
+        top = sorted((r for r in ran if r.get("oos_cagr") is not None), key=lambda r: -r["oos_cagr"])[:3]
+        keep = list({id(r): r for r in (won[:5] + top + [r for r in records if r.get("kind") == "seated"])}.values())
         append_research_log(registry.path.parent / RESEARCH_LOG, {
-            "date": on.isoformat(), "note": "systematic sweep (code, no LLM)",
+            "date": on.isoformat(), "note": f"lab: {len(ran)} cells backtested, {len(won)} beat the parent (code, no LLM)",
+            "n_tested": len(ran), "n_passed": len(won),
             "parent_oos_cagr": next(iter(parents.values())).outofsample.get("cagr") if parents else None,
             "proposals": [{"name": r["proposal"], "overrides": r["overrides"], "sleeve": r["sleeve"],
-                           "oos_cagr": r.get("oos_cagr"), "verdict": (r.get("verdict") or "")[:120]} for r in records]})
+                           "oos_cagr": r.get("oos_cagr"), "verdict": (r.get("verdict") or "")[:120]} for r in keep]})
     return records

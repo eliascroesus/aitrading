@@ -22,6 +22,7 @@ class MemePosition:
     entered_at: str
     cost_usd: float
     took_half: bool = False
+    misses: int = 0          # scans in a row without a quote (the trench scout exits at zero after a few)
 
 
 @dataclass

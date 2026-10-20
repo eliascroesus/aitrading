@@ -16,10 +16,14 @@ name: daily-run
 on:
   schedule:
     - cron: "37 0 * * *"
+    # Safety net: if the 00:37 run was dropped or cancelled, this one trades the bar;
+    # if it was not, the once-per-bar guard makes this a no-op for orders and marks.
+    - cron: "41 3 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: write              # to restart the always-on lab when this run is done
 
 concurrency:
   group: hive-state          # shared with weekly.yml: never two commits to state/ at once
@@ -40,6 +44,8 @@ jobs:
       HIVE_LLM_CHEAP_MODEL: ${{ vars.HIVE_LLM_CHEAP_MODEL || 'claude-haiku-5-5' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}     # the branch head now, not the commit the run was queued at
       - uses: astral-sh/setup-uv@v5
         with:
           cache-dependency-glob: pyproject.toml
@@ -74,6 +80,11 @@ jobs:
           git diff --cached --quiet || git commit -m "daily run $(date -u +%F)"
           git pull --rebase origin "$GITHUB_REF_NAME"
           git push
+      - name: Restart the always-on lab
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run watch.yml --ref "$GITHUB_REF_NAME" || echo "lab restart skipped"
 
   # Commits made with GITHUB_TOKEN do not trigger other workflows, so pages.yml
   # would never see the bot's push: publish the dashboard from here instead.

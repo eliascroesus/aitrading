@@ -32,6 +32,10 @@ def pair_summary(p: dict[str, Any]) -> dict[str, Any]:
         "chg_1h": float(g(p.get("priceChange") or {}, "h1") or 0), "chg_6h": float(g(p.get("priceChange") or {}, "h6") or 0),
         "chg_24h": float(g(p.get("priceChange") or {}, "h24") or 0), "fdv_usd": float(p.get("fdv") or 0),
         "age_hours": age_h,
+        "chg_5m": float(g(p.get("priceChange") or {}, "m5") or 0),
+        "volume_1h_usd": float(g(p.get("volume") or {}, "h1") or 0),
+        "buys_1h": int(g((p.get("txns") or {}).get("h1") or {}, "buys") or 0),
+        "sells_1h": int(g((p.get("txns") or {}).get("h1") or {}, "sells") or 0),
     }
 
 
