@@ -1,5 +1,5 @@
 {
-  "cash": 68.86549330984985,
+  "cash": 68.8385798879429,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -17,20 +17,9 @@
       "symbol": "pika",
       "qty": 82709.2652884142,
       "entry_price": 5.939e-05,
-      "peak_price": 7.592e-05,
+      "peak_price": 7.84e-05,
       "entered_at": "2026-10-20T14:39:34.197919+00:00",
       "cost_usd": 5.206829461407655,
-      "took_half": false,
-      "misses": 0
-    },
-    "8T2nkC9HQkgd2yjxc7Yn1LAietmXyZKbv1vR4FXDbonk": {
-      "mint": "8T2nkC9HQkgd2yjxc7Yn1LAietmXyZKbv1vR4FXDbonk",
-      "symbol": "Bonnie",
-      "qty": 30518.741297834018,
-      "entry_price": 0.0001556,
-      "peak_price": 0.0002345,
-      "entered_at": "2026-10-20T15:49:49.143930+00:00",
-      "cost_usd": 5.033639114699551,
       "took_half": false,
       "misses": 0
     },
@@ -39,7 +28,7 @@
       "symbol": "COLLECTOOOR",
       "qty": 31098.337563477227,
       "entry_price": 0.0001527,
-      "peak_price": 0.000227,
+      "peak_price": 0.0002441,
       "entered_at": "2026-10-20T15:49:49.143930+00:00",
       "cost_usd": 5.033639114699551,
       "took_half": false,
@@ -53,6 +42,17 @@
       "peak_price": 6.722e-05,
       "entered_at": "2026-10-20T16:36:12.459507+00:00",
       "cost_usd": 5.029983287825291,
+      "took_half": false,
+      "misses": 0
+    },
+    "7gUDvf45et6627atavR45Md4BjgYqJHMZe9EPqeR9Sya": {
+      "mint": "7gUDvf45et6627atavR45Md4BjgYqJHMZe9EPqeR9Sya",
+      "symbol": "ARTEMI",
+      "qty": 39058.11664297884,
+      "entry_price": 0.0001199,
+      "peak_price": 0.0001199,
+      "entered_at": "2026-10-20T16:44:22.363984+00:00",
+      "cost_usd": 4.964052276622754,
       "took_half": false,
       "misses": 0
     }
@@ -306,6 +306,25 @@
       "notional": 5.029983287825291,
       "liquidity_usd": 21013.01,
       "age_hours": 2.930136830512153
+    },
+    {
+      "mint": "8T2nkC9HQkgd2yjxc7Yn1LAietmXyZKbv1vR4FXDbonk",
+      "symbol": "Bonnie",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001721,
+      "proceeds": 4.9371388547158,
+      "pnl_approx": -0.09650025998375078,
+      "age_hours": 0.9092277927777778
+    },
+    {
+      "mint": "7gUDvf45et6627atavR45Md4BjgYqJHMZe9EPqeR9Sya",
+      "symbol": "ARTEMI",
+      "event": "entry",
+      "price": 0.0001199,
+      "notional": 4.964052276622754,
+      "liquidity_usd": 30228.61,
+      "age_hours": 0.5233519936116536
     }
   ]
 }
