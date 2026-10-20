@@ -1,5 +1,5 @@
 {
-  "cash": 52.82243735049912,
+  "cash": 48.39417392754709,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -28,7 +28,7 @@
       "symbol": "MONEYBIZ",
       "qty": 3389.2261465051824,
       "entry_price": 0.001403,
-      "peak_price": 0.001467,
+      "peak_price": 0.001494,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
       "took_half": false,
@@ -50,7 +50,7 @@
       "symbol": "GTAa",
       "qty": 36886.7139746612,
       "entry_price": 0.0001147,
-      "peak_price": 0.0001488,
+      "peak_price": 0.0001614,
       "entered_at": "2026-10-20T17:30:03.991883+00:00",
       "cost_usd": 4.4847604584672585,
       "took_half": false,
@@ -75,6 +75,17 @@
       "peak_price": 0.0002082,
       "entered_at": "2026-10-20T17:52:54.421396+00:00",
       "cost_usd": 4.487088018690703,
+      "took_half": false,
+      "misses": 0
+    },
+    "Df18xmSEf64DXaKMMfoCrJaEgqBKVc7rXfmKDyagpump": {
+      "mint": "Df18xmSEf64DXaKMMfoCrJaEgqBKVc7rXfmKDyagpump",
+      "symbol": "PEPEMON",
+      "qty": 2994.7003604193105,
+      "entry_price": 0.001395,
+      "peak_price": 0.001395,
+      "entered_at": "2026-10-20T18:00:46.550539+00:00",
+      "cost_usd": 4.428263422952035,
       "took_half": false,
       "misses": 0
     }
@@ -460,6 +471,15 @@
       "notional": 4.487088018690703,
       "liquidity_usd": 40017.8,
       "age_hours": 0.380337316148546
+    },
+    {
+      "mint": "Df18xmSEf64DXaKMMfoCrJaEgqBKVc7rXfmKDyagpump",
+      "symbol": "PEPEMON",
+      "event": "entry",
+      "price": 0.001395,
+      "notional": 4.428263422952035,
+      "liquidity_usd": 107398.77,
+      "age_hours": 1.058800626695421
     }
   ]
 }
