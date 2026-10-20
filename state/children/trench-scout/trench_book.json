@@ -1,5 +1,5 @@
 {
-  "cash": 36.725265210141444,
+  "cash": 34.3846025825975,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -17,7 +17,7 @@
       "symbol": "SASONA",
       "qty": 53136.882848257366,
       "entry_price": 5.336e-05,
-      "peak_price": 7.796e-05,
+      "peak_price": 7.969e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
       "took_half": false,
@@ -28,9 +28,20 @@
       "symbol": "DTC",
       "qty": 2195.18319129925,
       "entry_price": 0.001002,
-      "peak_price": 0.001002,
+      "peak_price": 0.001037,
       "entered_at": "2026-10-20T23:43:22.701913+00:00",
       "cost_usd": 2.33154797114276,
+      "took_half": false,
+      "misses": 0
+    },
+    "GyN3wQ4ZsjTuViG8oVdPD8Zmie1XZZfkudFrGbBqe8oc": {
+      "mint": "GyN3wQ4ZsjTuViG8oVdPD8Zmie1XZZfkudFrGbBqe8oc",
+      "symbol": "Melonie",
+      "qty": 52018.19293606118,
+      "entry_price": 4.245e-05,
+      "peak_price": 4.245e-05,
+      "entered_at": "2026-10-20T23:51:29.698462+00:00",
+      "cost_usd": 2.3406626275439453,
       "took_half": false,
       "misses": 0
     }
@@ -1147,6 +1158,15 @@
       "notional": 2.33154797114276,
       "liquidity_usd": 92043.18,
       "age_hours": 4.625948743353949
+    },
+    {
+      "mint": "GyN3wQ4ZsjTuViG8oVdPD8Zmie1XZZfkudFrGbBqe8oc",
+      "symbol": "Melonie",
+      "event": "entry",
+      "price": 4.245e-05,
+      "notional": 2.3406626275439453,
+      "liquidity_usd": 16793.97,
+      "age_hours": 1.0623161777750652
     }
   ]
 }
