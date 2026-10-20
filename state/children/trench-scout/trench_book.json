@@ -1,5 +1,5 @@
 {
-  "cash": 65.43568514525225,
+  "cash": 69.05989339882991,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -28,7 +28,7 @@
       "symbol": "WiSP",
       "qty": 75784.28764849785,
       "entry_price": 6.153e-05,
-      "peak_price": 9.7e-05,
+      "peak_price": 0.0001011,
       "entered_at": "2026-10-20T15:18:45.258009+00:00",
       "cost_usd": 4.942787652152798,
       "took_half": false,
@@ -40,17 +40,6 @@
       "qty": 30518.741297834018,
       "entry_price": 0.0001556,
       "peak_price": 0.0002345,
-      "entered_at": "2026-10-20T15:49:49.143930+00:00",
-      "cost_usd": 5.033639114699551,
-      "took_half": false,
-      "misses": 0
-    },
-    "BjvruPbagrnmGKGbjWjSxVD3hYYeRE4VDSkfeysnpump": {
-      "mint": "BjvruPbagrnmGKGbjWjSxVD3hYYeRE4VDSkfeysnpump",
-      "symbol": "JARVIS",
-      "qty": 18607.82188849127,
-      "entry_price": 0.0002552,
-      "peak_price": 0.0003465,
       "entered_at": "2026-10-20T15:49:49.143930+00:00",
       "cost_usd": 5.033639114699551,
       "took_half": false,
@@ -288,6 +277,16 @@
       "proceeds": 3.292584896774799,
       "pnl_approx": -1.799804832668932,
       "age_hours": 0.38251206888888883
+    },
+    {
+      "mint": "BjvruPbagrnmGKGbjWjSxVD3hYYeRE4VDSkfeysnpump",
+      "symbol": "JARVIS",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0002072,
+      "proceeds": 3.6242082535776676,
+      "pnl_approx": -1.4094308611218835,
+      "age_hours": 0.38855709833333335
     }
   ]
 }
