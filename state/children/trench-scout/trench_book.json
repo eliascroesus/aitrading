@@ -1,5 +1,5 @@
 {
-  "cash": 36.66781072857669,
+  "cash": 33.9244022049437,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -45,25 +45,36 @@
       "took_half": false,
       "misses": 0
     },
-    "ECARsqfGxEQbsLhkJugMh1pQrDzM9iBMgtg22uNCpump": {
-      "mint": "ECARsqfGxEQbsLhkJugMh1pQrDzM9iBMgtg22uNCpump",
-      "symbol": "air",
-      "qty": 17163.056902384888,
-      "entry_price": 0.0001647,
-      "peak_price": 0.0002713,
-      "entered_at": "2026-10-20T22:10:52.842315+00:00",
-      "cost_usd": 2.9963608001321584,
-      "took_half": false,
-      "misses": 0
-    },
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
       "symbol": "SASONA",
       "qty": 53136.882848257366,
       "entry_price": 5.336e-05,
-      "peak_price": 5.336e-05,
+      "peak_price": 5.64e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
+      "took_half": false,
+      "misses": 0
+    },
+    "GBv35e9EEpHEdeL4g2TGEXBoEvdk6Yw72sSMHtw6pump": {
+      "mint": "GBv35e9EEpHEdeL4g2TGEXBoEvdk6Yw72sSMHtw6pump",
+      "symbol": "DOGGY",
+      "qty": 44781.4295109303,
+      "entry_price": 6.212e-05,
+      "peak_price": 6.212e-05,
+      "entered_at": "2026-10-20T22:33:44.320957+00:00",
+      "cost_usd": 2.9487317452921293,
+      "took_half": false,
+      "misses": 0
+    },
+    "B26mMiTtweujaxifxnw3vWJ5GewWkkKaHwo1RjWhpump": {
+      "mint": "B26mMiTtweujaxifxnw3vWJ5GewWkkKaHwo1RjWhpump",
+      "symbol": "POKE",
+      "qty": 34703.37326869997,
+      "entry_price": 8.016e-05,
+      "peak_price": 8.016e-05,
+      "entered_at": "2026-10-20T22:33:44.320957+00:00",
+      "cost_usd": 2.9487317452921293,
       "took_half": false,
       "misses": 0
     }
@@ -998,6 +1009,34 @@
       "notional": 3.0055071129099935,
       "liquidity_usd": 40596.71,
       "age_hours": 4.837886125217014
+    },
+    {
+      "mint": "ECARsqfGxEQbsLhkJugMh1pQrDzM9iBMgtg22uNCpump",
+      "symbol": "air",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001955,
+      "proceeds": 3.154054966951271,
+      "pnl_approx": 0.15769416681911252,
+      "age_hours": 0.38096628944444444
+    },
+    {
+      "mint": "GBv35e9EEpHEdeL4g2TGEXBoEvdk6Yw72sSMHtw6pump",
+      "symbol": "DOGGY",
+      "event": "entry",
+      "price": 6.212e-05,
+      "notional": 2.9487317452921293,
+      "liquidity_usd": 22754.34,
+      "age_hours": 0.593293362765842
+    },
+    {
+      "mint": "B26mMiTtweujaxifxnw3vWJ5GewWkkKaHwo1RjWhpump",
+      "symbol": "POKE",
+      "event": "entry",
+      "price": 8.016e-05,
+      "notional": 2.9487317452921293,
+      "liquidity_usd": 22773.52,
+      "age_hours": 0.3616266852484809
     }
   ]
 }
