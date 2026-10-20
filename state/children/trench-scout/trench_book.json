@@ -1,12 +1,12 @@
 {
-  "cash": 39.97504077197424,
+  "cash": 40.73804556047446,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
       "symbol": "MONEYBIZ",
       "qty": 3389.2261465051824,
       "entry_price": 0.001403,
-      "peak_price": 0.001594,
+      "peak_price": 0.0016,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
       "took_half": false,
@@ -34,28 +34,6 @@
       "took_half": false,
       "misses": 0
     },
-    "Bivugv4GNFUiqUabDhvFcepDskTcgPk7EtExV4mvpump": {
-      "mint": "Bivugv4GNFUiqUabDhvFcepDskTcgPk7EtExV4mvpump",
-      "symbol": "Xingxing",
-      "qty": 74956.81136240836,
-      "entry_price": 4.304e-05,
-      "peak_price": 6.164e-05,
-      "entered_at": "2026-10-20T20:46:05.059530+00:00",
-      "cost_usd": 3.41970963070034,
-      "took_half": false,
-      "misses": 0
-    },
-    "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump": {
-      "mint": "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump",
-      "symbol": "SPACE",
-      "qty": 68574.54355700134,
-      "entry_price": 4.534e-05,
-      "peak_price": 4.668e-05,
-      "entered_at": "2026-10-20T21:01:09.877755+00:00",
-      "cost_usd": 3.295719993166907,
-      "took_half": false,
-      "misses": 0
-    },
     "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump": {
       "mint": "ETVsGFnykwYerYw2UY4t28G4mkkgAhtG4h6uyiqMpump",
       "symbol": "ILLUSTRATOR",
@@ -75,6 +53,17 @@
       "peak_price": 4.368e-05,
       "entered_at": "2026-10-20T21:08:44.823531+00:00",
       "cost_usd": 3.394093839987854,
+      "took_half": false,
+      "misses": 0
+    },
+    "HukcUGZ7xNwD9kCxHhVUf5wLtG5rJmUgNTbi5iLqpump": {
+      "mint": "HukcUGZ7xNwD9kCxHhVUf5wLtG5rJmUgNTbi5iLqpump",
+      "symbol": "SXSI",
+      "qty": 15194.166518206712,
+      "entry_price": 0.000203,
+      "peak_price": 0.000203,
+      "entered_at": "2026-10-20T21:24:03.052827+00:00",
+      "cost_usd": 3.26948075138772,
       "took_half": false,
       "misses": 0
     }
@@ -859,6 +848,35 @@
       "notional": 3.394093839987854,
       "liquidity_usd": 17783.68,
       "age_hours": 18.80871504889594
+    },
+    {
+      "mint": "Bivugv4GNFUiqUabDhvFcepDskTcgPk7EtExV4mvpump",
+      "symbol": "Xingxing",
+      "event": "exit",
+      "reason": "trail",
+      "price": 3.393e-05,
+      "proceeds": 2.3906875329549244,
+      "pnl_approx": -1.0290220977454156,
+      "age_hours": 0.6327759158333334
+    },
+    {
+      "mint": "BfgSRauifc4cYCW9r6LR9iYsbuj4UHG1krRUMGujpump",
+      "symbol": "SPACE",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 2.547e-05,
+      "proceeds": 1.6417980069330145,
+      "pnl_approx": -1.6539219862338925,
+      "age_hours": 0.38143752
+    },
+    {
+      "mint": "HukcUGZ7xNwD9kCxHhVUf5wLtG5rJmUgNTbi5iLqpump",
+      "symbol": "SXSI",
+      "event": "entry",
+      "price": 0.000203,
+      "notional": 3.26948075138772,
+      "liquidity_usd": 40607.2,
+      "age_hours": 0.543822426961263
     }
   ]
 }
