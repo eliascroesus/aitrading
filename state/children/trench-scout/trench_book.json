@@ -1,5 +1,5 @@
 {
-  "cash": 71.8078098103304,
+  "cash": 76.55275313208959,
   "positions": {
     "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump": {
       "mint": "EHPugw1ghE46BeySAa7cHvoZHwYometbp1aK1Q7jpump",
@@ -37,12 +37,12 @@
     "BjvruPbagrnmGKGbjWjSxVD3hYYeRE4VDSkfeysnpump": {
       "mint": "BjvruPbagrnmGKGbjWjSxVD3hYYeRE4VDSkfeysnpump",
       "symbol": "JARVIS",
-      "qty": 31817.28360809757,
+      "qty": 15908.641804048784,
       "entry_price": 0.0001492,
-      "peak_price": 0.0002431,
+      "peak_price": 0.0003173,
       "entered_at": "2026-10-20T15:10:34.332722+00:00",
       "cost_usd": 5.031967037187846,
-      "took_half": false,
+      "took_half": true,
       "misses": 0
     },
     "USEu5qroduzuvrSZfvs3xM1MwyU83joapQF5LMyWiSP": {
@@ -50,7 +50,7 @@
       "symbol": "WiSP",
       "qty": 75784.28764849785,
       "entry_price": 6.153e-05,
-      "peak_price": 7.786e-05,
+      "peak_price": 8.942e-05,
       "entered_at": "2026-10-20T15:18:45.258009+00:00",
       "cost_usd": 4.942787652152798,
       "took_half": false,
@@ -204,6 +204,13 @@
       "notional": 4.942787652152798,
       "liquidity_usd": 19997.76,
       "age_hours": 1.6391312055121527
+    },
+    {
+      "mint": "BjvruPbagrnmGKGbjWjSxVD3hYYeRE4VDSkfeysnpump",
+      "symbol": "JARVIS",
+      "event": "take_half",
+      "price": 0.0003173,
+      "proceeds": 4.744943321759198
     }
   ]
 }
