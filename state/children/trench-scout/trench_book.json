@@ -1,12 +1,12 @@
 {
-  "cash": 48.39417392754709,
+  "cash": 47.96935502453299,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
       "symbol": "pika",
       "qty": 82709.2652884142,
       "entry_price": 5.939e-05,
-      "peak_price": 9.132e-05,
+      "peak_price": 9.447e-05,
       "entered_at": "2026-10-20T14:39:34.197919+00:00",
       "cost_usd": 5.206829461407655,
       "took_half": false,
@@ -28,20 +28,9 @@
       "symbol": "MONEYBIZ",
       "qty": 3389.2261465051824,
       "entry_price": 0.001403,
-      "peak_price": 0.001494,
+      "peak_price": 0.001533,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
-      "took_half": false,
-      "misses": 0
-    },
-    "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump": {
-      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
-      "symbol": "ONEPIECE",
-      "qty": 58638.34484638686,
-      "entry_price": 8.137e-05,
-      "peak_price": 0.0001009,
-      "entered_at": "2026-10-20T17:14:01.617318+00:00",
-      "cost_usd": 5.057686247359529,
       "took_half": false,
       "misses": 0
     },
@@ -50,7 +39,7 @@
       "symbol": "GTAa",
       "qty": 36886.7139746612,
       "entry_price": 0.0001147,
-      "peak_price": 0.0001614,
+      "peak_price": 0.0001727,
       "entered_at": "2026-10-20T17:30:03.991883+00:00",
       "cost_usd": 4.4847604584672585,
       "took_half": false,
@@ -72,7 +61,7 @@
       "symbol": "CUMROCKET",
       "qty": 20331.90155823819,
       "entry_price": 0.0002082,
-      "peak_price": 0.0002082,
+      "peak_price": 0.0002835,
       "entered_at": "2026-10-20T17:52:54.421396+00:00",
       "cost_usd": 4.487088018690703,
       "took_half": false,
@@ -86,6 +75,17 @@
       "peak_price": 0.001395,
       "entered_at": "2026-10-20T18:00:46.550539+00:00",
       "cost_usd": 4.428263422952035,
+      "took_half": false,
+      "misses": 0
+    },
+    "5hvGRZsrfWqi2pMKE51KFKQR9zEFVyvXx2mhVkH7pump": {
+      "mint": "5hvGRZsrfWqi2pMKE51KFKQR9zEFVyvXx2mhVkH7pump",
+      "symbol": "TIMQ",
+      "qty": 23224.361026469018,
+      "entry_price": 0.0001829,
+      "peak_price": 0.0001829,
+      "entered_at": "2026-10-20T18:08:18.621807+00:00",
+      "cost_usd": 4.502599769645655,
       "took_half": false,
       "misses": 0
     }
@@ -480,6 +480,25 @@
       "notional": 4.428263422952035,
       "liquidity_usd": 107398.77,
       "age_hours": 1.058800626695421
+    },
+    {
+      "mint": "G2a5BzQ9vhk2wBZFNH9dKRJgy6DwebW4yS2YS8fFpump",
+      "symbol": "ONEPIECE",
+      "event": "exit",
+      "reason": "trail",
+      "price": 7.398e-05,
+      "proceeds": 4.077780866631558,
+      "pnl_approx": -0.9799053807279705,
+      "age_hours": 0.9047234691666667
+    },
+    {
+      "mint": "5hvGRZsrfWqi2pMKE51KFKQR9zEFVyvXx2mhVkH7pump",
+      "symbol": "TIMQ",
+      "event": "entry",
+      "price": 0.0001829,
+      "notional": 4.502599769645655,
+      "liquidity_usd": 35986.71,
+      "age_hours": 0.5573984216986763
     }
   ]
 }
