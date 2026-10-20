@@ -1,5 +1,5 @@
 {
-  "cash": 33.63583518477684,
+  "cash": 38.54072385214737,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -23,47 +23,14 @@
       "took_half": false,
       "misses": 0
     },
-    "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump": {
-      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
-      "symbol": "DTC",
-      "qty": 1986.0285323117578,
-      "entry_price": 0.001492,
-      "peak_price": 0.002173,
-      "entered_at": "2026-10-20T21:55:07.597343+00:00",
-      "cost_usd": 3.1409438444216913,
-      "took_half": false,
-      "misses": 0
-    },
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
       "symbol": "SASONA",
       "qty": 53136.882848257366,
       "entry_price": 5.336e-05,
-      "peak_price": 7.61e-05,
+      "peak_price": 7.642e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
-      "took_half": false,
-      "misses": 0
-    },
-    "8tWatwDBrfVy7ebJmH6kDEzdF23Cicn9xXvQxYLepump": {
-      "mint": "8tWatwDBrfVy7ebJmH6kDEzdF23Cicn9xXvQxYLepump",
-      "symbol": "WIPD",
-      "qty": 10820.102374027736,
-      "entry_price": 0.0002424,
-      "peak_price": 0.0002424,
-      "entered_at": "2026-10-20T23:04:04.028312+00:00",
-      "cost_usd": 2.7801603843921825,
-      "took_half": false,
-      "misses": 0
-    },
-    "E2AuxyVptsdNBvy9xsXgBr7mxgPHxJUs4T2xQXf2pump": {
-      "mint": "E2AuxyVptsdNBvy9xsXgBr7mxgPHxJUs4T2xQXf2pump",
-      "symbol": "Noppy",
-      "qty": 47249.01487055166,
-      "entry_price": 5.551e-05,
-      "peak_price": 5.551e-05,
-      "entered_at": "2026-10-20T23:04:04.028312+00:00",
-      "cost_usd": 2.7801603843921825,
       "took_half": false,
       "misses": 0
     }
@@ -1074,6 +1041,36 @@
       "notional": 2.7801603843921825,
       "liquidity_usd": 19014.54,
       "age_hours": 0.3826209716796875
+    },
+    {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.001528,
+      "proceeds": 2.852572501530024,
+      "pnl_approx": -0.2883713428916672,
+      "age_hours": 1.282087973888889
+    },
+    {
+      "mint": "8tWatwDBrfVy7ebJmH6kDEzdF23Cicn9xXvQxYLepump",
+      "symbol": "WIPD",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001756,
+      "proceeds": 1.7860093782665143,
+      "pnl_approx": -0.9941510061256682,
+      "age_hours": 0.1330793713888889
+    },
+    {
+      "mint": "E2AuxyVptsdNBvy9xsXgBr7mxgPHxJUs4T2xQXf2pump",
+      "symbol": "Noppy",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 5.996e-06,
+      "proceeds": 0.2663067875739981,
+      "pnl_approx": -2.5138535968181843,
+      "age_hours": 0.1330793713888889
     }
   ]
 }
