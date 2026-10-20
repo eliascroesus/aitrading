@@ -1,5 +1,5 @@
 {
-  "cash": 33.9244022049437,
+  "cash": 39.121779683971724,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -34,36 +34,14 @@
       "took_half": false,
       "misses": 0
     },
-    "2gJBAZVtxFcQzj3NQDKgqKbpECh6epSoq8Mzu4Fupump": {
-      "mint": "2gJBAZVtxFcQzj3NQDKgqKbpECh6epSoq8Mzu4Fupump",
-      "symbol": "DACAT",
-      "qty": 13263.89691230592,
-      "entry_price": 0.0002234,
-      "peak_price": 0.0003637,
-      "entered_at": "2026-10-20T21:55:07.597343+00:00",
-      "cost_usd": 3.1409438444216913,
-      "took_half": false,
-      "misses": 0
-    },
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
       "symbol": "SASONA",
       "qty": 53136.882848257366,
       "entry_price": 5.336e-05,
-      "peak_price": 5.64e-05,
+      "peak_price": 5.839e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
-      "took_half": false,
-      "misses": 0
-    },
-    "GBv35e9EEpHEdeL4g2TGEXBoEvdk6Yw72sSMHtw6pump": {
-      "mint": "GBv35e9EEpHEdeL4g2TGEXBoEvdk6Yw72sSMHtw6pump",
-      "symbol": "DOGGY",
-      "qty": 44781.4295109303,
-      "entry_price": 6.212e-05,
-      "peak_price": 6.212e-05,
-      "entered_at": "2026-10-20T22:33:44.320957+00:00",
-      "cost_usd": 2.9487317452921293,
       "took_half": false,
       "misses": 0
     },
@@ -1037,6 +1015,26 @@
       "notional": 2.9487317452921293,
       "liquidity_usd": 22773.52,
       "age_hours": 0.3616266852484809
+    },
+    {
+      "mint": "2gJBAZVtxFcQzj3NQDKgqKbpECh6epSoq8Mzu4Fupump",
+      "symbol": "DACAT",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0002707,
+      "proceeds": 3.3751046805115394,
+      "pnl_approx": 0.23416083608984817,
+      "age_hours": 0.7684095047222222
+    },
+    {
+      "mint": "GBv35e9EEpHEdeL4g2TGEXBoEvdk6Yw72sSMHtw6pump",
+      "symbol": "DOGGY",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 4.329e-05,
+      "proceeds": 1.8222727985164822,
+      "pnl_approx": -1.1264589467756472,
+      "age_hours": 0.12487516750000001
     }
   ]
 }
