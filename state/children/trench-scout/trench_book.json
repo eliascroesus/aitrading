@@ -1,5 +1,5 @@
 {
-  "cash": 47.96935502453299,
+  "cash": 45.70123154681915,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -28,20 +28,9 @@
       "symbol": "MONEYBIZ",
       "qty": 3389.2261465051824,
       "entry_price": 0.001403,
-      "peak_price": 0.001533,
+      "peak_price": 0.001547,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
-      "took_half": false,
-      "misses": 0
-    },
-    "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
-      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
-      "symbol": "GTAa",
-      "qty": 36886.7139746612,
-      "entry_price": 0.0001147,
-      "peak_price": 0.0001727,
-      "entered_at": "2026-10-20T17:30:03.991883+00:00",
-      "cost_usd": 4.4847604584672585,
       "took_half": false,
       "misses": 0
     },
@@ -67,25 +56,36 @@
       "took_half": false,
       "misses": 0
     },
-    "Df18xmSEf64DXaKMMfoCrJaEgqBKVc7rXfmKDyagpump": {
-      "mint": "Df18xmSEf64DXaKMMfoCrJaEgqBKVc7rXfmKDyagpump",
-      "symbol": "PEPEMON",
-      "qty": 2994.7003604193105,
-      "entry_price": 0.001395,
-      "peak_price": 0.001395,
-      "entered_at": "2026-10-20T18:00:46.550539+00:00",
-      "cost_usd": 4.428263422952035,
-      "took_half": false,
-      "misses": 0
-    },
     "5hvGRZsrfWqi2pMKE51KFKQR9zEFVyvXx2mhVkH7pump": {
       "mint": "5hvGRZsrfWqi2pMKE51KFKQR9zEFVyvXx2mhVkH7pump",
       "symbol": "TIMQ",
       "qty": 23224.361026469018,
       "entry_price": 0.0001829,
-      "peak_price": 0.0001829,
+      "peak_price": 0.0002316,
       "entered_at": "2026-10-20T18:08:18.621807+00:00",
       "cost_usd": 4.502599769645655,
+      "took_half": false,
+      "misses": 0
+    },
+    "6gXN9N4yGwstzHHEABzpkPFWqZfpS9aBqMHewe5Vpump": {
+      "mint": "6gXN9N4yGwstzHHEABzpkPFWqZfpS9aBqMHewe5Vpump",
+      "symbol": "Pikachu",
+      "qty": 25659.33273754164,
+      "entry_price": 0.0001609,
+      "peak_price": 0.0001609,
+      "entered_at": "2026-10-20T18:16:06.951114+00:00",
+      "cost_usd": 4.376301835718677,
+      "took_half": false,
+      "misses": 0
+    },
+    "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump": {
+      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
+      "symbol": "COLLECTOOOR",
+      "qty": 22734.50791558618,
+      "entry_price": 0.0001816,
+      "peak_price": 0.0001816,
+      "entered_at": "2026-10-20T18:16:06.951114+00:00",
+      "cost_usd": 4.376301835718677,
       "took_half": false,
       "misses": 0
     }
@@ -499,6 +499,44 @@
       "notional": 4.502599769645655,
       "liquidity_usd": 35986.71,
       "age_hours": 0.5573984216986763
+    },
+    {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001085,
+      "proceeds": 3.7620759582756955,
+      "pnl_approx": -0.7226845001915629,
+      "age_hours": 0.7674886752777778
+    },
+    {
+      "mint": "Df18xmSEf64DXaKMMfoCrJaEgqBKVc7rXfmKDyagpump",
+      "symbol": "PEPEMON",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 0.0009671,
+      "proceeds": 2.722404235447824,
+      "pnl_approx": -1.7058591875042106,
+      "age_hours": 0.2556668263888889
+    },
+    {
+      "mint": "6gXN9N4yGwstzHHEABzpkPFWqZfpS9aBqMHewe5Vpump",
+      "symbol": "Pikachu",
+      "event": "entry",
+      "price": 0.0001609,
+      "notional": 4.376301835718677,
+      "liquidity_usd": 33470.83,
+      "age_hours": 0.7180463677978516
+    },
+    {
+      "mint": "ESnW5ZbLmoEAg2QEMxnMsY9R3aS8Kw58HJacYURmpump",
+      "symbol": "COLLECTOOOR",
+      "event": "entry",
+      "price": 0.0001816,
+      "notional": 4.376301835718677,
+      "liquidity_usd": 47129.47,
+      "age_hours": 23.283102183363173
     }
   ]
 }
