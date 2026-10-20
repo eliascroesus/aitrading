@@ -332,20 +332,28 @@ def operate(dry_run: bool = typer.Option(False, help="Propose and evaluate witho
     today = __import__("datetime").date.today()
     st = ledger.status(last, on=today)
     tier = ledger.tier(st.equity_net)
+    from hive.operator.iterate import RESEARCH_LOG, read_research_log
+    from hive.survival.earned import operator_multiplier, operator_scorecard, write_earned
+
+    reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+    # the operator's budget is earned: its proposals' pass rate against the lab's free search
+    card = operator_scorecard(read_research_log(s.hive_state_dir / RESEARCH_LOG, last=100_000), reg.children)
+    mult = operator_multiplier(card)
+    write_earned(s.hive_state_dir, "operator", {"date": today.isoformat(), "multiplier": mult,
+                                                **{k: v for k, v in card.items() if k != "recent"}})
     llm = None
     if s.anthropic_api_key is not None:
         llm = LLMClient(api_key=s.anthropic_api_key.get_secret_value(),
-                        budget_usd=ledger.research_budget(st.equity_net, tier, today,
-                                                          bonus=_research_bonus(cfg, s.hive_state_dir)))
-    reg = HiveRegistry(s.hive_state_dir / "hive.json", cfg.survival)
+                        budget_usd=ledger.research_budget(st.equity_net, tier, today, bonus=mult))
     if dry_run:
         reg.path = s.hive_state_dir / "hive.dryrun.json"
-    rprint(f"operator: tier {tier.name}, research pot ${(llm.budget_usd if llm else 0.0):.4f}, "
+    rprint(f"operator: tier {tier.name}, earned multiplier {mult:.2f}x, research pot ${(llm.budget_usd if llm else 0.0):.4f}, "
            f"llm={'on' if llm and llm.available else 'off'}")
     from hive.operator.lab import lab_dir
 
     recs = _operate(cfg=cfg, registry=reg, tier=tier, status=st.__dict__, llm=llm, model=s.hive_llm_model,
-                    inputs=default_inputs(s, cfg), lab_dir=None if dry_run else lab_dir(s))
+                    inputs=default_inputs(s, cfg), lab_dir=None if dry_run else lab_dir(s),
+                    inputs_for=lambda sl: default_inputs(s, cfg, sl))
     if llm is not None and llm.spent_usd > 0:
         ledger.append("ai_cost", llm.spent_usd, {"label": "operator", "date": f"{today.isoformat()}-research"})
     for r in recs:

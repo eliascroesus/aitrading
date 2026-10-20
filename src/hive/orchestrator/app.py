@@ -179,6 +179,14 @@ def run_day(settings: Settings, cfg: StrategyConfig, run_date: date, *, with_sha
 
     desk_reports = latest_desk_reports(settings, HiveRegistry(settings.hive_state_dir / "hive.json", cfg.survival))
     primary_broker = build_primary_broker(settings, store, classes, ts, cfg.survival.starting_bankroll_usd)
+    # The desks are paid by what they add: the AI-filtered primary against the rules-only shadow.
+    from hive.survival.earned import desk_multiplier, desk_value_add, write_earned
+
+    va, va_days = desk_value_add(ledger, SurvivalLedger(settings.hive_state_dir / "ledger_shadow.jsonl", cfg.survival))
+    ledger.ai_multiplier = desk_multiplier(va)
+    write_earned(settings.hive_state_dir, "desks", {"date": rd, "value_add": va, "days": va_days,
+                                                    "multiplier": ledger.ai_multiplier})
+    journal.write("earned_budget", {"desks_value_add": va, "days": va_days, "multiplier": ledger.ai_multiplier})
     try:
         primary = DailyRun(
             label="primary", run_date=run_date, cfg=cfg, store=store, broker=primary_broker,

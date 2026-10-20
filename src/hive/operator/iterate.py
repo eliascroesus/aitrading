@@ -23,25 +23,33 @@ log = logging.getLogger(__name__)
 OPERATOR_SYSTEM = (
     "You are the operator, the firm's head of research. Your job is to make the firm's strategy "
     "earn more: propose up to {N} variants of its configuration, each changing one to three "
-    "parameters within the stated bounds, each with the sleeve it should trade (stocks, crypto or "
-    "all) and a one-sentence testable hypothesis grounded in the evidence summary and the firm's "
+    "parameters within the stated bounds, each with the sleeve it should trade (stocks, crypto, "
+    "macro or all) and a one-sentence testable hypothesis grounded in the evidence summary and the firm's "
     "own results so far. A variant may change the entry family (entry_mode) as well as any knob: "
     "the trend template, exits and limits stay, the moment to buy is yours to design. Read "
-    "tested_variants and research_log before proposing: never repeat a tested variant, build on "
+    "tested_variants, research_log and your_record before proposing: never repeat a tested variant, build on "
     "what beat the parent, and say what you learned in the note. You may also propose a monitor "
     "(kind=monitor, watch=up to five topics or symbols, no overrides): a news-channel sub-agent whose "
     "bounded daily reports reach the portfolio manager; it costs about a cent a day and takes a seat, "
     "so propose one only when a theme bears on open positions or candidates and no monitor covers it. "
-    "Promotion is automatic: a variant that beats the parent for the shadow period is promoted into "
-    "the firm's live configuration by the evidence rule, and reverted if the pre-registered baseline "
-    "sub-agent beats it back; so propose what you believe will earn a seat, not what flatters a backtest. Code backtests every proposal in-sample and out-of-sample; only variants "
-    "that beat the parent out of sample without a worse drawdown become paper-traded sub-agents, "
-    "and only while the firm's tier has a free seat. Sub-agents that underperform the parent are "
-    "retired; a human promotes the winners into the live configuration. Whenever a seat is free, "
-    "propose at least one variant: if you think nothing deserves a seat, say why in the note and "
-    "still propose the single most informative experiment, because an untested idea earns nothing. "
-    "You cannot change risk limits, budgets or the universe, and you cannot promote anything to "
-    "live. " + prompts.OBJECTIVE
+    "Code backtests every proposal in-sample and out-of-sample on its own sleeve's markets (stocks, "
+    "crypto, or macro: forex, gold, silver and index futures) against that sleeve's parent; a variant "
+    "that beats the parent on the firm's objective (the simulated prop-firm pass rate, growth breaking "
+    "ties), made money in sample and kept its drawdown within tolerance takes a paper seat while the "
+    "tier has one free. Promotion is automatic: a variant that out-earns the parent on paper for the "
+    "shadow period is promoted into the firm's configuration by the evidence rule, and reverted if "
+    "the baseline sub-agent beats it back; one that breaks a prop loss limit, lags the parent or falls "
+    "75% is retired. Books the primary's venue cannot trade (forex, metals, index futures, shorts) "
+    "stay on paper and are judged on their own record. So propose what you believe will earn a seat, "
+    "not what flatters a backtest. You are judged the same way: your_record compares your proposals' "
+    "pass rate with the lab's free search, and your research budget is that ratio times the base "
+    "(a quarter to four times), plus a bonus for each proposal later promoted; a failed proposal, or "
+    "one outside the bounds, lowers your next budget, and your calls are paid from the bankroll. "
+    "Whenever a seat is free, propose at least one variant: if you think nothing deserves a seat, say "
+    "why in the note and still propose the single most informative experiment, because an untested "
+    "idea earns nothing. The levers you may change are exactly those in bounds (entries, exits, "
+    "direction, sizing); budgets, the universe and the death rules are not levers, and you cannot "
+    "promote anything yourself or move money to a live venue. " + prompts.OBJECTIVE
 )
 
 
@@ -70,7 +78,7 @@ def proposal_schema(bounds: dict[str, tuple[float, float]]) -> type[BaseModel]:
         kind=(Literal["variant", "monitor"], "variant"),
         overrides=(list[override], Field(default_factory=list, max_length=3)),
         watch=(list[str], Field(default_factory=list, max_length=5)),
-        sleeve=(Literal["stocks", "crypto", "all"], "stocks"),
+        sleeve=(Literal["stocks", "crypto", "macro", "all"], "stocks"),
     )
     return create_model("ProposalsChoice", proposals=(list[proposal], Field(max_length=5)),
                         note=(str, Field(default="", max_length=300)))
@@ -221,8 +229,10 @@ def tested_variants(registry: HiveRegistry) -> list[dict[str, Any]]:
 
 def performance_context(registry: HiveRegistry, status: dict[str, Any] | None, parent_eval: EvalResult | None,
                         bounds: dict[str, Bound], cfg: StrategyConfig,
-                        research_log: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+                        research_log: list[dict[str, Any]] | None = None,
+                        your_record: dict[str, Any] | None = None) -> dict[str, Any]:
     return {
+        "your_record": your_record or {},
         "entry_families": {
             "reset_breakout": "the pre-registered rule: strong impulse, quiet reset of short ROC, breakout trigger",
             "template_cross": "buy the first bar the trend template is met (earliest, most trades)",
@@ -281,16 +291,33 @@ def operate(
     on: date | None = None,
     proposals_override: list[Proposal] | None = None,
     lab_dir: Path | None = None,
+    inputs_for: Any = None,
 ) -> list[dict[str, Any]]:
     """One operator iteration. Returns the iteration records written to the registry.
     With ``lab_dir`` every backtest (the parent's and each proposal's) is kept as a lab record."""
     from hive.operator.lab import lab_record, parent_eval, record_test
+    from hive.survival.earned import explain_operator, operator_multiplier, operator_scorecard
 
     on = on or date.today()
     bounds = load_bounds(bounds_path or (REPO_ROOT / cfg.operator.bounds_file))
     parent = parent_eval(cfg, "stocks", inputs, lab_dir, on=on.isoformat())
     log_path = registry.path.parent / RESEARCH_LOG
-    ctx = performance_context(registry, status, parent, bounds, cfg, research_log=read_research_log(log_path))
+    # the operator is judged too, and told how: its record against the lab's free search sets its budget
+    card = operator_scorecard(read_research_log(log_path, last=100_000), registry.children)
+    mult = operator_multiplier(card)
+    record = {**card, "budget_multiplier": mult, "how_you_are_paid": explain_operator(card, mult)}
+    ctx = performance_context(registry, status, parent, bounds, cfg, research_log=read_research_log(log_path),
+                              your_record=record)
+    # every proposal is backtested on its own sleeve's markets against that sleeve's parent
+    sleeve_inputs: dict[str, dict[str, Any]] = {"stocks": inputs}
+    parents: dict[str, EvalResult] = {"stocks": parent}
+
+    def for_sleeve(sl: str) -> tuple[dict[str, Any], EvalResult]:
+        if sl not in sleeve_inputs:
+            sleeve_inputs[sl] = inputs_for(sl) if inputs_for is not None else inputs
+        if sl not in parents:
+            parents[sl] = parent_eval(cfg, sl, sleeve_inputs[sl], lab_dir, on=on.isoformat())
+        return sleeve_inputs[sl], parents[sl]
 
     proposals: list[Proposal] = []
     cost = 0.0
@@ -345,7 +372,8 @@ def operate(
         p.overrides = rec["overrides"] = coerce_types(cfg, p.overrides)
         t0 = datetime.now(UTC)
         try:
-            ev = evaluate(cfg, p.overrides, inputs, keep_curves=lab_dir is not None)
+            p_inputs, parent = for_sleeve(p.sleeve)
+            ev = evaluate(cfg, p.overrides, p_inputs, keep_curves=lab_dir is not None)
         except Exception as exc:  # a bad value must not take the whole iteration down
             rec["verdict"] = f"rejected: backtest failed: {str(exc)[:160]}"
             registry.record_iteration(rec)
@@ -382,7 +410,8 @@ def operate(
                 elapsed_s=round((datetime.now(UTC) - t0).total_seconds(), 1)))
     # The firm's memory: what was tried, what it found, what the operator thought.
     append_research_log(log_path, {
-        "date": on.isoformat(), "note": note, "parent_oos_cagr": parent.outofsample.get("cagr"),
+        "date": on.isoformat(), "by": "operator", "note": note, "budget_multiplier": mult,
+        "parent_oos_cagr": parents["stocks"].outofsample.get("cagr"),
         "proposals": [{"name": r.get("proposal"), "overrides": r.get("overrides"), "sleeve": r.get("sleeve"),
                        "oos_cagr": r.get("oos_cagr"), "verdict": (r.get("verdict") or "")[:120]} for r in records],
     })

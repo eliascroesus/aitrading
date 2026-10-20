@@ -451,6 +451,10 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
         return {"key": key, "value": value, "what": what, "who": "lab" if b is not None else "owner", "range": rng}
 
     r, sv, op = cfg.risk, cfg.survival, cfg.operator
+    from hive.survival.earned import read_earned
+
+    earned = read_earned(settings.hive_state_dir)
+    ed, eo = earned.get("desks") or {}, earned.get("operator") or {}
     risk_rows = [
         lever("risk.sizing_mode", r.sizing_mode, "how risk per trade is set: fixed share, or edge (each book's own record)"),
         lever("risk.risk_per_trade_pct", r.risk_per_trade_pct, "equity risked per trade (entry to stop); edge books start here"),
@@ -486,7 +490,16 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
         {"key": "survival.death_drawdown_pct", "value": sv.death_drawdown_pct, "who": "owner",
          "what": "drawdown from peak at which the firm dies, permanently"},
         {"key": "survival.daily_ai_budget", "value": f"{sv.daily_ai_budget_min_usd:g} to {sv.daily_ai_budget_max_usd:g} USD",
-         "who": "owner", "what": "the day's AI budget, a share of equity set by the tier; unspent budget accrues to the weekly research pot"},
+         "who": "owner", "what": "the day's AI budget: a share of equity set by the tier, times the desks' earned multiplier; "
+                                 "unspent budget accrues to the weekly research pot"},
+        {"key": "earned.desks", "value": (f"{ed.get('multiplier', 1.0):.2f}x" + (f" · added {ed['value_add']:+.1%} over {ed.get('days')} d"
+                                          if ed.get("value_add") is not None else " · too few days to judge")),
+         "who": "code", "what": "the daily desks are paid by what they add: the AI-filtered book against the rules-only shadow "
+                                "after its own costs; +1% added = +25% budget, between 0.25x and 4x"},
+        {"key": "earned.operator", "value": (f"{eo.get('multiplier', 1.0):.2f}x · {eo.get('passed', 0)} of {eo.get('proposals', 0)} proposals "
+                                             f"passed vs the lab's {eo.get('lab_passed', 0)} of {eo.get('lab_tests', 0)}" if eo else "set at the next operator run"),
+         "who": "code", "what": "the operator's research pot: its pass rate divided by the free search's, +0.5x per promoted "
+                                "proposal, between 0.25x and 4x; it is told this before it proposes"},
         {"key": "survival.tiers", "value": " · ".join(f"{t['name']} ≥${t['min_equity_usd']:g}: {t['seats']} seats, risk ×{t['risk_multiplier']:g}"
                                                        + (", close-only" if t["close_only"] else "") for t in tiers),
          "who": "owner", "what": "what equity unlocks: sub-agent seats, risk multiplier, research budget"},

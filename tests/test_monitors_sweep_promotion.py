@@ -3,6 +3,8 @@
 import json
 from datetime import date
 
+import pytest
+
 from hive.config import Settings, StrategyConfig
 from hive.hive.monitors import fetch_items, latest_desk_reports, run_monitor_child
 from hive.hive.registry import Child, HiveRegistry
@@ -67,7 +69,7 @@ def test_promoted_overrides_reach_the_primary(tmp_path):
     assert cfg.stocks.trail_atr == 5.0  # the pre-registered object is untouched
 
 
-def test_research_bonus_raises_the_pot(tmp_path):
+def test_the_research_pot_is_earned_both_ways(tmp_path):
     cfg = StrategyConfig()
     led = SurvivalLedger(tmp_path / "ledger.jsonl", cfg.survival)
     led.append("equity_mark", 100.0, {"label": "primary", "date": "2026-10-18"})
@@ -75,5 +77,10 @@ def test_research_bonus_raises_the_pot(tmp_path):
     st = led.status(100.0, on=on)
     tier = led.tier(st.equity_net)
     base = led.research_budget(st.equity_net, tier, on)
-    assert led.research_budget(st.equity_net, tier, on, bonus=1.5) > base
-    assert led.research_budget(st.equity_net, tier, on, bonus=0.5) == base   # never below 1x
+    assert led.research_budget(st.equity_net, tier, on, bonus=1.5) == pytest.approx(1.5 * base)
+    assert led.research_budget(st.equity_net, tier, on, bonus=0.5) == pytest.approx(0.5 * base)   # punished too
+    assert led.research_budget(st.equity_net, tier, on, bonus=0.01) == pytest.approx(0.25 * base)  # a quarter at least
+    assert led.research_budget(st.equity_net, tier, on, bonus=99) == pytest.approx(4 * base)        # four times at most
+    day = led.budget_today(st.equity_net, tier)
+    led.ai_multiplier = 2.0                                       # the desks' earned multiplier scales the day's budget
+    assert led.budget_today(st.equity_net, tier) == pytest.approx(2 * day)

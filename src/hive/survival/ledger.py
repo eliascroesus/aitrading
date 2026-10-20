@@ -61,6 +61,9 @@ class SurvivalLedger:
         self.rules = rules
         self.entries: list[LedgerEntry] = []
         self._tier_name: str | None = None
+        # The daily desks' earned multiplier (hive.survival.earned): what the AI layer added over
+        # the rules-only shadow sets its budget, between a quarter and four times the base.
+        self.ai_multiplier = 1.0
         if self.path.exists():
             self._load()
 
@@ -198,7 +201,7 @@ class SurvivalLedger:
             self._tier_name = tier.name
 
     def budget_today(self, equity_net: float, tier: Tier) -> float:
-        raw = equity_net * tier.daily_ai_budget_pct
+        raw = equity_net * tier.daily_ai_budget_pct * self.ai_multiplier
         floor = self.rules.daily_ai_budget_min_usd if tier.risk_multiplier > 0 else 0.0
         return float(min(max(raw, floor), self.rules.daily_ai_budget_max_usd))
 
@@ -219,8 +222,9 @@ class SurvivalLedger:
             pot += max(per_day - spent, 0.0)
         research = sum(e.amount_usd for e in self.entries
                        if e.kind == "ai_cost" and str(e.day).endswith("-research") and str(e.day)[:10] in window)
-        # ``bonus`` > 1 rewards a firm whose sub-agents beat the parent (set by the CLI from the registry).
-        return max(min(pot, days * per_day) * max(bonus, 1.0) - research, 0.0)
+        # ``bonus`` is earned (hive.survival.earned): above 1 rewards research that beat the free
+        # search, below 1 punishes research that did worse; a quarter to four times the pot.
+        return max(min(pot, days * per_day) * min(max(bonus, 0.25), 4.0) - research, 0.0)
 
     def death_recorded(self) -> LedgerEntry | None:
         for e in reversed(self.entries):
