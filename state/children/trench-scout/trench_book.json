@@ -1,5 +1,5 @@
 {
-  "cash": 61.041785910556456,
+  "cash": 52.141230452840425,
   "positions": {
     "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump": {
       "mint": "7XBdVqzZFYwpBz7VshzWZWd7ms1sG9f9UQ8YiHqapump",
@@ -39,20 +39,9 @@
       "symbol": "MONEYBIZ",
       "qty": 3389.2261465051824,
       "entry_price": 0.001403,
-      "peak_price": 0.001414,
+      "peak_price": 0.001465,
       "entered_at": "2026-10-20T16:59:06.184877+00:00",
       "cost_usd": 5.040389340559577,
-      "took_half": false,
-      "misses": 0
-    },
-    "kai8sjSxmcxyEyXzy58bBmPFPB4bqZdGMty2ZosxJuP": {
-      "mint": "kai8sjSxmcxyEyXzy58bBmPFPB4bqZdGMty2ZosxJuP",
-      "symbol": "KAI",
-      "qty": 26630.675066025156,
-      "entry_price": 0.0001748,
-      "peak_price": 0.0002358,
-      "entered_at": "2026-10-20T17:06:27.697056+00:00",
-      "cost_usd": 4.934344521633669,
       "took_half": false,
       "misses": 0
     },
@@ -61,9 +50,31 @@
       "symbol": "ONEPIECE",
       "qty": 58638.34484638686,
       "entry_price": 8.137e-05,
-      "peak_price": 8.137e-05,
+      "peak_price": 8.261e-05,
       "entered_at": "2026-10-20T17:14:01.617318+00:00",
       "cost_usd": 5.057686247359529,
+      "took_half": false,
+      "misses": 0
+    },
+    "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "qty": 36886.7139746612,
+      "entry_price": 0.0001147,
+      "peak_price": 0.0001147,
+      "entered_at": "2026-10-20T17:30:03.991883+00:00",
+      "cost_usd": 4.4847604584672585,
+      "took_half": false,
+      "misses": 0
+    },
+    "4VPbDqHHoXtNVQcxeYJ5EjUduh6ZkFD3cU1deoVMpump": {
+      "mint": "4VPbDqHHoXtNVQcxeYJ5EjUduh6ZkFD3cU1deoVMpump",
+      "symbol": "BULLRUN",
+      "qty": 98347.42196405485,
+      "entry_price": 4.302e-05,
+      "peak_price": 4.302e-05,
+      "entered_at": "2026-10-20T17:30:03.991883+00:00",
+      "cost_usd": 4.4847604584672585,
       "took_half": false,
       "misses": 0
     }
@@ -402,6 +413,34 @@
       "proceeds": 1.3618509718730962,
       "pnl_approx": -3.6958352754864325,
       "age_hours": 0.12635532861111112
+    },
+    {
+      "mint": "kai8sjSxmcxyEyXzy58bBmPFPB4bqZdGMty2ZosxJuP",
+      "symbol": "KAI",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 2.755e-06,
+      "proceeds": 0.06896545921848533,
+      "pnl_approx": -4.865379062415184,
+      "age_hours": 0.3934152297222222
+    },
+    {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "event": "entry",
+      "price": 0.0001147,
+      "notional": 4.4847604584672585,
+      "liquidity_usd": 28694.9,
+      "age_hours": 0.4566887660725911
+    },
+    {
+      "mint": "4VPbDqHHoXtNVQcxeYJ5EjUduh6ZkFD3cU1deoVMpump",
+      "symbol": "BULLRUN",
+      "event": "entry",
+      "price": 4.302e-05,
+      "notional": 4.4847604584672585,
+      "liquidity_usd": 16094.5,
+      "age_hours": 0.46502210917154946
     }
   ]
 }
