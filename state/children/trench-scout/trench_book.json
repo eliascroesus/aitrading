@@ -1,25 +1,14 @@
 {
-  "cash": 23.28237731204972,
+  "cash": 23.468711882059868,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
       "symbol": "KIMCHI",
       "qty": 179.98604802560405,
       "entry_price": 0.009778,
-      "peak_price": 0.01334,
+      "peak_price": 0.01347,
       "entered_at": "2026-10-21T03:25:09.792361+00:00",
       "cost_usd": 1.865497792250018,
-      "took_half": false,
-      "misses": 0
-    },
-    "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
-      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
-      "symbol": "Pokecity",
-      "qty": 2178.215444328796,
-      "entry_price": 0.0007949,
-      "peak_price": 0.001249,
-      "entered_at": "2026-10-21T04:36:11.228778+00:00",
-      "cost_usd": 1.8353512640987775,
       "took_half": false,
       "misses": 0
     },
@@ -39,7 +28,7 @@
       "symbol": "PHP",
       "qty": 13152.211623386116,
       "entry_price": 0.0001237,
-      "peak_price": 0.0001237,
+      "peak_price": 0.0001924,
       "entered_at": "2026-10-21T05:47:04.670783+00:00",
       "cost_usd": 1.7245442924816345,
       "took_half": false,
@@ -53,6 +42,17 @@
       "peak_price": 0.0001678,
       "entered_at": "2026-10-21T05:54:31.801847+00:00",
       "cost_usd": 1.680967115903993,
+      "took_half": false,
+      "misses": 0
+    },
+    "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump": {
+      "mint": "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump",
+      "symbol": "smol",
+      "qty": 40122.59544440126,
+      "entry_price": 3.992e-05,
+      "peak_price": 3.992e-05,
+      "entered_at": "2026-10-21T06:01:51.394681+00:00",
+      "cost_usd": 1.6977956507489282,
       "took_half": false,
       "misses": 0
     }
@@ -1823,6 +1823,25 @@
       "notional": 1.680967115903993,
       "liquidity_usd": 35586.1,
       "age_hours": 3.9454212200249565
+    },
+    {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0009202,
+      "proceeds": 1.8841302207590767,
+      "pnl_approx": 0.04877895666029919,
+      "age_hours": 1.4278238619444446
+    },
+    {
+      "mint": "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump",
+      "symbol": "smol",
+      "event": "entry",
+      "price": 3.992e-05,
+      "notional": 1.6977956507489282,
+      "liquidity_usd": 16599.83,
+      "age_hours": 2.2362335077582465
     }
   ]
 }
