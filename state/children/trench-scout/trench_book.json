@@ -1,5 +1,5 @@
 {
-  "cash": 23.21016169630535,
+  "cash": 24.307987847409898,
   "positions": {
     "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump": {
       "mint": "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump",
@@ -28,20 +28,9 @@
       "symbol": "KIMCHI",
       "qty": 145.6386878621956,
       "entry_price": 0.01101,
-      "peak_price": 0.0112,
+      "peak_price": 0.01129,
       "entered_at": "2026-10-21T07:03:08.053792+00:00",
       "cost_usd": 1.6996908705645404,
-      "took_half": false,
-      "misses": 0
-    },
-    "7k1S1H4VgTXafzgMJcVRUs3qBXPMKV6prytKe32apump": {
-      "mint": "7k1S1H4VgTXafzgMJcVRUs3qBXPMKV6prytKe32apump",
-      "symbol": "Clout",
-      "qty": 23404.812840671766,
-      "entry_price": 6.954e-05,
-      "peak_price": 6.954e-05,
-      "entered_at": "2026-10-21T07:18:21.213934+00:00",
-      "cost_usd": 1.7252249260367336,
       "took_half": false,
       "misses": 0
     },
@@ -50,7 +39,7 @@
       "symbol": "Clout",
       "qty": 13688.567577294487,
       "entry_price": 0.0001189,
-      "peak_price": 0.0001189,
+      "peak_price": 0.0001929,
       "entered_at": "2026-10-21T07:18:21.213934+00:00",
       "cost_usd": 1.7252249260367336,
       "took_half": false,
@@ -2008,6 +1997,16 @@
       "notional": 1.7252249260367336,
       "liquidity_usd": 29003.24,
       "age_hours": 0.9515611933051216
+    },
+    {
+      "mint": "7k1S1H4VgTXafzgMJcVRUs3qBXPMKV6prytKe32apump",
+      "symbol": "Clout",
+      "event": "exit",
+      "reason": "trail",
+      "price": 4.99e-05,
+      "proceeds": 1.0978261511045497,
+      "pnl_approx": -0.6273987749321839,
+      "age_hours": 0.12323085777777777
     }
   ]
 }
