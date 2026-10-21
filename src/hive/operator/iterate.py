@@ -179,15 +179,26 @@ def evaluate(cfg: StrategyConfig, overrides: dict[str, Any], inputs: dict[str, A
     return EvalResult(overrides, out["insample"], out["outofsample"], curves)
 
 
+def breach_rate(m: dict[str, Any]) -> float:
+    return float(m.get("prop_fail_daily_rate") or 0.0) + float(m.get("prop_fail_total_rate") or 0.0)
+
+
+def prop_score(m: dict[str, Any]) -> float:
+    """The lab's prop objective for one window's metrics: passes earn, breaches cost (a result
+    scored before the score existed counts its pass rate)."""
+    return float(m["prop_score"]) if m.get("prop_score") is not None else float(m.get("prop_pass_rate") or 0.0)
+
+
 def verdict(parent: EvalResult, child: EvalResult, tolerance: float, objective: str = "growth") -> tuple[bool, str]:
     """A cell earns a paper seat when it beats the parent out of sample on the firm's objective:
     the simulated prop-firm pass rate (ties broken by growth) or, with "growth", CAGR; the
     in-sample and drawdown checks below apply either way."""
     p, c = parent.outofsample, child.outofsample
     if objective == "prop":
-        pp, cp = float(p.get("prop_pass_rate") or 0.0), float(c.get("prop_pass_rate") or 0.0)
+        pp, cp = prop_score(p), prop_score(c)
         if cp < pp or (cp == pp and c["cagr"] <= p["cagr"]):
-            return False, f"OOS prop pass rate {cp:.0%} does not beat parent {pp:.0%}"
+            return False, (f"OOS prop score {cp:+.2f} (pass {float(c.get('prop_pass_rate') or 0):.0%}, breach "
+                           f"{breach_rate(c):.0%}) does not beat parent {pp:+.2f}")
     elif c["cagr"] <= p["cagr"]:
         return False, f"OOS CAGR {c['cagr']:.2%} does not beat parent {p['cagr']:.2%}"
     if c["max_drawdown"] < p["max_drawdown"] * tolerance:
@@ -195,8 +206,9 @@ def verdict(parent: EvalResult, child: EvalResult, tolerance: float, objective: 
     if child.insample["cagr"] < 0:
         return False, "negative in-sample return"
     if objective == "prop":
-        return True, (f"beats parent on the prop objective out of sample (pass rate {float(c.get('prop_pass_rate') or 0):.0%} "
-                      f"vs {float(p.get('prop_pass_rate') or 0):.0%}) within the drawdown tolerance")
+        return True, (f"beats parent on the prop objective out of sample (score {prop_score(c):+.2f} vs {prop_score(p):+.2f}; "
+                      f"pass {float(c.get('prop_pass_rate') or 0):.0%} vs {float(p.get('prop_pass_rate') or 0):.0%}, "
+                      f"breach {breach_rate(c):.0%} vs {breach_rate(p):.0%}) within the drawdown tolerance")
     return True, "beats parent out of sample within the drawdown tolerance"
 
 

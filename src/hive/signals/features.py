@@ -77,10 +77,11 @@ def entry_signal(f: pd.DataFrame, close: pd.Series, high: pd.Series, low: pd.Ser
 
 
 def compute_features(bars: pd.DataFrame, rules: TrendRules) -> pd.DataFrame:
+    # Columns are built in a dict and the frame is assembled once: adding columns one at a
+    # time to a pandas frame copies its block manager each time (most of the lab's run time).
     px = adjust_ohlc(bars)
     close, high, low = px["close"], px["high"], px["low"]
-    f = pd.DataFrame(index=px.index)
-    f["close"] = close
+    f: dict[str, pd.Series] = {"close": close}
     # Unadjusted close, for dollar-denominated filters (min price, lot maths).
     f["raw_close"] = bars["close"]
 
@@ -132,8 +133,8 @@ def compute_features(bars: pd.DataFrame, rules: TrendRules) -> pd.DataFrame:
         f["volume_ratio"] = ind.sma(vol, rules.volume_short) / ind.sma(vol, rules.volume_long)
         f["volume_ok"] = f["volume_ratio"] <= rules.volume_max_ratio
     else:
-        f["volume_ratio"] = np.nan
-        f["volume_ok"] = True
+        f["volume_ratio"] = pd.Series(np.nan, index=px.index)
+        f["volume_ok"] = pd.Series(True, index=px.index)
     f["setup"] = f["impulse_ok"] & f["reset_ok"] & f["depth_ok"] & f["volume_ok"]
     f["setup_recent"] = f["setup"].astype(int).rolling(rules.setup_valid_bars, min_periods=1).max() > 0
 
@@ -156,7 +157,7 @@ def compute_features(bars: pd.DataFrame, rules: TrendRules) -> pd.DataFrame:
                  "setup", "setup_recent", "trigger", "entry_signal", "below_long"]
     for col in bool_cols:
         f[col] = f[col].fillna(False).astype(bool)
-    return f[FEATURE_COLUMNS]
+    return pd.DataFrame({c: f[c] for c in FEATURE_COLUMNS}, index=px.index)
 
 
 def initial_stop(entry_price: float, row: pd.Series, rules: TrendRules) -> float:

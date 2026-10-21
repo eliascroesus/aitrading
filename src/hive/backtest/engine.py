@@ -22,13 +22,73 @@ from hive.backtest.metrics import summarize
 from hive.config import StrategyConfig, TrendRules
 from hive.data.bars import adjust_ohlc, mirror_bars
 from hive.data.universe import PointInTimeUniverse
-from hive.signals.features import compute_features, initial_stop, rank_candidates
+from hive.signals.features import compute_features, entry_signal, initial_stop, rank_candidates
 from hive.signals.regime import class_multipliers, regime_frame, short_multipliers
 from hive.signals.sizing import edge_risk_pct, size_position
 
 log = logging.getLogger(__name__)
 
 SHORT = "~S"   # suffix of the short instrument of a market
+
+# Settings that never change a feature column (stops, exits, direction): a backtest that
+# differs from another only in these reuses its features. Everything else keys the cache.
+NON_FEATURE_FIELDS = frozenset({
+    "stop_swing_low_atr_pad", "stop_initial_atr", "trail_atr", "trail_atr_late", "trail_tighten_after_bars",
+    "exit_closes_below_mid", "exit_closes_below_long", "failure_stop_bars", "failure_stop_min_r",
+    "review_bars", "max_hold_bars", "earnings_blackout_bars", "direction", "short_green_mult",
+})
+CANDIDATE_COLUMNS = ("symbol", "close", "raw_close", "atr", "swing_low", "mom_vol_adj", "pct_of_high")
+# The feature columns the backtester itself reads (a third of the frame, so a third of the memory).
+ENGINE_COLUMNS = ["close", "raw_close", "atr", "swing_low", "mom_vol_adj", "pct_of_high",
+                  "below_mid_streak", "below_long", "template_ok", "entry_signal"]
+# Settings that change only the entry signal: a cell that differs from a cached rule set only
+# in these recomputes that one column from the cached base (about a tenth of the work).
+ENTRY_ONLY_FIELDS = frozenset({"entry_mode", "breakout_lookback", "pullback_touch_bars", "momentum_min"})
+BASE_COLUMNS = [*ENGINE_COLUMNS, "ma_mid", "trigger", "setup_recent"]
+FEATURE_CACHE_GROUPS = 2        # rule sets kept per process, per level (slim: about 0.3 GB each for stocks)
+_FEATURES: dict[tuple, dict[tuple, tuple[pd.DataFrame, pd.DataFrame]]] = {}
+_BASES: dict[tuple, dict[tuple, tuple[pd.DataFrame, pd.DataFrame]]] = {}
+
+
+def _feature_key(rules: TrendRules, also_skip: frozenset[str] = frozenset()) -> tuple:
+    skip = NON_FEATURE_FIELDS | also_skip
+    return tuple(sorted((k, repr(v)) for k, v in rules.model_dump().items() if k not in skip))
+
+
+def _lru(store: dict, group: tuple) -> dict:
+    """The group's cache, most recently used last; the least recently used group is dropped."""
+    cache = store.pop(group, None)
+    if cache is None:
+        cache = {}
+        while len(store) >= FEATURE_CACHE_GROUPS:
+            store.pop(next(iter(store)))
+    store[group] = cache
+    return cache
+
+
+def _cached_features(sym: str, bars: pd.DataFrame, rules: TrendRules, short: bool,
+                     slim: bool = True) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """(adjusted bars, features) for one market and rule set, computed once per process: the
+    lab's two windows, and every cell that only changes exits, sizing or direction, share them;
+    a cell that only changes the entry rule reuses the base and recomputes the entry signal.
+    ``slim`` keeps only the columns the backtester reads (a candidate filter needs them all)."""
+    b = mirror_bars(bars) if short else bars
+    if not slim:
+        return adjust_ohlc(b), compute_features(b, rules)
+    data = (sym, len(bars), bars.index[0], bars.index[-1], float(bars["close"].iloc[-1]))
+    full = _lru(_FEATURES, (_feature_key(rules), short))
+    if data in full:
+        return full[data]
+    base = _lru(_BASES, (_feature_key(rules, ENTRY_ONLY_FIELDS), short))
+    if data not in base:
+        base[data] = (adjust_ohlc(b), compute_features(b, rules)[BASE_COLUMNS])
+    px, f = base[data]
+    entry = entry_signal(f, px["close"], px["high"], px["low"], rules).fillna(False).astype(bool)
+    feats = f[ENGINE_COLUMNS].copy()
+    feats["entry_signal"] = entry
+    full[data] = (px, feats)
+    return full[data]
+
 
 # Optional hook: given (date, ranked candidate rows) return the subset approved.
 # This is where the LLM layer plugs in during agent-assisted backtests.
@@ -112,10 +172,9 @@ class Backtester:
                 continue
             legs = {"long": [sym], "short": [sym + SHORT], "both": [sym, sym + SHORT]}[rules.direction]
             for inst in legs:
-                b = mirror_bars(bars) if inst.endswith(SHORT) else bars
                 self.rules[inst] = rules
-                self.px[inst] = adjust_ohlc(b)
-                self.features[inst] = compute_features(b, rules)
+                self.px[inst], self.features[inst] = _cached_features(sym, bars, rules, inst.endswith(SHORT),
+                                                                      slim=candidate_filter is None)
                 self.last_bar[inst] = bars.index[-1]
                 self.asset_class[inst] = self.asset_class[sym]
                 self.base[inst] = sym
@@ -135,6 +194,12 @@ class Backtester:
             cal = cal[cal <= pd.Timestamp(end)]
         self.calendar = cal
         self.regime = regime_frame(benchmark_bars, config.regime, vix).reindex(cal, method="ffill")
+        # Day-loop lookups run on arrays aligned to the calendar (pandas row access was most of a
+        # backtest's time): the day's position in the calendar, the regime rows, and per
+        # instrument (built on first use) its bar and feature columns at each calendar day.
+        self._day_ix = {d: i for i, d in enumerate(cal)}
+        self._reg_rows = self.regime.to_dict("records")
+        self._al: dict[str, dict[str, np.ndarray]] = {}
 
         # Sparse index of entry signals: day -> symbols. Scanning every symbol
         # every day is O(days x symbols) of pandas row lookups and far too slow.
@@ -162,6 +227,11 @@ class Backtester:
             for sym, f in self.features.items():
                 for day in f.index[f["entry_signal"].to_numpy()]:
                     self.signal_days.setdefault(day, []).append(sym)
+        self._sig_of: dict[str, list[pd.Timestamp]] = {}
+        for day, syms in self.signal_days.items():
+            for sym in syms:
+                self._sig_of.setdefault(sym, []).append(day)
+        self._sig_rows: dict[str, dict] = {}
 
     # ------------------------------------------------------------------
     def run(self) -> BacktestResult:
@@ -272,9 +342,10 @@ class Backtester:
                 mv += self._value(pos, close)
                 gx += self._exposure(pos, close)
                 pos.highest_close = max(pos.highest_close, close)
-                f = self.features[sym]
                 rules = self.rules[sym]
-                atr = f.at[day, "atr"] if day in f.index else np.nan
+                al = self._aligned(sym)
+                ri = al["row"][self._day_ix[day]]
+                atr = al["atr"][ri] if ri >= 0 else np.nan
                 if pd.notna(atr):
                     mult = rules.trail_atr if pos.bars_held < rules.trail_tighten_after_bars else rules.trail_atr_late
                     pos.stop_price = max(pos.stop_price, pos.highest_close - atr * mult)
@@ -308,28 +379,28 @@ class Backtester:
             for sym, pos in positions.items():
                 if sym in pending_exits:
                     continue
-                f = self.features[sym]
                 rules = self.rules[sym]
-                if day not in f.index:
+                al = self._aligned(sym)
+                ri = al["row"][self._day_ix[day]]
+                if ri < 0:
                     continue
-                row = f.loc[day]
-                close = float(row["close"])
+                close = float(al["f_close"][ri])
                 failure_due = pos.bars_held >= rules.failure_stop_bars and not pos.failure_checked
                 if failure_due:
                     pos.failure_checked = True
-                if row["below_mid_streak"] >= rules.exit_closes_below_mid or (
-                    bool(row["below_long"]) and rules.exit_closes_below_long <= 1
+                if al["below_mid_streak"][ri] >= rules.exit_closes_below_mid or (
+                    bool(al["below_long"][ri]) and rules.exit_closes_below_long <= 1
                 ):
                     pending_exits[sym] = "trend_break"
                 elif failure_due and close < pos.entry_price + rules.failure_stop_min_r * pos.r_per_share:
                     pending_exits[sym] = "failure_stop"
-                elif pos.bars_held >= rules.review_bars and not bool(row["template_ok"]):
+                elif pos.bars_held >= rules.review_bars and not bool(al["template_ok"][ri]):
                     pending_exits[sym] = "review"
                 elif pos.bars_held >= rules.max_hold_bars:
                     pending_exits[sym] = "max_hold"
 
             # ---- 6. new entries ---------------------------------------------
-            reg = self.regime.loc[day] if day in self.regime.index else None
+            reg = self._reg_rows[self._day_ix[day]]
             mult = class_multipliers(reg, use_filter=self.use_regime_filter)
             smult = short_multipliers(reg, self.short_green, use_filter=self.use_regime_filter)
             state = str(reg["state"]) if (reg is not None and self.use_regime_filter) else "off"
@@ -425,15 +496,46 @@ class Backtester:
         return BacktestResult(equity_s, exposure_s, trades_df, metrics, cfg, daily_log, open_positions)
 
     # ------------------------------------------------------------------
-    def _bar(self, sym: str, day: pd.Timestamp) -> pd.Series | None:
-        px = self.px.get(sym)
-        if px is None or day not in px.index:
+    def _aligned(self, sym: str) -> dict[str, np.ndarray]:
+        """The instrument's bars and exit features as arrays, with each calendar day's row
+        (``row``: -1 when it has no bar that day) and its last bar on or before it (``last``)."""
+        a = self._al.get(sym)
+        if a is None:
+            px, f = self.px[sym], self.features[sym]
+            idx = px.index
+            a = {"row": idx.get_indexer(self.calendar), "last": idx.searchsorted(self.calendar, side="right") - 1,
+                 "open": px["open"].to_numpy(dtype=float), "high": px["high"].to_numpy(dtype=float),
+                 "low": px["low"].to_numpy(dtype=float), "close": px["close"].to_numpy(dtype=float),
+                 "f_close": f["close"].to_numpy(dtype=float), "atr": f["atr"].to_numpy(dtype=float),
+                 "below_mid_streak": f["below_mid_streak"].to_numpy(), "below_long": f["below_long"].to_numpy(),
+                 "template_ok": f["template_ok"].to_numpy()}
+            self._al[sym] = a
+        return a
+
+    def _bar(self, sym: str, day: pd.Timestamp) -> dict[str, float] | None:
+        if sym not in self.px:
             return None
-        return px.loc[day]
+        a = self._aligned(sym)
+        i = a["row"][self._day_ix[day]]
+        if i < 0:
+            return None
+        return {"open": a["open"][i], "high": a["high"][i], "low": a["low"][i], "close": a["close"][i]}
 
     def _last_close_before(self, sym: str, day: pd.Timestamp) -> float:
-        px = self.px[sym].loc[:day]
-        return float(px["close"].iloc[-1]) if len(px) else 0.0
+        a = self._aligned(sym)
+        i = a["last"][self._day_ix[day]]
+        return float(a["close"][i]) if i >= 0 else 0.0
+
+    def _signal_row(self, sym: str, day: pd.Timestamp) -> dict:
+        """The feature row of an instrument on one of its signal days, extracted once per run
+        for all of its signal days in the calendar (they are sparse)."""
+        rows = self._sig_rows.get(sym)
+        if rows is None:
+            f = self.features[sym]
+            days = [d for d in self._sig_of.get(sym, ()) if d in self._day_ix]
+            rows = f.loc[days].to_dict("index") if days else {}
+            self._sig_rows[sym] = rows
+        return rows[day]
 
     def _close_or(self, pos: Position, day: pd.Timestamp) -> float:
         bar = self._bar(pos.symbol, day)
@@ -464,14 +566,17 @@ class Backtester:
                 continue
             if allowed is not None and ac == "stock" and self.base[sym] not in allowed:
                 continue
-            row = self.features[sym].loc[day]
+            row = self._signal_row(sym, day)
             if pd.notna(row["atr"]) and row["atr"] > 0:
                 raw = 1.0 / row["raw_close"] if short else row["raw_close"]
                 if ac in ("stock", "etf") and raw < self.cfg.universe.min_price_usd:
                     continue
-                rows.append({"symbol": sym, **row.to_dict()})
+                rows.append({"symbol": sym, **row})
         if not rows:
             return pd.DataFrame(columns=["symbol", "score"])
+        if self.candidate_filter is None:
+            # the lab needs only what ranking and sizing read; an attached filter gets every column
+            rows = [{k: r[k] for k in CANDIDATE_COLUMNS} for r in rows]
         return rank_candidates(pd.DataFrame(rows))
 
     @staticmethod

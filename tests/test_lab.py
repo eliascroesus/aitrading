@@ -147,7 +147,8 @@ def test_queue_interleaves_sleeves_and_grid_comes_first(tmp_path):
     assert [(sl, ov) for sl, ov, st in staged2 if st == "rescore"] == [cell]
     assert sum(1 for sl, ov, _ in staged2 if (sl, ov) == cell) == 1
     reg.record_iteration({"date": "2026-10-20", "proposal": "x", "overrides": {"stocks.entry_mode": "template_cross"},
-                          "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17, "oos_prop": 0.2, "verdict": "spawned"})
+                          "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17, "oos_prop": 0.2, "oos_score": 0.15,
+                          "verdict": "spawned"})
     q2 = queue(reg, cfg, bounds, tmp_path / "lab")
     assert len(q2) > len(grid()) and cell not in q2                    # scored: never again
     assert len(results_so_far(reg, tmp_path / "lab")) == 1

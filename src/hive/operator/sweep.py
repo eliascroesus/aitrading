@@ -23,6 +23,7 @@ from hive.hive.registry import Child, HiveRegistry
 from hive.operator.iterate import (
     RESEARCH_LOG,
     Bound,
+    EvalResult,
     _get,
     append_research_log,
     coerce_types,
@@ -53,6 +54,9 @@ REFINE_DIVISORS = (1, 2, 4)   # coarse steps first (a sixth of the range), then 
 EVOLVE_TOP = 8                # the evolve stage mutates the best EVOLVE_TOP cells per sleeve ...
 EVOLVE_PER_SLEEVE = 150       # ... into this many fresh candidates per call
 EVOLVE_MAX_KNOBS = 6          # a candidate never changes more than this many settings
+# Cells per turn of the queue: forex and gold first (what prop firms trade most), then crypto,
+# then stocks (a stock cell also costs the most time: hundreds of markets).
+SLEEVE_WEIGHTS = {"macro": 3, "crypto": 2, "stocks": 1}
 RESCORE_TOP = 15              # best distinct results per sleeve re-tested once to get their prop score
 STAGES = ("rescore", "sweep", "refine", "evolve")
 
@@ -123,7 +127,9 @@ def results_so_far(registry: HiveRegistry, ldir=None) -> list[dict[str, Any]]:
         k = cell_key(it.get("sleeve") or "", ov)
         rows[k] = {"sleeve": it.get("sleeve") or "", "overrides": ov, "oos_cagr": it.get("oos_cagr"),
                    "oos_dd": it.get("oos_dd"), "is_cagr": it.get("is_cagr"), "verdict": it.get("verdict") or "",
-                   "oos_prop": it.get("oos_prop", (it.get("outofsample") or {}).get("prop_pass_rate"))}
+                   "oos_prop": it.get("oos_prop", (it.get("outofsample") or {}).get("prop_pass_rate")),
+                   "oos_score": it.get("oos_score", (it.get("outofsample") or {}).get("prop_score")),
+                   "oos_prop_days": it.get("oos_prop_days", (it.get("outofsample") or {}).get("prop_median_days"))}
     return list(rows.values())
 
 
@@ -144,10 +150,15 @@ def untested(registry: HiveRegistry, cells: list[Cell], ldir=None) -> list[Cell]
 
 
 def rank_key(r: dict[str, Any], objective: str = "growth") -> tuple:
-    """Best first under the firm's objective: the simulated prop pass rate, then growth, then the
-    shallower drawdown (a cell scored before prop metrics existed ranks as a zero pass rate)."""
-    lead = -(float(r.get("oos_prop") or 0.0)) if objective == "prop" else 0.0
-    return (lead, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
+    """Best first under the firm's objective: the prop score (passes earn, breaches cost), then the
+    faster median pass, then growth, then the shallower drawdown. A cell tested before the score
+    existed ranks by its pass rate until it is rescored."""
+    if objective != "prop":
+        return (0.0, 0.0, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
+    score = r.get("oos_score")
+    score = float(r.get("oos_prop") or 0.0) if score is None else float(score)
+    days = float(r.get("oos_prop_days") or 0.0) or 999.0
+    return (-score, days, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
 
 
 def _step(cur: float, lo: float, hi: float, div: int, sign: int, like: Any) -> Any:
@@ -300,8 +311,8 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
             return tuple(round(float(r.get(k) or 0.0), 6) for k in ("oos_cagr", "oos_dd", "is_cagr"))
 
         for sl in SLEEVES:
-            done = {same(r) for r in results if r["sleeve"] == sl and r.get("oos_prop") is not None}
-            unscored = sorted((r for r in results if r["sleeve"] == sl and r.get("oos_prop") is None
+            done = {same(r) for r in results if r["sleeve"] == sl and r.get("oos_score") is not None}
+            unscored = sorted((r for r in results if r["sleeve"] == sl and r.get("oos_score") is None
                                and r.get("oos_cagr") is not None
                                and not str(r.get("verdict", "")).startswith("rejected: backtest failed")),
                               key=lambda r: rank_key(r, "growth"))
@@ -330,8 +341,9 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
     out: list[tuple[str, dict[str, Any], str]] = []
     while any(by_sleeve.values()):
         for s in SLEEVES:
-            if by_sleeve[s]:
-                out.append(by_sleeve[s].pop(0))
+            for _ in range(SLEEVE_WEIGHTS.get(s, 1)):
+                if by_sleeve[s]:
+                    out.append(by_sleeve[s].pop(0))
     return out
 
 
@@ -398,13 +410,35 @@ def seat_waiting(registry: HiveRegistry, tier: Tier, on: date, ldir=None, object
     return out
 
 
+_POOL: dict[str, Any] = {}     # set before the workers fork: the config and every sleeve's markets
+
+
+def _pool_init() -> None:
+    # a worker keeps fewer rule sets' features than a lone process: four of them share the memory
+    from hive.backtest import engine
+
+    engine.FEATURE_CACHE_GROUPS = 2
+
+
+def _pool_eval(sleeve: str, ov: dict[str, Any]) -> tuple[EvalResult | None, str | None, float]:
+    """Backtest one cell in a worker process. Returns (result, error, seconds)."""
+    import time
+
+    t0 = time.monotonic()
+    try:
+        return evaluate(_POOL["cfg"], ov, _POOL["inputs"][sleeve], keep_curves=_POOL["keep"]), None, time.monotonic() - t0
+    except Exception as exc:  # a bad cell must not take the round down
+        return None, f"backtest failed: {str(exc)[:160]}", time.monotonic() - t0
+
+
 def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier, *, n_cells: int = 3,
               on: date | None = None, inputs_by_sleeve: dict[str, dict] | None = None,
               budget_s: float | None = None, with_refine: bool = True,
-              ldir=None) -> list[dict[str, Any]]:
+              ldir=None, workers: int = 1) -> list[dict[str, Any]]:
     """Backtest the next cells of the queue: ``n_cells`` of them, or as many as fit in ``budget_s``
-    seconds when that is given (the cell in flight always finishes). Every cell becomes a registry
-    iteration, a research-log line and a lab record with its curves."""
+    seconds when that is given (cells in flight always finish). With ``workers`` > 1 the cells
+    run in that many processes at once and are judged and recorded here as each finishes. Every
+    cell becomes a registry iteration, a research-log line and a lab record with its curves."""
     from hive.operator.iterate import default_inputs
 
     on = on or date.today()
@@ -415,61 +449,91 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
 
         rollup(ldir)
     records: list[dict[str, Any]] = seat_waiting(registry, tier, on, ldir, cfg.operator.objective)
-    todo = queue_staged(registry, cfg, bounds, ldir, with_refine=with_refine)
     inputs = dict(inputs_by_sleeve or {})
     parents: dict[str, Any] = {}
     no_data: set[str] = set()    # a sleeve whose markets are not in the cache yet is skipped, not failed
     started = datetime.now(UTC)
     n_done = 0
+    keep = ldir is not None
     hypothesis = {"rescore": "a top cell re-tested to score it on the prop objective",
                   "sweep": "systematic sweep of the strategy space",
                   "refine": "refinement around the best cells found so far",
                   "evolve": "mutation of one of the best cells found so far"}
-    for sleeve, ov, stage in todo:
+
+    def elapsed() -> float:
+        return (datetime.now(UTC) - started).total_seconds()
+
+    def load(sleeve: str) -> bool:
+        """The sleeve's markets and its parent's result, once; False when it has no data yet."""
         if sleeve in no_data:
-            continue
-        if sleeve not in inputs:
-            try:
+            return False
+        try:
+            if sleeve not in inputs:
                 if settings is None:
                     raise FileNotFoundError(sleeve)
                 inputs[sleeve] = default_inputs(settings, cfg, sleeve)
-            except FileNotFoundError:
-                no_data.add(sleeve)
+            if sleeve not in parents:
+                parents[sleeve] = parent_eval(cfg, sleeve, inputs[sleeve], ldir, on=on.isoformat())
+        except FileNotFoundError:
+            no_data.add(sleeve)
+            return False
+        return True
+
+    def cells():
+        """The queue, refreshed with this run's own results whenever a timed run outgrows it."""
+        seen_now: set[str] = set()
+        while True:
+            fresh = 0
+            for sleeve, ov, stage in queue_staged(registry, cfg, bounds, ldir, with_refine=with_refine):
+                k = cell_key(sleeve, ov)
+                if k in seen_now:
+                    continue
+                seen_now.add(k)
+                fresh += 1
+                yield sleeve, ov, stage
+            if budget_s is None or fresh == 0 or elapsed() >= budget_s:
+                return
+
+    gen = cells()
+
+    def next_job() -> tuple[str, dict[str, Any], str] | None:
+        for sleeve, ov, stage in gen:
+            if sleeve in no_data:
                 continue
-        elapsed = (datetime.now(UTC) - started).total_seconds()
-        if (budget_s is not None and elapsed >= budget_s) or (budget_s is None and n_done >= n_cells):
-            break
+            ok, why = validate_overrides(ov, bounds)
+            if not ok:
+                rec = {"date": on.isoformat(), "proposal": describe(sleeve, ov, stage=stage), "kind": "sweep",
+                       "stage": stage, "hypothesis": hypothesis[stage], "overrides": ov, "sleeve": sleeve,
+                       "cost_usd": 0.0, "verdict": f"rejected: {why}"}
+                registry.record_iteration(rec)
+                records.append(rec)
+                continue
+            if not load(sleeve):
+                continue
+            return sleeve, ov, stage
+        return None
+
+    def finish(sleeve: str, ov: dict[str, Any], stage: str, ev: EvalResult | None, err: str | None,
+               took: float) -> None:
+        """Judge one backtested cell, seat it if it earned a seat, and keep the record."""
         rec: dict[str, Any] = {"date": on.isoformat(), "proposal": describe(sleeve, ov, stage=stage), "kind": "sweep",
                                "stage": stage, "hypothesis": hypothesis[stage],
                                "overrides": ov, "sleeve": sleeve, "cost_usd": 0.0}
-        ok, why = validate_overrides(ov, bounds)
-        if not ok:
-            rec["verdict"] = f"rejected: {why}"
-            registry.record_iteration(rec)
-            records.append(rec)
-            continue
-        t0 = datetime.now(UTC)
-        try:
-            if sleeve not in inputs:
-                inputs[sleeve] = default_inputs(settings, cfg, sleeve)
-            if sleeve not in parents:
-                parents[sleeve] = parent_eval(cfg, sleeve, inputs[sleeve], ldir, on=on.isoformat())
-            ev = evaluate(cfg, ov, inputs[sleeve], keep_curves=ldir is not None)
-        except Exception as exc:
-            rec["verdict"] = f"rejected: backtest failed: {str(exc)[:160]}"
+        parent = parents.get(sleeve)
+        if ev is None:
+            rec["verdict"] = f"rejected: {err}"
             registry.record_iteration(rec)
             records.append(rec)
             if ldir is not None:
                 record_test(ldir, lab_record(by=stage, sleeve=sleeve, name=rec["proposal"], overrides=ov, ev=None,
-                                              parent=parents.get(sleeve), verdict=rec["verdict"], on=on.isoformat(),
+                                              parent=parent, verdict=rec["verdict"], on=on.isoformat(),
                                               hypothesis=rec["hypothesis"], cfg=cfg))
-            n_done += 1
-            continue
-        parent = parents[sleeve]
+            return
         rec.update({"is_cagr": ev.insample["cagr"], "oos_cagr": ev.outofsample["cagr"],
                     "is_dd": ev.insample["max_drawdown"], "oos_dd": ev.outofsample["max_drawdown"],
                     "parent_oos_cagr": parent.outofsample["cagr"],
-                    "oos_prop": ev.outofsample.get("prop_pass_rate"), "parent_oos_prop": parent.outofsample.get("prop_pass_rate")})
+                    "oos_prop": ev.outofsample.get("prop_pass_rate"), "parent_oos_prop": parent.outofsample.get("prop_pass_rate"),
+                    "oos_score": ev.outofsample.get("prop_score"), "oos_prop_days": ev.outofsample.get("prop_median_days")})
         passed, why = verdict(parent, ev, cfg.operator.max_drawdown_tolerance, cfg.operator.objective)
         child_id = None
         seated_as = next((c.id for c in registry.children if cell_key(c.sleeve, c.overrides or {}) == cell_key(sleeve, ov)), None)
@@ -489,16 +553,59 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
             rec["verdict"] = f"rejected: {why}"
         registry.record_iteration(rec)
         records.append(rec)
-        n_done += 1
         if ldir is not None:
             from hive.operator.lab import data_fingerprint
 
             record_test(ldir, lab_record(by=stage, sleeve=sleeve, name=rec["proposal"], overrides=ov, ev=ev,
                                           parent=parent, verdict=rec["verdict"], on=on.isoformat(),
                                           hypothesis=rec["hypothesis"], child_id=child_id, cfg=cfg,
-                                          elapsed_s=round((datetime.now(UTC) - t0).total_seconds(), 1),
-                                          data=data_fingerprint(inputs[sleeve])))
+                                          elapsed_s=round(took, 1), data=data_fingerprint(inputs[sleeve])))
         log.info("lab: %s -> %s", rec["proposal"], rec["verdict"])
+
+    def may_start(n_started: int) -> bool:
+        return (budget_s is None and n_started < n_cells) or (budget_s is not None and elapsed() < budget_s)
+
+    if workers <= 1:
+        while may_start(n_done):
+            job = next_job()
+            if job is None:
+                break
+            sleeve, ov, stage = job
+            t0 = datetime.now(UTC)
+            try:
+                ev, err = evaluate(cfg, ov, inputs[sleeve], keep_curves=keep), None
+            except Exception as exc:
+                ev, err = None, f"backtest failed: {str(exc)[:160]}"
+            finish(sleeve, ov, stage, ev, err, (datetime.now(UTC) - t0).total_seconds())
+            n_done += 1
+    else:
+        # every sleeve's markets are loaded before the workers fork, so they share them
+        for sl in SLEEVES:
+            load(sl)
+        _POOL.update(cfg=cfg, inputs=inputs, keep=keep)
+        import multiprocessing as mp
+
+        n_started = 0
+        with mp.get_context("fork").Pool(workers, initializer=_pool_init) as pool:
+            pending: list[tuple[Any, str, dict[str, Any], str]] = []
+            while True:
+                while len(pending) < workers + 1 and may_start(n_started):
+                    job = next_job()
+                    if job is None:
+                        break
+                    pending.append((pool.apply_async(_pool_eval, (job[0], job[1])), *job))
+                    n_started += 1
+                if not pending:
+                    break
+                ready = [x for x in pending if x[0].ready()]
+                if not ready:
+                    pending[0][0].wait(0.25)
+                    continue
+                for x in ready:
+                    pending.remove(x)
+                    ev, err, took = x[0].get()
+                    finish(x[1], x[2], x[3], ev, err, took)
+                    n_done += 1
     if records:
         # one compact line per run: the operator reads the last dozen, so it gets the gist, not the flood
         ran = [r for r in records if r.get("kind") == "sweep"]

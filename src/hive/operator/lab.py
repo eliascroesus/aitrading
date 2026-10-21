@@ -308,11 +308,16 @@ def lab_record(*, by: str, sleeve: str, name: str, overrides: dict[str, Any], ev
         rec["is_cagr"], rec["oos_cagr"] = ev.insample.get("cagr"), ev.outofsample.get("cagr")
         rec["is_dd"], rec["oos_dd"] = ev.insample.get("max_drawdown"), ev.outofsample.get("max_drawdown")
         rec["is_prop"], rec["oos_prop"] = ev.insample.get("prop_pass_rate"), ev.outofsample.get("prop_pass_rate")
+        rec["oos_score"] = ev.outofsample.get("prop_score")
+        rec["oos_breach"] = (float(ev.outofsample.get("prop_fail_daily_rate") or 0.0)
+                             + float(ev.outofsample.get("prop_fail_total_rate") or 0.0))
+        rec["oos_prop_days"] = ev.outofsample.get("prop_median_days")
         rec["curves"] = ev.curves
     if parent is not None:
         rec["parent_oos_cagr"] = parent.outofsample.get("cagr")
         rec["parent_oos_dd"] = parent.outofsample.get("max_drawdown")
         rec["parent_oos_prop"] = parent.outofsample.get("prop_pass_rate")
+        rec["parent_oos_score"] = parent.outofsample.get("prop_score")
     return rec
 
 

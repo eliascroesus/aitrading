@@ -30,7 +30,7 @@ import pandas as pd
 from hive.config import PropRules
 
 PROP_KEYS = ("prop_pass_rate", "prop_fail_daily_rate", "prop_fail_total_rate", "prop_timeout_rate",
-             "prop_median_days", "prop_n")
+             "prop_median_days", "prop_n", "prop_score")
 
 
 @dataclass
@@ -85,6 +85,10 @@ def prop_metrics(equity: pd.Series, rules: PropRules) -> dict[str, float]:
                 "prop_timeout_rate": sum(e.outcome == "timeout" for e in evals) / n,
                 "prop_median_days": float(np.median([e.days for e in passed])) if passed else 0.0,
                 "prop_n": float(n)})
+    # the reward and the punishment in one number: a pass earns 1, a breached evaluation (the fee
+    # lost) costs breach_penalty, running out of time costs nothing
+    out["prop_score"] = out["prop_pass_rate"] - rules.breach_penalty * (out["prop_fail_daily_rate"]
+                                                                        + out["prop_fail_total_rate"])
     return out
 
 

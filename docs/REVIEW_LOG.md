@@ -256,3 +256,30 @@ to choose, and for the operator to act on the reward and punishment system.
   unlevered forex book moves slowly: a 10% prop target in 60 days is rare
   without leverage.
 
+### Config 2.4.0: the lab at full speed, scored on passes and breaches
+
+The owner asked (2026-10-21) for many more backtests per second, a focus on
+forex and gold, and rewards and punishments honed for clearing prop-firm
+challenges quickly.
+
+* **Speed.** One stock cell took 158 s; the same cell now takes about 10 s when
+  its indicators are cached, 12 s when only its entry rule is new and 25 s from
+  cold, and the lab runs four cells at once (one per core). Measured on the
+  same data: 2.6 cells a minute before, 25 a minute after (about 9x). Every
+  change was checked for identical results against the old engine on real
+  data in both windows (equity, trades, metrics), shorts included.
+  How: indicator frames are built in one step, cached per rule set and reused
+  across cells that only change exits, sizing or direction; an entry-rule change
+  recomputes only the entry column; the day loop reads arrays instead of pandas
+  rows; the queue refills itself when a round outruns it.
+* **Focus.** The queue gives forex and gold three turns, crypto two, stocks one.
+* **Reward and punishment.** The prop score: a passed simulated evaluation earns
+  1, a breach costs 0.5, a timeout nothing; ties go to the faster pass. Cells
+  scored before 2.4.0 rank by their pass rate until the rescore stage re-tests
+  them.
+* **Pending owner decision.** Without leverage the forex and gold sleeve makes
+  about 4% a year and passes about 4% of simulated evaluations; a prop
+  account's leverage (often 1:30 or more on forex) is what makes a 10% target
+  reachable. Modelling a prop account's leverage for the macro sleeve's
+  evaluations is the owner's call (they asked for no leverage on 2026-10-20).
+

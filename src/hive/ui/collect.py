@@ -354,7 +354,8 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
         if not t.get("overrides"):
             row["name"] = t.get("name")
         row["verdict"] = (t.get("verdict") or "")[:110]
-        for k in ("is_cagr", "oos_cagr", "is_dd", "oos_dd", "parent_oos_cagr", "oos_prop", "parent_oos_prop"):
+        for k in ("is_cagr", "oos_cagr", "is_dd", "oos_dd", "parent_oos_cagr", "oos_prop", "parent_oos_prop",
+                  "oos_score", "parent_oos_score", "oos_breach", "oos_prop_days"):
             row[k] = r5(t.get(k))
         row["oos"] = {k: r5((t.get("outofsample") or {}).get(k)) for k in metric_keys if k in ("sharpe", "n_trades")}
         row["child_status"] = child_status.get(t.get("child_id")) if t.get("child_id") else None
@@ -504,7 +505,8 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
                                                        + (", close-only" if t["close_only"] else "") for t in tiers),
          "who": "owner", "what": "what equity unlocks: sub-agent seats, risk multiplier, research budget"},
     ]
-    beat = ("OOS prop pass rate > parent (equal: higher OOS CAGR)" if op.objective == "prop" else "OOS CAGR > parent")
+    beat = (f"OOS prop score > parent (a pass +1, a breach -{cfg.prop.breach_penalty:g}; equal: higher OOS CAGR)"
+            if op.objective == "prop" else "OOS CAGR > parent")
     search_rows = [
         {"key": "operator.objective", "value": op.objective, "who": "owner",
          "what": "what the lab climbs: prop = the simulated prop-firm pass rate, growth = the growth rate"},
@@ -561,6 +563,8 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
         {"key": "prop.min_trading_days", "value": pr.min_trading_days, "who": "owner", "what": "trading days before a pass counts"},
         {"key": "prop.eval_horizon_days / eval_step_days", "value": f"{pr.eval_horizon_days} days / every {pr.eval_step_days}",
          "who": "owner", "what": "each backtest is scored by evaluations this long, one starting every few days"},
+        {"key": "prop.breach_penalty", "value": pr.breach_penalty, "who": "owner",
+         "what": "the lab's score: each simulated evaluation passed earns 1, each that breaks a loss limit costs this"},
         {"key": "prop.ready_min_forward_days", "value": pr.ready_min_forward_days, "who": "owner",
          "what": "paper trading days a book needs before it can be called ready"},
         {"key": "prop.ready_min_backtest_pass_rate", "value": pr.ready_min_backtest_pass_rate, "who": "owner",

@@ -397,7 +397,8 @@ def sweep(cells: int = typer.Option(3, help="Untested cells to backtest this run
           minutes: float | None = typer.Option(None, help="Backtest cells until this many minutes have passed"),
           refine: bool = typer.Option(True, help="After the grid, refine around the best cells so far"),
           round_: int = typer.Option(1, "--round", help="This round's number within the hourly run"),
-          rounds: int = typer.Option(1, help="Rounds in the hourly run (for the dashboard's status line)")) -> None:
+          rounds: int = typer.Option(1, help="Rounds in the hourly run (for the dashboard's status line)"),
+          workers: int = typer.Option(0, help="Backtests at once (0: one per CPU core)")) -> None:
     """The lab: backtest the next cells of the strategy space against the parent (no LLM).
     Every cell is kept in reports/lab/ with its curves and shown on the dashboard."""
     from datetime import UTC, datetime
@@ -419,8 +420,10 @@ def sweep(cells: int = typer.Option(3, help="Untested cells to backtest this run
     started = datetime.now(UTC).isoformat(timespec="seconds")
     write_status(s.hive_state_dir, {"state": "running", "started": started, "round": round_, "rounds": rounds,
                                     "minutes": minutes})
+    import os
+
     recs = run_sweep(s, cfg, reg, tier, n_cells=cells, on=_date.today(), with_refine=refine,
-                     budget_s=None if minutes is None else minutes * 60.0)
+                     budget_s=None if minutes is None else minutes * 60.0, workers=workers or (os.cpu_count() or 1))
     for r in recs:
         rprint(f"{r['proposal']}: {r['verdict']}")
     sm = summary(lab_dir(s))

@@ -427,6 +427,9 @@ class PropRules(BaseModel):
     min_trading_days: int = 4
     eval_horizon_days: int = 60           # simulated evaluations end after this many days
     eval_step_days: int = 5               # a new simulated evaluation starts every this many days
+    # The lab's score per evaluation: a pass earns 1, a breach of the daily or total loss limit
+    # costs this much (the fee is lost), a timeout costs nothing (config 2.4.0).
+    breach_penalty: float = 0.5
     retire_on_breach: bool = True         # a variant whose paper record breaches is retired
     ready_min_forward_days: int = 30
     ready_min_backtest_pass_rate: float = 0.5
@@ -478,7 +481,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "2.3.0"
+    version: str = "2.4.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     macro: TrendRules = Field(default_factory=TrendRules.macro)

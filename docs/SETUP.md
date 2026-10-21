@@ -134,6 +134,12 @@ hive status
   drawdown is more than 10% worse than the parent's; see the owner's pending
   decisions in `docs/REVIEW_LOG.md`). Set `objective = "growth"` under
   `[operator]` to go back to ranking by growth alone.
+  Since config 2.4.0 the number the lab climbs is the **prop score**: each
+  simulated evaluation that passes earns 1, each that breaks the daily or total
+  loss limit costs `prop.breach_penalty` (0.5: the fee is lost), a timeout costs
+  nothing; ties go to the faster median pass. The lab runs one backtest per CPU
+  core (four on a GitHub runner), reuses every computed indicator across cells
+  that share it, and gives forex and gold three turns for every one stock cell.
 * **Punishment** follows the same rules: a sub-agent whose own paper book
   breaks the daily or total loss limit is retired that day, as a firm would
   close the account; one that lags the parent for 10 days is retired; one
