@@ -1,5 +1,5 @@
 {
-  "cash": 23.382215060478067,
+  "cash": 22.998398603476538,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
@@ -17,21 +17,10 @@
       "symbol": "Pokecity",
       "qty": 2178.215444328796,
       "entry_price": 0.0007949,
-      "peak_price": 0.0008362,
+      "peak_price": 0.001249,
       "entered_at": "2026-10-21T04:36:11.228778+00:00",
       "cost_usd": 1.8353512640987775,
       "took_half": false,
-      "misses": 0
-    },
-    "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
-      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
-      "symbol": "CPU",
-      "qty": 14300.242710623203,
-      "entry_price": 5.954e-05,
-      "peak_price": 0.0001343,
-      "entered_at": "2026-10-21T04:52:20.303882+00:00",
-      "cost_usd": 1.8050452760998716,
-      "took_half": true,
       "misses": 0
     },
     "G9WuTdRa3UErXAAZaF6gpkA4g4bQ6vcqPqs1YB6kTKXB": {
@@ -64,6 +53,17 @@
       "peak_price": 6.973e-05,
       "entered_at": "2026-10-21T05:31:59.736756+00:00",
       "cost_usd": 1.6986128594725682,
+      "took_half": false,
+      "misses": 0
+    },
+    "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump": {
+      "mint": "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump",
+      "symbol": "PHP",
+      "qty": 13152.211623386116,
+      "entry_price": 0.0001237,
+      "peak_price": 0.0001237,
+      "entered_at": "2026-10-21T05:47:04.670783+00:00",
+      "cost_usd": 1.7245442924816345,
       "took_half": false,
       "misses": 0
     }
@@ -1786,6 +1786,25 @@
       "notional": 1.6986128594725682,
       "liquidity_usd": 21760.91,
       "age_hours": 1.7385296975368925
+    },
+    {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "event": "exit",
+      "reason": "trail",
+      "price": 9.974e-05,
+      "proceeds": 1.3407278354801047,
+      "pnl_approx": 0.43820519743016906,
+      "age_hours": 0.9123241391666667
+    },
+    {
+      "mint": "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump",
+      "symbol": "PHP",
+      "event": "entry",
+      "price": 0.0001237,
+      "notional": 1.7245442924816345,
+      "liquidity_usd": 29835.76,
+      "age_hours": 0.5465103608534071
     }
   ]
 }
