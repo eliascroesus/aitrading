@@ -171,7 +171,7 @@ def evaluate(cfg: StrategyConfig, overrides: dict[str, Any], inputs: dict[str, A
                          initial_equity=cfg.survival.starting_bankroll_usd, start=s, end=e,
                          universe=inputs.get("universe"), vix=inputs.get("vix"), calendar=inputs.get("calendar")).run()
         out[label] = {k: float(res.metrics.get(k, 0.0)) for k in KEEP}
-        out[label].update(prop_metrics(res.equity, cfg.prop))
+        out[label].update(prop_metrics(res.equity, cfg.prop, res.equity_low))
         if keep_curves:
             cv = downsample(res.equity)
             cv["benchmark"] = benchmark_on(cv["dates"], inputs.get("bench"), cfg.survival.starting_bankroll_usd)

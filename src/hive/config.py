@@ -429,9 +429,12 @@ class PropRules(BaseModel):
     # minimum in each. FTMO's 2-Step is 10% / 5% with four days. phase2_target_pct = 0 is one phase.
     profit_target_pct: float = 0.08
     phase2_target_pct: float = 0.05
-    max_daily_loss_pct: float = 0.05      # from the previous close
+    max_daily_loss_pct: float = 0.05      # from the previous close, in units of the starting balance
     max_total_loss_pct: float = 0.10      # from the start, or from the peak when trailing
     trailing_total_loss: bool = False
+    # Firms check both limits against equity during the day, floating losses included: a
+    # backtest's limits are checked against each day's worst equity, not the close (config 2.6.0).
+    intraday_breach: bool = True
     min_trading_days: int = 5
     eval_horizon_days: int = 60           # simulated evaluations end after this many days
     eval_step_days: int = 5               # a new simulated evaluation starts every this many days
@@ -489,7 +492,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "2.5.0"
+    version: str = "2.6.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     macro: TrendRules = Field(default_factory=TrendRules.macro)

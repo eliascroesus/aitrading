@@ -311,3 +311,30 @@ challenges quickly.
   pre-registered rules until a seated variant out-earns it for 10 paper days and
   is promoted (none yet: the first seats were filled under the old scoring).
 
+### Config 2.6.0: loss limits checked on the day's worst equity
+
+* **Research (three reports, 2026-10-21).** Firms check the daily and total loss
+  limits against equity during the day, floating losses included (FTMO:
+  balance at midnight CE(S)T minus 5% of the initial balance; The5ers and
+  FundingPips: the higher of balance and equity at the day's start). One firm
+  publishing its own data saw 79% of failures come from the daily limit. Most
+  firms no longer have a time limit, so the 60-day horizon is the firm's own
+  speed budget, not a rule.
+* **The change.** The backtest records each day's worst equity (every open
+  position marked at its adverse extreme of the day, all at once: a little
+  harsher than the real path). The simulator checks a day's loss as (worst
+  equity minus the previous close) over the starting balance, and the total
+  loss as worst equity over the start; the target still counts on the close.
+  The rules key changes, so every cell is rescored.
+* **Measured on real data before the change went live:** the unlevered
+  strategies barely move (best crypto cell +0.145 to +0.144, stock parent
+  -0.014 to -0.021): their bad days already show in the closes. It matters as
+  risk per trade, or leverage, goes up.
+* **Checked and not changed.** One report argued that a strategy with no edge
+  and high risk scores about +0.06 under a 0.5 breach penalty. On this
+  simulator (60-day horizon, daily limit, minimum days) zero-edge random walks
+  at 0.5% to 3% daily volatility score -0.004 to -0.19, so the penalty stays.
+* **Noted for the next step.** About 20 independent challenges fit in the
+  out-of-sample window, so a 17% pass rate is 17% plus or minus about 8%: the
+  gaps between the top cells are mostly noise.
+

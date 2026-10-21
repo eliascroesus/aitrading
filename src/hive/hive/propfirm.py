@@ -15,8 +15,12 @@ Two uses:
   on its first day: did it pass, did it breach, how far along it is. It drives punishment
   (a variant that breaches is retired, as a firm would close the account) and readiness.
 
-Daily closes only: an intraday breach the closes do not show is invisible here, so the
-real evaluation is somewhat harder than the simulated one.
+Firms check their loss limits against equity during the day, floating losses included
+(config 2.6.0). A backtest also gives each day's worst equity (every position at its adverse
+extreme of the day at once, a little harsher than the real path), and the limits are checked
+against it: a day's loss is measured from the previous close in units of the starting balance,
+as firms measure it, and the total loss from the start. A target counts on the close. A live
+paper record has only its closes, so ``forward_status`` checks those.
 """
 
 from __future__ import annotations
@@ -46,21 +50,27 @@ def rules_key(rules: PropRules) -> str:
     """The rules a prop score was made under, so a score from other rules is not compared."""
     return (f"{rules.profit_target_pct:g}/{rules.phase2_target_pct:g}/{rules.max_daily_loss_pct:g}/"
             f"{rules.max_total_loss_pct:g}/{'trail' if rules.trailing_total_loss else 'static'}/"
-            f"{rules.min_trading_days}d/{rules.eval_horizon_days}h/{rules.eval_step_days}s/{rules.breach_penalty:g}")
+            f"{rules.min_trading_days}d/{rules.eval_horizon_days}h/{rules.eval_step_days}s/{rules.breach_penalty:g}"
+            + ("/intraday" if rules.intraday_breach else ""))
 
 
 def _walk(eq: np.ndarray, start: int, rules: PropRules, *, horizon: int | None,
-          target: float | None = None) -> Evaluation:
+          target: float | None = None, low: np.ndarray | None = None) -> Evaluation:
     target = rules.profit_target_pct if target is None else target
     e0 = eq[start]
     peak = e0
     worst_day, max_loss = 0.0, 0.0
     end = len(eq) if horizon is None else min(len(eq), start + horizon + 1)
     for i in range(start + 1, end):
-        day_ret = eq[i] / eq[i - 1] - 1.0
+        if low is None:
+            worst = eq[i]
+            day_ret = eq[i] / eq[i - 1] - 1.0
+        else:                                    # the day's worst equity, against the starting balance
+            worst = min(low[i], eq[i])
+            day_ret = (worst - eq[i - 1]) / e0
         worst_day = min(worst_day, day_ret)
         ref = peak if rules.trailing_total_loss else e0
-        loss = eq[i] / ref - 1.0
+        loss = worst / ref - 1.0
         max_loss = min(max_loss, loss)
         days = i - start
         if day_ret <= -rules.max_daily_loss_pct:
@@ -75,31 +85,37 @@ def _walk(eq: np.ndarray, start: int, rules: PropRules, *, horizon: int | None,
     return Evaluation(outcome, days, eq[end - 1] / e0 - 1.0, worst_day, max_loss)
 
 
-def _evaluate(eq: np.ndarray, start: int, rules: PropRules, *, horizon: int | None) -> Evaluation:
+def _evaluate(eq: np.ndarray, start: int, rules: PropRules, *, horizon: int | None,
+              low: np.ndarray | None = None) -> Evaluation:
     """One whole challenge from ``start``: phase 1, then (when ``phase2_target_pct`` > 0) phase 2
     from a fresh balance on the day phase 1 passed, with the same loss limits and minimum days,
     inside the same horizon. It passes only if both phases do."""
-    p1 = _walk(eq, start, rules, horizon=horizon)
+    p1 = _walk(eq, start, rules, horizon=horizon, low=low)
     if p1.outcome != "passed" or rules.phase2_target_pct <= 0:
         return p1
     rest = None if horizon is None else horizon - p1.days
     if rest is not None and rest <= 0:
         return Evaluation("timeout", p1.days, p1.ret, p1.worst_day, p1.max_loss)
-    p2 = _walk(eq, start + p1.days, rules, horizon=rest, target=rules.phase2_target_pct)
+    p2 = _walk(eq, start + p1.days, rules, horizon=rest, target=rules.phase2_target_pct, low=low)
     days = p1.days + p2.days
     return Evaluation(p2.outcome, days, float(eq[start + days] / eq[start] - 1.0), min(p1.worst_day, p2.worst_day),
                       min(p1.max_loss, p2.max_loss))
 
 
-def prop_metrics(equity: pd.Series, rules: PropRules) -> dict[str, float]:
+def prop_metrics(equity: pd.Series, rules: PropRules, low: pd.Series | None = None) -> dict[str, float]:
     """Rolling simulated evaluations over an equity curve (one start every ``eval_step_days``,
     each walked for at most ``eval_horizon_days``). Starts without a full horizon left are
-    skipped so every evaluation had the same chance to finish."""
-    eq = np.asarray(pd.Series(equity).dropna().astype(float).values)
+    skipped so every evaluation had the same chance to finish. ``low`` is each day's worst
+    equity; with ``intraday_breach`` the loss limits are checked against it."""
+    s = pd.Series(equity).dropna().astype(float)
+    eq = np.asarray(s.values)
+    lw = None
+    if low is not None and rules.intraday_breach:
+        lw = np.asarray(pd.Series(low).reindex(s.index).astype(float).fillna(s).values)
     out = dict.fromkeys(PROP_KEYS, 0.0)
     h = rules.eval_horizon_days
     starts = range(0, max(0, len(eq) - h), max(1, rules.eval_step_days))
-    evals = [_evaluate(eq, s, rules, horizon=h) for s in starts if eq[s] > 0]
+    evals = [_evaluate(eq, i, rules, horizon=h, low=lw) for i in starts if eq[i] > 0]
     if not evals:
         return out
     n = len(evals)

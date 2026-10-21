@@ -125,6 +125,10 @@ class BacktestResult:
     config: StrategyConfig
     daily_log: list[dict] = field(default_factory=list)
     open_positions: list[dict] = field(default_factory=list)   # filled when the run is not liquidated at the end
+    # each day's worst equity: every open position marked at its adverse extreme of the day (the
+    # low for a long, the high for a short) as if they all came at once; what a prop firm's
+    # intraday loss limits are checked against
+    equity_low: pd.Series | None = None
 
 
 class Backtester:
@@ -240,6 +244,7 @@ class Backtester:
         positions: dict[str, Position] = {}
         trades: list[dict] = []
         equity_hist: list[tuple[pd.Timestamp, float]] = []
+        low_hist: list[tuple[pd.Timestamp, float]] = []
         exposure_hist: list[tuple[pd.Timestamp, float]] = []
         pending_entries: list[dict] = []  # decided at close t, filled at open t+1
         pending_exits: dict[str, str] = {}  # symbol -> reason (kept until a bar exists)
@@ -329,17 +334,19 @@ class Backtester:
                     pending_exits.pop(sym, None)
 
             # ---- 3. mark to market at close; ratchet trailing stops ---------
-            mv = gx = 0.0      # market value (what the book is worth) and gross exposure (what it holds)
+            mv = gx = lo = 0.0  # market value (what the book is worth), gross exposure, worst value of the day
             for sym, pos in positions.items():
                 bar = self._bar(sym, day)
                 if bar is None:
                     last_px = self._last_close_before(sym, day)
                     mv += self._value(pos, last_px)
+                    lo += self._value(pos, last_px)
                     gx += self._exposure(pos, last_px)
                     continue
                 pos.bars_held += 1
                 close = bar["close"]
                 mv += self._value(pos, close)
+                lo += self._value(pos, bar["low"])      # a short's mirrored low is the real high
                 gx += self._exposure(pos, close)
                 pos.highest_close = max(pos.highest_close, close)
                 rules = self.rules[sym]
@@ -352,6 +359,7 @@ class Backtester:
             equity = cash + mv
             peak_equity = max(peak_equity, equity)
             equity_hist.append((day, equity))
+            low_hist.append((day, cash + lo))
             exposure_hist.append((day, gx / equity if equity > 0 else 0.0))
 
             # ---- 4. portfolio-level halts -----------------------------------
@@ -490,12 +498,14 @@ class Backtester:
             del positions[sym]
         if equity_hist and not positions:
             equity_hist[-1] = (last, cash)
+            low_hist[-1] = (last, min(low_hist[-1][1], cash))
         equity_s = pd.Series(dict(equity_hist), name="equity")
+        low_s = pd.Series(dict(low_hist), name="equity_low")
         exposure_s = pd.Series(dict(exposure_hist), name="exposure")
         trades_df = pd.DataFrame(trades)
         metrics = summarize(equity_s, trades_df, exposure_s, periods_per_year=self.periods_per_year)
         metrics["n_drawdown_halts"] = n_halts
-        return BacktestResult(equity_s, exposure_s, trades_df, metrics, cfg, daily_log, open_positions)
+        return BacktestResult(equity_s, exposure_s, trades_df, metrics, cfg, daily_log, open_positions, low_s)
 
     # ------------------------------------------------------------------
     def _aligned(self, sym: str) -> dict[str, np.ndarray]:

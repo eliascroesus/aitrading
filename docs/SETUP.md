@@ -146,6 +146,11 @@ hive status
   (`take_profit_r`: 2 is the 1:2 trade, decided on the close and sold at the next
   open, the same in the backtest and in the daily run), tighter initial stops,
   holds as short as 5 days, up to 12 positions and 6 new entries a day.
+  Since 2.6.0 the loss limits are checked as firms check them, against equity
+  during the day: the backtest also records each day's worst equity (every open
+  position at its worst price of the day at once), a day's loss is measured from
+  the previous close in units of the starting balance, and the target still
+  counts on the close (`prop.intraday_breach`).
 * **Punishment** follows the same rules: a sub-agent whose own paper book
   breaks the daily or total loss limit is retired that day, as a firm would
   close the account; one that lags the parent for 10 days is retired; one

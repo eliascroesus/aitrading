@@ -14,6 +14,7 @@ from hive.hive.propfirm import (
     prop_metrics,
     readiness,
     readiness_report,
+    rules_key,
     time_weighted,
 )
 from hive.hive.registry import Child, HiveRegistry
@@ -137,3 +138,26 @@ def test_a_two_phase_challenge_passes_only_when_both_phases_do():
                                                          min_trading_days=5))
     assert one["prop_median_days"] == 5 and two["prop_median_days"] == 10
 
+
+
+def test_loss_limits_are_checked_on_the_days_worst_equity():
+    from hive.backtest.costs import ALPACA_STOCKS
+    from hive.backtest.engine import Backtester
+    from hive.config import StrategyConfig
+    from tests.test_features import bars_from_path, textbook_setup
+
+    r = PropRules(phase2_target_pct=0.0, min_trading_days=1, eval_horizon_days=20, eval_step_days=20)
+    idx = pd.date_range("2020-01-01", periods=45, freq="D")
+    eq = pd.Series(100 * np.cumprod(np.full(45, 1.006)), index=idx)
+    low = eq.copy()
+    low.iloc[3] = eq.iloc[2] - 6.0                         # fell 6% of the start during day 3, closed up
+    assert prop_metrics(eq, r)["prop_fail_daily_rate"] == 0.0
+    m = prop_metrics(eq, r, low)
+    assert m["prop_fail_daily_rate"] == 0.5 and m["prop_pass_rate"] == 0.5    # the first start breached
+    assert prop_metrics(eq, r.model_copy(update={"intraday_breach": False}), low)["prop_fail_daily_rate"] == 0.0
+    assert rules_key(r) != rules_key(r.model_copy(update={"intraday_breach": False}))
+
+    close, volume = textbook_setup(n_after=200)
+    bars = bars_from_path(close, volume)
+    res = Backtester({"AAA": bars}, bars, StrategyConfig(), ALPACA_STOCKS, initial_equity=100.0).run()
+    assert (res.equity_low <= res.equity + 1e-9).all() and (res.equity_low < res.equity - 1e-9).any()
