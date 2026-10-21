@@ -8,8 +8,8 @@
       "entry_date": "2026-10-16",
       "r_per_share": 22.607322480258347,
       "stop_price": 364.5861775197416,
-      "highest_close": 387.1935,
-      "bars_held": 3,
+      "highest_close": 395.7300109863281,
+      "bars_held": 4,
       "invalidation_condition": "none",
       "source": "shadow-rules",
       "stop_order_id": "stop-TRV",
@@ -27,8 +27,8 @@
       "entry_date": "2026-10-16",
       "r_per_share": 13.397831572674562,
       "stop_price": 210.59411331257934,
-      "highest_close": 224.3699951171875,
-      "bars_held": 3,
+      "highest_close": 225.7100067138672,
+      "bars_held": 4,
       "invalidation_condition": "none",
       "source": "shadow-rules",
       "stop_order_id": "stop-CVX",
@@ -46,8 +46,8 @@
       "entry_date": "2026-10-19",
       "r_per_share": 3.0704857232681775,
       "stop_price": 42.372222444761604,
-      "highest_close": 46.849998474121094,
-      "bars_held": 2,
+      "highest_close": 47.040000915527344,
+      "bars_held": 3,
       "invalidation_condition": "none",
       "source": "shadow-rules",
       "stop_order_id": "stop-MNST",
@@ -55,6 +55,44 @@
       "meta": {
         "fill_pending": false,
         "order_id": "shadow-rules-2026-10-19-MNST"
+      }
+    },
+    "MRK": {
+      "symbol": "MRK",
+      "asset_class": "stock",
+      "qty": 0.08900876418318819,
+      "entry_price": 148.3000030517578,
+      "entry_date": "2026-10-20",
+      "r_per_share": 11.352167401928313,
+      "stop_price": 136.9478356498295,
+      "highest_close": 148.3000030517578,
+      "bars_held": 0,
+      "invalidation_condition": "none",
+      "source": "shadow-rules",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "shadow-rules-2026-10-20-MRK"
+      }
+    },
+    "MTCH": {
+      "symbol": "MTCH",
+      "asset_class": "stock",
+      "qty": 0.25188051380767956,
+      "entry_price": 46.529998779296875,
+      "entry_date": "2026-10-20",
+      "r_per_share": 3.8714601551096095,
+      "stop_price": 42.658538624187265,
+      "highest_close": 46.529998779296875,
+      "bars_held": 0,
+      "invalidation_condition": "none",
+      "source": "shadow-rules",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "shadow-rules-2026-10-20-MTCH"
       }
     }
   }

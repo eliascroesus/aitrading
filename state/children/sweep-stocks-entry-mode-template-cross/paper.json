@@ -1,35 +1,39 @@
 {
-  "cash": 50.0,
+  "cash": 79.44406098215146,
   "positions": {
-    "EEM": {
-      "asset_class": "etf",
-      "qty": 0.4698371613856909,
-      "avg_price": 63.85190969467163,
-      "current_price": 63.310001373291016,
-      "stop_price": null
-    },
     "GOOG": {
       "asset_class": "stock",
       "qty": 0.058772524799709666,
       "avg_price": 340.2950625,
-      "current_price": 340.1600036621094,
+      "current_price": 336.3999938964844,
       "stop_price": 330.33795020142196
     }
   },
-  "stops": {
-    "GOOG": [
-      0.058772524799709666,
-      330.33795020142196
-    ]
-  },
+  "stops": {},
   "pending": [
     {
-      "id": "7f10bbca1ed5",
-      "symbol": "EEM",
+      "id": "e5b4e1bfcf29",
+      "symbol": "GOOG",
       "side": "sell",
-      "qty": 0.4698371613856909,
+      "qty": 0.058772524799709666,
       "notional": null,
-      "asset_class": "etf"
+      "asset_class": "stock"
+    },
+    {
+      "id": "child-sweep-stocks-entry-mode-template-cross-2026-10-20-VTR",
+      "symbol": "VTR",
+      "side": "buy",
+      "qty": null,
+      "notional": 15.56,
+      "asset_class": "stock"
+    },
+    {
+      "id": "child-sweep-stocks-entry-mode-template-cross-2026-10-20-SBUX",
+      "symbol": "SBUX",
+      "side": "buy",
+      "qty": null,
+      "notional": 13.77,
+      "asset_class": "stock"
     }
   ],
   "fills": [
@@ -50,7 +54,16 @@
       "price": 340.2950625,
       "fee": 0.0,
       "id": "child-sweep-stocks-entry-mode-template-cross-2026-10-19-GOOG"
+    },
+    {
+      "ts": "2026-10-21T05:20:02+00:00",
+      "symbol": "EEM",
+      "side": "sell",
+      "qty": 0.4698371613856909,
+      "price": 62.66865076255798,
+      "fee": 0.0,
+      "id": "7f10bbca1ed5"
     }
   ],
-  "saved_at": "2026-10-20T05:15:10+00:00"
+  "saved_at": "2026-10-21T05:20:16+00:00"
 }

@@ -1,0 +1,2 @@
+{"ts": "2026-10-21T05:20:39+00:00", "kind": "tier_change", "amount_usd": 0.0, "meta": {"from": null, "to": "base"}, "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000", "hash": "b825f463614e56b528ee1ba328c585640af43daef7614a01a51b161640c7a4e1"}
+{"ts": "2026-10-21T05:20:40+00:00", "kind": "equity_mark", "amount_usd": 100.0, "meta": {"label": "child-hyperliquid-desk", "date": "2026-10-20"}, "prev_hash": "b825f463614e56b528ee1ba328c585640af43daef7614a01a51b161640c7a4e1", "hash": "f8f4899fbb1e6c127547de47aa3ddff191a6c812015df73fb76aca1fe9c66a52"}

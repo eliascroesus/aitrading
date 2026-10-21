@@ -1,0 +1,42 @@
+{
+  "positions": {
+    "ZEC": {
+      "symbol": "ZEC",
+      "asset_class": "crypto",
+      "qty": 0.0037134223918575066,
+      "entry_price": 1257.6,
+      "entry_date": "2026-10-20",
+      "r_per_share": 269.25309988638105,
+      "stop_price": 988.3469001136189,
+      "highest_close": 1257.6,
+      "bars_held": 0,
+      "invalidation_condition": "none",
+      "source": "child-hyperliquid-desk",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "child-hyperliquid-desk-2026-10-20-ZEC"
+      }
+    },
+    "LIT": {
+      "symbol": "LIT",
+      "asset_class": "crypto",
+      "qty": 1.352988094886414,
+      "entry_price": 3.3851,
+      "entry_date": "2026-10-20",
+      "r_per_share": 0.7390360191492413,
+      "stop_price": 2.6460639808507587,
+      "highest_close": 3.3851,
+      "bars_held": 0,
+      "invalidation_condition": "none",
+      "source": "child-hyperliquid-desk",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "child-hyperliquid-desk-2026-10-20-LIT"
+      }
+    }
+  }
+}

@@ -1,25 +1,68 @@
 {
-  "cash": 100.0,
-  "positions": {},
-  "stops": {},
+  "cash": 67.8,
+  "positions": {
+    "TRV": {
+      "asset_class": "stock",
+      "qty": 0.04420564669712261,
+      "avg_price": 388.86434843444823,
+      "current_price": 395.7300109863281,
+      "stop_price": 366.4363926197109
+    },
+    "TRGP": {
+      "asset_class": "stock",
+      "qty": 0.0507441199402747,
+      "avg_price": 295.79781889343263,
+      "current_price": 292.6499938964844,
+      "stop_price": 276.2852504712379
+    }
+  },
+  "stops": {
+    "TRV": [
+      0.04420564669712261,
+      366.4363926197109
+    ],
+    "TRGP": [
+      0.0507441199402747,
+      276.2852504712379
+    ]
+  },
   "pending": [
     {
-      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-19-TRV",
-      "symbol": "TRV",
+      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-20-MRK",
+      "symbol": "MRK",
       "side": "buy",
       "qty": null,
-      "notional": 17.19,
+      "notional": 13.08,
       "asset_class": "stock"
     },
     {
-      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-19-TRGP",
-      "symbol": "TRGP",
+      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-20-LLY",
+      "symbol": "LLY",
       "side": "buy",
       "qty": null,
-      "notional": 15.01,
+      "notional": 11.76,
       "asset_class": "stock"
     }
   ],
-  "fills": [],
-  "saved_at": "2026-10-20T05:15:24+00:00"
+  "fills": [
+    {
+      "ts": "2026-10-21T05:20:16+00:00",
+      "symbol": "TRV",
+      "side": "buy",
+      "qty": 0.04420564669712261,
+      "price": 388.86434843444823,
+      "fee": 0.0,
+      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-19-TRV"
+    },
+    {
+      "ts": "2026-10-21T05:20:16+00:00",
+      "symbol": "TRGP",
+      "side": "buy",
+      "qty": 0.0507441199402747,
+      "price": 295.79781889343263,
+      "fee": 0.0,
+      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-19-TRGP"
+    }
+  ],
+  "saved_at": "2026-10-21T05:20:29+00:00"
 }

@@ -8,8 +8,8 @@
       "entry_date": "2026-10-19",
       "r_per_share": 9.602674842452714,
       "stop_price": 136.6373251575473,
-      "highest_close": 145.24000549316406,
-      "bars_held": 3,
+      "highest_close": 145.9499969482422,
+      "bars_held": 4,
       "invalidation_condition": "none",
       "source": "reconciled",
       "stop_order_id": "3de0a84e-d1af-44cd-88cc-6c6ce5dbd615",
@@ -24,13 +24,32 @@
       "entry_date": "2026-10-19",
       "r_per_share": 22.373953426167276,
       "stop_price": 364.6260465738327,
-      "highest_close": 387.32,
-      "bars_held": 3,
+      "highest_close": 395.7300109863281,
+      "bars_held": 4,
       "invalidation_condition": "none",
       "source": "reconciled",
       "stop_order_id": "78f4ce4f-6b57-489c-8abb-d5284250613f",
       "below_mid_streak": 0,
       "meta": {}
+    },
+    "CVX": {
+      "symbol": "CVX",
+      "asset_class": "stock",
+      "qty": 0.03770324640851274,
+      "entry_price": 225.7100067138672,
+      "entry_date": "2026-10-20",
+      "r_per_share": 13.312918612303406,
+      "stop_price": 212.39708810156378,
+      "highest_close": 225.7100067138672,
+      "bars_held": 0,
+      "invalidation_condition": "close_below_entry_minus_3atr",
+      "source": "primary",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "f237f586-887d-442f-a74a-00ee83675f23"
+      }
     }
   }
 }

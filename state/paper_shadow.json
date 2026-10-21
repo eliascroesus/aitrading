@@ -5,21 +5,21 @@
       "asset_class": "stock",
       "qty": 0.04449971396730576,
       "avg_price": 387.1935,
-      "current_price": 385.5400085449219,
+      "current_price": 395.7300109863281,
       "stop_price": 364.5861775197416
     },
     "CVX": {
       "asset_class": "stock",
       "qty": 0.07495805265944337,
       "avg_price": 223.9919448852539,
-      "current_price": 224.31500244140625,
+      "current_price": 225.7100067138672,
       "stop_price": 210.59411331257934
     },
     "MNST": {
       "asset_class": "stock",
       "qty": 0.33382693531175855,
       "avg_price": 45.44270816802978,
-      "current_price": 46.849998474121094,
+      "current_price": 47.040000915527344,
       "stop_price": 42.372222444761604
     }
   },
@@ -37,7 +37,24 @@
       42.372222444761604
     ]
   },
-  "pending": [],
+  "pending": [
+    {
+      "id": "shadow-rules-2026-10-20-MRK",
+      "symbol": "MRK",
+      "side": "buy",
+      "qty": null,
+      "notional": 13.2,
+      "asset_class": "stock"
+    },
+    {
+      "id": "shadow-rules-2026-10-20-MTCH",
+      "symbol": "MTCH",
+      "side": "buy",
+      "qty": null,
+      "notional": 11.72,
+      "asset_class": "stock"
+    }
+  ],
   "fills": [
     {
       "ts": "2026-10-19T15:24:56+00:00",
@@ -67,5 +84,5 @@
       "id": "shadow-rules-2026-10-19-MNST"
     }
   ],
-  "saved_at": "2026-10-20T05:15:10+00:00"
+  "saved_at": "2026-10-21T05:20:01+00:00"
 }

@@ -1,0 +1,25 @@
+{
+  "cash": 100.0,
+  "positions": {},
+  "stops": {},
+  "pending": [
+    {
+      "id": "child-hyperliquid-desk-2026-10-20-ZEC",
+      "symbol": "ZEC",
+      "side": "buy",
+      "qty": null,
+      "notional": 4.67,
+      "asset_class": "crypto"
+    },
+    {
+      "id": "child-hyperliquid-desk-2026-10-20-LIT",
+      "symbol": "LIT",
+      "side": "buy",
+      "qty": null,
+      "notional": 4.58,
+      "asset_class": "crypto"
+    }
+  ],
+  "fills": [],
+  "saved_at": "2026-10-21T05:20:40+00:00"
+}
