@@ -1,5 +1,5 @@
 {
-  "cash": 25.80859321254126,
+  "cash": 19.972286264610837,
   "positions": {
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
@@ -53,6 +53,39 @@
       "peak_price": 0.000839,
       "entered_at": "2026-10-21T02:48:10.152934+00:00",
       "cost_usd": 2.012442498067782,
+      "took_half": false,
+      "misses": 0
+    },
+    "ANrmxCwhQHxp9g3gumWE3jYcfdbnA6MWBaJ9A6NYpump": {
+      "mint": "ANrmxCwhQHxp9g3gumWE3jYcfdbnA6MWBaJ9A6NYpump",
+      "symbol": "NORMIE",
+      "qty": 24635.12282271927,
+      "entry_price": 7.45e-05,
+      "peak_price": 7.45e-05,
+      "entered_at": "2026-10-21T02:55:38.049222+00:00",
+      "cost_usd": 1.9454356493101408,
+      "took_half": false,
+      "misses": 0
+    },
+    "Ety3BtYenUFm2Hvz6a6VGRTs8p9sgXggJ3M9XtpZpump": {
+      "mint": "Ety3BtYenUFm2Hvz6a6VGRTs8p9sgXggJ3M9XtpZpump",
+      "symbol": "Trencher",
+      "qty": 8879.132318783675,
+      "entry_price": 0.0002067,
+      "peak_price": 0.0002067,
+      "entered_at": "2026-10-21T02:55:38.049222+00:00",
+      "cost_usd": 1.9454356493101408,
+      "took_half": false,
+      "misses": 0
+    },
+    "CdXHgb7CboQfbTRZwH2AFnmVnDKuwkrPUFp4jt53pump": {
+      "mint": "CdXHgb7CboQfbTRZwH2AFnmVnDKuwkrPUFp4jt53pump",
+      "symbol": "ORANGIE",
+      "qty": 19959.941819386466,
+      "entry_price": 9.195e-05,
+      "peak_price": 9.195e-05,
+      "entered_at": "2026-10-21T02:55:38.049222+00:00",
+      "cost_usd": 1.9454356493101408,
       "took_half": false,
       "misses": 0
     }
@@ -1415,6 +1448,33 @@
       "notional": 2.012442498067782,
       "liquidity_usd": 81650.12,
       "age_hours": 2.751964081624349
+    },
+    {
+      "mint": "ANrmxCwhQHxp9g3gumWE3jYcfdbnA6MWBaJ9A6NYpump",
+      "symbol": "NORMIE",
+      "event": "entry",
+      "price": 7.45e-05,
+      "notional": 1.9454356493101408,
+      "liquidity_usd": 22804.58,
+      "age_hours": 0.6766218846978082
+    },
+    {
+      "mint": "Ety3BtYenUFm2Hvz6a6VGRTs8p9sgXggJ3M9XtpZpump",
+      "symbol": "Trencher",
+      "event": "entry",
+      "price": 0.0002067,
+      "notional": 1.9454356493101408,
+      "liquidity_usd": 39854.95,
+      "age_hours": 1.6152329902479383
+    },
+    {
+      "mint": "CdXHgb7CboQfbTRZwH2AFnmVnDKuwkrPUFp4jt53pump",
+      "symbol": "ORANGIE",
+      "event": "entry",
+      "price": 9.195e-05,
+      "notional": 1.9454356493101408,
+      "liquidity_usd": 25128.71,
+      "age_hours": 1.3288441213650173
     }
   ]
 }
