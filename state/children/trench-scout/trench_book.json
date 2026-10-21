@@ -1,5 +1,5 @@
 {
-  "cash": 29.585460174321756,
+  "cash": 27.195219132822842,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -50,7 +50,7 @@
       "symbol": "Pokecity",
       "qty": 4482.869246292809,
       "entry_price": 0.0005053,
-      "peak_price": 0.0005053,
+      "peak_price": 0.0005288,
       "entered_at": "2026-10-21T00:07:30.532825+00:00",
       "cost_usd": 2.4011054599608617,
       "took_half": false,
@@ -61,9 +61,20 @@
       "symbol": "BabyKimchi",
       "qty": 23079.973554827895,
       "entry_price": 9.802e-05,
-      "peak_price": 9.802e-05,
+      "peak_price": 0.0001279,
       "entered_at": "2026-10-21T00:15:25.228074+00:00",
       "cost_usd": 2.3980369483148842,
+      "took_half": false,
+      "misses": 0
+    },
+    "8zemVcC8974xhtHva7wuY64B6viXsfj24b6LH41mpump": {
+      "mint": "8zemVcC8974xhtHva7wuY64B6viXsfj24b6LH41mpump",
+      "symbol": "UMI",
+      "qty": 18528.71305482794,
+      "entry_price": 0.0001217,
+      "peak_price": 0.0001217,
+      "entered_at": "2026-10-21T00:23:32.378057+00:00",
+      "cost_usd": 2.390241041498914,
       "took_half": false,
       "misses": 0
     }
@@ -1207,6 +1218,15 @@
       "notional": 2.3980369483148842,
       "liquidity_usd": 27671.29,
       "age_hours": 0.3917823355441623
+    },
+    {
+      "mint": "8zemVcC8974xhtHva7wuY64B6viXsfj24b6LH41mpump",
+      "symbol": "UMI",
+      "event": "entry",
+      "price": 0.0001217,
+      "notional": 2.390241041498914,
+      "liquidity_usd": 28926.68,
+      "age_hours": 0.4130613566758898
     }
   ]
 }
