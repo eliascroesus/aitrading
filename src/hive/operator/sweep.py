@@ -395,7 +395,8 @@ def waiting_list(registry: HiveRegistry, ldir=None, objective: str | None = None
         if key in seated:
             continue
         rows[key] = {"proposal": it.get("proposal") or it.get("name") or "waiting list", "overrides": it["overrides"],
-                     "oos_prop": it.get("oos_prop"),
+                     "oos_prop": it.get("oos_prop"), "oos_score": it.get("oos_score"), "prop_key": it.get("prop_key"),
+                     "oos_prop_days": it.get("oos_prop_days"),
                      "sleeve": it.get("sleeve") or "stocks", "hypothesis": it.get("hypothesis") or "",
                      "date": it.get("date"), "is_cagr": it.get("is_cagr"), "oos_cagr": it.get("oos_cagr"),
                      "oos_dd": it.get("oos_dd"), "parent_oos_cagr": it.get("parent_oos_cagr")}
@@ -403,11 +404,55 @@ def waiting_list(registry: HiveRegistry, ldir=None, objective: str | None = None
     return sorted(rows.values(), key=lambda r: rank_key(r, objective))
 
 
-def seat_waiting(registry: HiveRegistry, tier: Tier, on: date, ldir=None, objective: str | None = None) -> list[dict[str, Any]]:
-    """Seat the best waiting cells when seats are free. A cell is never seated twice."""
+DISPLACE_MARGIN = 0.05      # how much better (prop score) a waiting cell must be to take a seat
+
+
+def _displace_weakest(registry: HiveRegistry, best: dict[str, Any], ldir, on: date, pkey: str) -> dict[str, Any] | None:
+    """Seats go to the best evidence: when every seat is taken, the best waiting cell takes the
+    seat of the weakest seated variant if it scores at least DISPLACE_MARGIN higher under today's
+    prop rules and that variant is behind the parent on paper. At most once a day, so a seated
+    cell still gets days to prove itself."""
+    if any(it.get("kind") == "displaced" and it.get("date") == on.isoformat() for it in registry.iterations):
+        return None
+    if best.get("oos_score") is None or best.get("prop_key") != pkey:
+        return None
+    src = (read_tests(ldir, with_curves=False) if ldir is not None else []) + list(registry.iterations)
+    score: dict[str, float] = {}
+    for it in sorted(src, key=lambda r: str(r.get("ts") or r.get("date") or "")):
+        if it.get("overrides") and it.get("oos_score") is not None and it.get("prop_key") == pkey:
+            score[cell_key(it.get("sleeve") or "", it["overrides"])] = float(it["oos_score"])
+    seated = [c for c in registry.active() if c.kind == "variant" and c.status == "shadow" and (c.voi or 0.0) <= 0.0]
+    if not seated:
+        return None
+    weakest = min(seated, key=lambda c: score.get(cell_key(c.sleeve, c.overrides or {}), float("-inf")))
+    ws = score.get(cell_key(weakest.sleeve, weakest.overrides or {}))
+    if ws is not None and float(best["oos_score"]) < ws + DISPLACE_MARGIN:
+        return None
+    theirs = "no score under today's rules" if ws is None else f"{ws:+.2f}"
+    why = (f"displaced by a better cell, {best['proposal']} (prop score {float(best['oos_score']):+.2f} vs {theirs}), "
+           f"while behind the parent on paper (VOI {(weakest.voi or 0.0):+.1%} after {weakest.shadow_days} days)")
+    registry.retire(weakest.id, why, on)
+    rec = {"date": on.isoformat(), "proposal": weakest.name, "kind": "displaced", "overrides": weakest.overrides,
+           "sleeve": weakest.sleeve, "cost_usd": 0.0, "verdict": why}
+    registry.record_iteration(rec)
+    return rec
+
+
+def seat_waiting(registry: HiveRegistry, tier: Tier, on: date, ldir=None, objective: str | None = None,
+                 cfg: StrategyConfig | None = None) -> list[dict[str, Any]]:
+    """Seat the best waiting cells when seats are free; under the prop objective a clearly better
+    waiting cell may take the seat of the weakest one (``_displace_weakest``). A cell is never
+    seated twice."""
     out: list[dict[str, Any]] = []
     seated: set[str] = set()
-    for it in waiting_list(registry, ldir, objective):
+    waiting = waiting_list(registry, ldir, objective)
+    if waiting and objective == "prop" and cfg is not None and not registry.can_spawn(tier)[0]:
+        from hive.hive.propfirm import rules_key
+
+        rec = _displace_weakest(registry, waiting[0], ldir, on, rules_key(cfg.prop))
+        if rec:
+            out.append(rec)
+    for it in waiting:
         key = cell_key(it["sleeve"], it["overrides"])
         if key in seated:
             continue
@@ -470,7 +515,7 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
         from hive.operator.lab import rollup
 
         rollup(ldir)
-    records: list[dict[str, Any]] = seat_waiting(registry, tier, on, ldir, cfg.operator.objective)
+    records: list[dict[str, Any]] = seat_waiting(registry, tier, on, ldir, cfg.operator.objective, cfg)
     inputs = dict(inputs_by_sleeve or {})
     parents: dict[str, Any] = {}
     no_data: set[str] = set()    # a sleeve whose markets are not in the cache yet is skipped, not failed

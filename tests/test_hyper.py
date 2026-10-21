@@ -79,3 +79,32 @@ def test_a_reward_to_risk_target_takes_the_profit():
     hits = t[t["reason"] == "target"]
     assert not hits.empty and (hits["r_multiple"] >= 1.9).all()         # closed near or beyond 2R, at the next open
     assert _run(StrategyConfig(), bars).trades["reason"].ne("target").all()   # 0 = no target
+
+
+def test_a_clearly_better_cell_takes_the_weakest_seat_once_a_day(tmp_path):
+    from hive.hive.propfirm import rules_key
+    from hive.hive.registry import Child
+    from hive.operator.sweep import seat_waiting
+
+    cfg = StrategyConfig()
+    reg = HiveRegistry(tmp_path / "hive.json", cfg.survival)
+    tier = next(t for t in cfg.survival.tiers if t.name == "base")             # four seats
+    key = rules_key(cfg.prop)
+    for i in range(tier.max_children):
+        ov = {"stocks.trail_atr": 4.0 + i}
+        c = reg.spawn(Child(id="", name=f"v{i}", kind="variant", sleeve="stocks", overrides=ov), tier)
+        reg.mark(c.id, 99.0, 100.0, on=date(2026, 10, 20))                    # all a little behind the parent
+        reg.record_iteration({"date": "2026-10-19", "proposal": f"v{i}", "overrides": ov, "sleeve": "stocks",
+                              "oos_score": 0.10 + 0.01 * i, "prop_key": key, "verdict": f"spawned shadow child {c.id}"})
+    best = {"stocks.take_profit_r": 2.0}
+    reg.record_iteration({"date": "2026-10-21", "proposal": "1:2 cell", "overrides": best, "sleeve": "stocks",
+                          "oos_cagr": 0.1, "oos_dd": -0.1, "is_cagr": 0.02, "oos_score": 0.30, "prop_key": key,
+                          "verdict": "passed but not spawned: tier base allows 4 children; 4 active"})
+    out = seat_waiting(reg, tier, date(2026, 10, 21), None, "prop", cfg)
+    assert [r["kind"] for r in out] == ["displaced", "seated"]
+    assert reg.get(out[0]["proposal"]).status == "retired" and out[0]["proposal"] == "v0"   # the weakest seat
+    assert any(c.overrides == best and c.status == "shadow" for c in reg.children)
+    reg.record_iteration({"date": "2026-10-21", "proposal": "another", "overrides": {"stocks.take_profit_r": 3.0},
+                          "sleeve": "stocks", "oos_cagr": 0.1, "oos_dd": -0.1, "is_cagr": 0.02, "oos_score": 0.5,
+                          "prop_key": key, "verdict": "passed but not spawned: tier base allows 4 children; 4 active"})
+    assert seat_waiting(reg, tier, date(2026, 10, 21), None, "prop", cfg) == []            # once a day

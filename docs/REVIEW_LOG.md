@@ -304,4 +304,10 @@ challenges quickly.
 * **What did not change.** Daily closes only: the simulator cannot see an
   intraday breach of the daily limit, so real challenges are harder. The macro
   sleeve is still unlevered (owner's decision pending).
+* **Seats go to the best evidence.** When every paper seat is taken, the best
+  waiting cell takes the seat of the weakest seated variant if it scores at
+  least 0.05 higher under today's prop rules and that variant is behind the
+  parent on paper; at most once a day. The Alpaca primary keeps trading the
+  pre-registered rules until a seated variant out-earns it for 10 paper days and
+  is promoted (none yet: the first seats were filled under the old scoring).
 
