@@ -1,5 +1,5 @@
 {
-  "cash": 27.195219132822842,
+  "cash": 26.04397350319025,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -17,7 +17,7 @@
       "symbol": "SASONA",
       "qty": 53136.882848257366,
       "entry_price": 5.336e-05,
-      "peak_price": 8.192e-05,
+      "peak_price": 8.231e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
       "took_half": false,
@@ -39,7 +39,7 @@
       "symbol": "Melonie",
       "qty": 52018.19293606118,
       "entry_price": 4.245e-05,
-      "peak_price": 7.029e-05,
+      "peak_price": 7.715e-05,
       "entered_at": "2026-10-20T23:51:29.698462+00:00",
       "cost_usd": 2.3406626275439453,
       "took_half": false,
@@ -50,20 +50,9 @@
       "symbol": "Pokecity",
       "qty": 4482.869246292809,
       "entry_price": 0.0005053,
-      "peak_price": 0.0005288,
+      "peak_price": 0.0005938,
       "entered_at": "2026-10-21T00:07:30.532825+00:00",
       "cost_usd": 2.4011054599608617,
-      "took_half": false,
-      "misses": 0
-    },
-    "CzkL8THZY8m1fu77cdLuKqNjXtyiBDiv4YXVP3fNpump": {
-      "mint": "CzkL8THZY8m1fu77cdLuKqNjXtyiBDiv4YXVP3fNpump",
-      "symbol": "BabyKimchi",
-      "qty": 23079.973554827895,
-      "entry_price": 9.802e-05,
-      "peak_price": 0.0001279,
-      "entered_at": "2026-10-21T00:15:25.228074+00:00",
-      "cost_usd": 2.3980369483148842,
       "took_half": false,
       "misses": 0
     },
@@ -75,6 +64,17 @@
       "peak_price": 0.0001217,
       "entered_at": "2026-10-21T00:23:32.378057+00:00",
       "cost_usd": 2.390241041498914,
+      "took_half": false,
+      "misses": 0
+    },
+    "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump": {
+      "mint": "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump",
+      "symbol": "claytonkimm",
+      "qty": 6648.427261688098,
+      "entry_price": 0.000334,
+      "peak_price": 0.000334,
+      "entered_at": "2026-10-21T00:32:01.469729+00:00",
+      "cost_usd": 2.3538091877280545,
       "took_half": false,
       "misses": 0
     }
@@ -1227,6 +1227,25 @@
       "notional": 2.390241041498914,
       "liquidity_usd": 28926.68,
       "age_hours": 0.4130613566758898
+    },
+    {
+      "mint": "CzkL8THZY8m1fu77cdLuKqNjXtyiBDiv4YXVP3fNpump",
+      "symbol": "BabyKimchi",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 5.543e-05,
+      "proceeds": 1.2025635580954637,
+      "pnl_approx": -1.1954733902194206,
+      "age_hours": 0.27673379305555557
+    },
+    {
+      "mint": "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump",
+      "symbol": "claytonkimm",
+      "event": "entry",
+      "price": 0.000334,
+      "notional": 2.3538091877280545,
+      "liquidity_usd": 49600.85,
+      "age_hours": 0.5499915825059679
     }
   ]
 }
