@@ -1,12 +1,12 @@
 {
-  "cash": 27.63830473657114,
+  "cash": 28.980486678706722,
   "positions": {
     "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
       "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
       "symbol": "KIMCHIBOSS",
       "qty": 4967.519020204963,
       "entry_price": 0.0001571,
-      "peak_price": 0.0005383,
+      "peak_price": 0.0005658,
       "entered_at": "2026-10-21T06:32:14.894479+00:00",
       "cost_usd": 1.6544421447173037,
       "took_half": true,
@@ -31,17 +31,6 @@
       "peak_price": 0.001113,
       "entered_at": "2026-10-21T07:48:24.303182+00:00",
       "cost_usd": 1.767370058680091,
-      "took_half": false,
-      "misses": 0
-    },
-    "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
-      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
-      "symbol": "CPU",
-      "qty": 36771.90651381587,
-      "entry_price": 4.805e-05,
-      "peak_price": 5.239e-05,
-      "entered_at": "2026-10-21T07:55:43.706782+00:00",
-      "cost_usd": 1.8729035144681838,
       "took_half": false,
       "misses": 0
     }
@@ -2071,6 +2060,16 @@
       "proceeds": 4.466780415957639,
       "pnl_approx": 3.6045082697168223,
       "age_hours": 2.4000816430555556
+    },
+    {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "event": "exit",
+      "reason": "trail",
+      "price": 3.883e-05,
+      "proceeds": 1.342181942135582,
+      "pnl_approx": -0.5307215723326018,
+      "age_hours": 0.5194420186111112
     }
   ]
 }
