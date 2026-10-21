@@ -260,6 +260,11 @@ class RiskLimits(BaseModel):
     edge_min_risk_pct: float = 0.0025
     max_risk_per_trade_pct: float = 0.05
     max_open_risk_pct: float = 0.06
+    # The heat guard (config 2.7.0; 0 = off): at every close, after the trailing stops, if the
+    # book would lose more than this share of equity with every stop filled (open profit
+    # included), every stop is raised in proportion until it would not. It keeps one day's
+    # loss inside a prop firm's daily limit; max_open_risk_pct only blocks new entries.
+    heat_guard_pct: float = 0.0
     target_annual_vol: float = 0.20
     portfolio_vol_lookback: int = 20
     max_daily_loss_pct: float = 0.04
@@ -492,7 +497,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "2.6.0"
+    version: str = "2.7.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     macro: TrendRules = Field(default_factory=TrendRules.macro)

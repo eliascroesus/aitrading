@@ -555,6 +555,7 @@ class DailyRun:
 
     def _manage_positions(self, reg: pd.Series) -> list[dict[str, Any]]:
         exits: list[dict[str, Any]] = []
+        kept: list[tuple[str, OpenPosition, float]] = []     # what is still held, at today's close
         for sym, pos in list(self.book.positions.items()):
             if pos.meta.get("fill_pending"):
                 continue
@@ -617,8 +618,32 @@ class DailyRun:
                     pos.stop_price = new_stop
                     self._arm_stop(pos)
                     self.journal.write("stop_ratchet", {"symbol": sym, "stop": new_stop})
+            kept.append((sym, pos, close))
             self.book.save()
+        self._guard_heat(kept)
         return exits
+
+    def _guard_heat(self, kept: list[tuple[str, OpenPosition, float]]) -> None:
+        """The heat guard, as in the backtest: when the book would lose more than
+        ``risk.heat_guard_pct`` of equity with every stop filled, every stop is raised so each
+        position's loss to its stop shrinks in the same proportion."""
+        cap = self.cfg.risk.heat_guard_pct
+        if cap <= 0 or not kept:
+            return
+        equity = float(self.broker.equity())
+        heat = sum(max(pos.qty * (close - pos.stop_price), 0.0) for _, pos, close in kept)
+        if equity <= 0 or heat <= cap * equity:
+            return
+        f = cap * equity / heat
+        for sym, pos, close in kept:
+            new_stop = close - (close - pos.stop_price) * f
+            if new_stop > pos.stop_price + 1e-9:
+                self.broker.cancel_open_orders(sym)
+                pos.stop_price = new_stop
+                self._arm_stop(pos)
+        self.journal.write("heat_guard", {"heat_pct": heat / equity, "cap_pct": cap,
+                                          "stops": {sym: pos.stop_price for sym, pos, _ in kept}})
+        self.book.save()
 
     def _news_negative(self, sym: str, pos: OpenPosition) -> bool:
         """The news desk: the quarantined reader checks today's headlines for every open

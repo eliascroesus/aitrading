@@ -335,16 +335,19 @@ class Backtester:
 
             # ---- 3. mark to market at close; ratchet trailing stops ---------
             mv = gx = lo = 0.0  # market value (what the book is worth), gross exposure, worst value of the day
+            closes: dict[str, float] = {}
             for sym, pos in positions.items():
                 bar = self._bar(sym, day)
                 if bar is None:
                     last_px = self._last_close_before(sym, day)
+                    closes[sym] = last_px
                     mv += self._value(pos, last_px)
                     lo += self._value(pos, last_px)
                     gx += self._exposure(pos, last_px)
                     continue
                 pos.bars_held += 1
                 close = bar["close"]
+                closes[sym] = close
                 mv += self._value(pos, close)
                 lo += self._value(pos, bar["low"])      # a short's mirrored low is the real high
                 gx += self._exposure(pos, close)
@@ -357,6 +360,8 @@ class Backtester:
                     mult = rules.trail_atr if pos.bars_held < rules.trail_tighten_after_bars else rules.trail_atr_late
                     pos.stop_price = max(pos.stop_price, pos.highest_close - atr * mult)
             equity = cash + mv
+            if cfg.risk.heat_guard_pct > 0 and positions and equity > 0:
+                self._guard_heat(positions, closes, equity, cfg.risk.heat_guard_pct)
             peak_equity = max(peak_equity, equity)
             equity_hist.append((day, equity))
             low_hist.append((day, cash + lo))
@@ -462,16 +467,28 @@ class Backtester:
                     )
                     if d.notional <= 0:
                         continue
+                    notional, qty = d.notional, d.qty
+                    if cfg.risk.heat_guard_pct > 0:                 # the entry fits in the guard's room
+                        heat_room = cfg.risk.heat_guard_pct - open_risk
+                        if heat_room <= 1e-9:
+                            break
+                        if qty * d.r_per_share / equity > heat_room:
+                            qty *= heat_room * equity / (qty * d.r_per_share)
+                            if not self.fractional:
+                                qty = float(int(qty))
+                            notional = qty * real_p
+                            if qty <= 0:
+                                continue
                     if ac == "crypto":
                         room = max(cfg.risk.crypto_sleeve_pct - crypto_exp, 0.0) * equity
-                        if d.notional > room:
+                        if notional > room:
                             continue
-                        crypto_exp += d.notional / equity
+                        crypto_exp += notional / equity
                         n_crypto += 1
-                    pending_entries.append({"symbol": sym, "notional": d.notional,
+                    pending_entries.append({"symbol": sym, "notional": notional,
                                             "r_per_share": price - stop if short else d.r_per_share})
-                    gross_now += d.notional / equity
-                    open_risk += d.qty * d.r_per_share / equity
+                    gross_now += notional / equity
+                    open_risk += qty * d.r_per_share / equity
                     taken += 1
             daily_log.append({"date": day, "equity": equity, "cash": cash, "n_pos": len(positions),
                               "state": state, "n_pending": len(pending_entries)})
@@ -605,6 +622,26 @@ class Backtester:
         if pos.short:
             return pos.shares / close if close > 0 else 0.0
         return pos.qty * close
+
+    @classmethod
+    def _guard_heat(cls, positions: dict[str, Position], closes: dict[str, float], equity: float, cap: float) -> None:
+        """The heat guard: when the book would lose more than ``cap`` x equity with every stop
+        filled, raise every stop so each position's loss to its stop shrinks in the same
+        proportion and the book's is exactly ``cap``. Stops only ever rise."""
+        heat = sum(cls._risk(p, closes[s]) for s, p in positions.items() if closes.get(s, 0) > 0)
+        if heat <= cap * equity:
+            return
+        f = cap * equity / heat
+        for s, pos in positions.items():
+            close = closes.get(s, 0.0)
+            if close <= 0:
+                continue
+            if pos.short:                                       # in real prices: the stop sits above
+                real_close, real_stop = 1.0 / close, 1.0 / pos.stop_price
+                new = 1.0 / (real_close + (real_stop - real_close) * f)
+            else:
+                new = close - (close - pos.stop_price) * f
+            pos.stop_price = max(pos.stop_price, new)
 
     @staticmethod
     def _risk(pos: Position, close: float) -> float:

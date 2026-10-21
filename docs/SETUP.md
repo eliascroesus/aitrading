@@ -151,6 +151,16 @@ hive status
   position at its worst price of the day at once), a day's loss is measured from
   the previous close in units of the starting balance, and the target still
   counts on the close (`prop.intraday_breach`).
+  Since 2.7.0 the lab can turn on the **heat guard** (`risk.heat_guard_pct`, 0 =
+  off): at every close, if the book would lose more than that share of equity
+  with every stop filled (open profit included), every stop is raised in
+  proportion until it would not, and new entries are sized to the room left.
+  It keeps one day's loss inside a firm's daily limit (the cause of most failed
+  challenges); the daily run does the same and arms the raised stops at the
+  broker. Cells are ranked by their prop score **less one standard error**:
+  only about one in twelve of the overlapping simulated evaluations is
+  independent, so a score made on a few lucky evaluations does not outrank a
+  steady one. The hub shows the score with its ±.
 * **Punishment** follows the same rules: a sub-agent whose own paper book
   breaks the daily or total loss limit is retired that day, as a firm would
   close the account; one that lags the parent for 10 days is retired; one

@@ -113,6 +113,12 @@ def grid() -> list[Cell]:
                   (sleeve, {tp: 2.0, "risk.risk_per_trade_pct": 0.02}),
                   (sleeve, {tp: 3.0, f"{pre}.stop_initial_atr": 2.0, "risk.risk_per_trade_pct": 0.02,
                             "risk.max_new_entries_per_day": 4})]
+        # the heat guard (2.7.0): one day's loss held inside the firm's daily limit, which lets
+        # each trade risk more
+        hg = "risk.heat_guard_pct"
+        cells += [(sleeve, {hg: 0.02}), (sleeve, {hg: 0.03}),
+                  (sleeve, {hg: 0.03, "risk.risk_per_trade_pct": 0.02}),
+                  (sleeve, {hg: 0.04, "risk.risk_per_trade_pct": 0.03, tp: 2.0})]
         # no position caps at all, and risk per trade chosen by each book's own record (2.2.0)
         edge = {"risk.sizing_mode": "edge"}
         cells += [(sleeve, dict(no_caps)), (sleeve, dict(edge)),
@@ -139,6 +145,7 @@ def results_so_far(registry: HiveRegistry, ldir=None) -> list[dict[str, Any]]:
                    "oos_dd": it.get("oos_dd"), "is_cagr": it.get("is_cagr"), "verdict": it.get("verdict") or "",
                    "oos_prop": it.get("oos_prop", (it.get("outofsample") or {}).get("prop_pass_rate")),
                    "oos_score": it.get("oos_score", (it.get("outofsample") or {}).get("prop_score")),
+                   "oos_score_se": it.get("oos_score_se", (it.get("outofsample") or {}).get("prop_score_se")),
                    "oos_prop_days": it.get("oos_prop_days", (it.get("outofsample") or {}).get("prop_median_days")),
                    "prop_key": it.get("prop_key")}
     return list(rows.values())
@@ -161,13 +168,15 @@ def untested(registry: HiveRegistry, cells: list[Cell], ldir=None) -> list[Cell]
 
 
 def rank_key(r: dict[str, Any], objective: str = "growth") -> tuple:
-    """Best first under the firm's objective: the prop score (passes earn, breaches cost), then the
-    faster median pass, then growth, then the shallower drawdown. A cell tested before the score
-    existed ranks by its pass rate until it is rescored."""
+    """Best first under the firm's objective: the prop score less one standard error (a score made
+    on a few lucky evaluations does not outrank a steady one; config 2.7.0), then the faster
+    median pass, then growth, then the shallower drawdown. A cell tested before the score existed
+    ranks by its pass rate until it is rescored."""
     if objective != "prop":
         return (0.0, 0.0, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
     score = r.get("oos_score")
-    score = float(r.get("oos_prop") or 0.0) if score is None else float(score)
+    score = (float(r.get("oos_prop") or 0.0) if score is None
+             else float(score) - float(r.get("oos_score_se") or 0.0))
     days = float(r.get("oos_prop_days") or 0.0) or 999.0
     return (-score, days, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
 
@@ -211,6 +220,13 @@ def refine(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
                 if ka & kb:
                     continue
                 add(sleeve, {**a["overrides"], **b["overrides"]})
+        # the heat guard on each of the best cells (2.7.0), at the levels that keep a day's loss
+        # well inside a 5% daily limit
+        if "risk.heat_guard_pct" in bounds:
+            for r in best:
+                if not r["overrides"].get("risk.heat_guard_pct"):
+                    for g in (0.02, 0.03, 0.04):
+                        add(sleeve, {**r["overrides"], "risk.heat_guard_pct": g})
         keys = _sleeve_keys(bounds, sleeve)[0]
         for div in REFINE_DIVISORS:
             for r in best:
@@ -406,6 +422,7 @@ def waiting_list(registry: HiveRegistry, ldir=None, objective: str | None = None
             continue
         rows[key] = {"proposal": it.get("proposal") or it.get("name") or "waiting list", "overrides": it["overrides"],
                      "oos_prop": it.get("oos_prop"), "oos_score": it.get("oos_score"), "prop_key": it.get("prop_key"),
+                     "oos_score_se": it.get("oos_score_se"),
                      "oos_prop_days": it.get("oos_prop_days"),
                      "sleeve": it.get("sleeve") or "stocks", "hypothesis": it.get("hypothesis") or "",
                      "date": it.get("date"), "is_cagr": it.get("is_cagr"), "oos_cagr": it.get("oos_cagr"),
@@ -620,7 +637,7 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
                     "parent_oos_cagr": parent.outofsample["cagr"],
                     "oos_prop": ev.outofsample.get("prop_pass_rate"), "parent_oos_prop": parent.outofsample.get("prop_pass_rate"),
                     "oos_score": ev.outofsample.get("prop_score"), "oos_prop_days": ev.outofsample.get("prop_median_days"),
-                    "prop_key": prop_key})
+                    "oos_score_se": ev.outofsample.get("prop_score_se"), "prop_key": prop_key})
         passed, why = verdict(parent, ev, cfg.operator.max_drawdown_tolerance, cfg.operator.objective)
         child_id = None
         seated_as = next((c.id for c in registry.children if cell_key(c.sleeve, c.overrides or {}) == cell_key(sleeve, ov)), None)

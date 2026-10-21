@@ -338,3 +338,51 @@ challenges quickly.
   out-of-sample window, so a 17% pass rate is 17% plus or minus about 8%: the
   gaps between the top cells are mostly noise.
 
+### Config 2.7.0: the heat guard, and ranking that discounts luck
+
+* **What the research found** (three reports, 2026-10-21: open-source prop
+  simulators and risk managers, current firm rules and statistics, and the
+  mathematics of reaching a target before a floor with a Monte Carlo and an
+  exact dynamic programme):
+  * The biggest single lever is a cap on what the whole book can lose in one
+    day. In the Monte Carlo (a +0.2R-per-trade strategy, two correlated trades
+    a day) it took daily-limit failures from 24-33% to 0% and two-phase passes
+    from 49% to 71%.
+  * Stop at the target (the simulator already ends an evaluation there).
+  * About 1% risk per trade under that cap; never 2-3% without it.
+  * Without a deadline, do not raise risk; under one, raise it only late.
+    Martingale and streak scaling do not help.
+  * Passing in under 10 trading days with high probability needs a daily
+    Sharpe of about 0.22 (3.5 a year) or gambling-level risk. With a
+    realistic edge and prudent sizing the median pass takes about 14 trading
+    days, and about 31% of attempts pass within 10.
+* **The heat guard** (`risk.heat_guard_pct`, 0 = off, searched 0 to 6%). At
+  every close, after the trailing stops, if the book would lose more than the
+  cap with every stop filled, every stop is raised so each position's loss to
+  its stop shrinks in the same proportion. New entries are sized to the room
+  left. The daily run does the same and arms the raised stops at the broker,
+  so backtest and live agree. The lab tries it at 2/3/4% on its best cells and
+  on fresh grid cells.
+* **Measured on the best crypto cell, real data:**
+
+  | Heat guard | In-sample score | In-sample daily breaches | In-sample worst drop | OOS score | OOS pass | OOS daily breaches | OOS worst drop |
+  |---|---|---|---|---|---|---|---|
+  | off | 0.000 | 14% | -47% | +0.144 | 18% | 8% | -29% |
+  | 2% | +0.080 | 1% | -5% | +0.116 | 12% | 1% | -14% |
+  | 3% | +0.062 | 9% | -7% | +0.141 | 16% | 5% | -17% |
+  | 4% | +0.057 | 9% | -7% | +0.138 | 16% | 4% | -20% |
+
+  The remaining breaches at 3-4% are three 2011-2012 bitcoin days that gapped
+  through the stops (each lands in about 12 overlapping evaluations). The
+  guard trades speed for survival; the lab decides where.
+* **Ranking discounts luck.** Each score now carries its standard error (the
+  spread of +1 / -0.5 / 0 outcomes over the about n x 5/60 independent
+  evaluations), and cells rank by score less one standard error. The verdict
+  against the parent is unchanged. The score format is part of the rules key,
+  so every cell is rescored.
+* **Not done, and why.**
+  * Intraday entries (opening-range breakouts and similar) need intraday data;
+    the owner asked for no new data sources for now.
+  * Room-to-floor sizing hurts under a deadline (-6 points at 60 days).
+  * Leverage for the forex and gold sleeve is still the owner's decision.
+

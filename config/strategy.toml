@@ -26,7 +26,7 @@
 #                      Monitors (news-channel sub-agents) and the daily sweep.
 
 name = "trend-reset-v1"
-version = "2.6.0"
+version = "2.7.0"
 
 [stocks]
 entry_mode = "reset_breakout"
@@ -208,6 +208,7 @@ edge_lookback_trades = 50
 edge_min_risk_pct = 0.0025
 max_risk_per_trade_pct = 0.05
 max_open_risk_pct = 0.06
+heat_guard_pct = 0.0
 target_annual_vol = 0.20
 portfolio_vol_lookback = 20
 max_daily_loss_pct = 0.04

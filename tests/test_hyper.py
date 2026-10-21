@@ -153,3 +153,63 @@ def test_rescores_take_every_other_turn_and_the_seated_cells_go_first(tmp_path):
          if sl == "stocks"]
     assert q[0] == ({"stocks.trail_atr": 6.0}, "rescore")      # the seated cell, though it ranks last
     assert [st for _, st in q[:10]] == ["rescore", "sweep"] * 5
+
+
+def test_the_heat_guard_raises_every_stop_until_the_book_risks_no_more_than_the_cap():
+    from hive.backtest.engine import Position
+
+    long = Position(symbol="A", asset_class="stock", qty=10.0, entry_price=90.0, entry_date=pd.Timestamp("2020-01-01"),
+                    stop_price=80.0, r_per_share=10.0, highest_close=100.0)
+    short = Position(symbol="B~S", asset_class="stock", qty=1.0, entry_price=0.02, entry_date=pd.Timestamp("2020-01-01"),
+                     stop_price=1 / 60.0, r_per_share=0.0, highest_close=0.02, short=True, shares=10.0,
+                     real_entry=50.0, collateral=500.0)
+    pos, closes = {"A": long, "B~S": short}, {"A": 100.0, "B~S": 1 / 50.0}
+    heat = lambda: sum(Backtester._risk(p, closes[s]) for s, p in pos.items())   # noqa: E731
+    assert heat() == pytest.approx(200.0 + 100.0)                  # 10 x (100 - 80) and 10 x (60 - 50)
+    Backtester._guard_heat(pos, closes, 10_000.0, 0.05)              # 300 is under 5% of 10,000: untouched
+    assert long.stop_price == 80.0
+    Backtester._guard_heat(pos, closes, 10_000.0, 0.015)             # 150 allowed: every distance halves
+    assert heat() == pytest.approx(150.0)
+    assert long.stop_price == pytest.approx(90.0) and 1 / short.stop_price == pytest.approx(55.0)
+
+
+def test_the_heat_guard_holds_a_days_loss_in_the_backtest_and_the_daily_run():
+    from types import SimpleNamespace
+
+    from hive.orchestrator.book import OpenPosition
+    from hive.orchestrator.run import DailyRun
+
+    close, volume = textbook_setup(n_after=200)
+    bars = bars_from_path(close, volume)
+    free = _run(StrategyConfig(), bars)
+    cfg = StrategyConfig()
+    cfg.risk.heat_guard_pct = 0.004
+    held = _run(cfg, bars)
+    assert not held.equity.equals(free.equity)
+    day = (held.equity_low - held.equity.shift(1)) / held.equity.shift(1)
+    assert day.min() >= -0.004 - 0.003                                # the cap, plus the open's gap
+
+    armed = []
+    run = SimpleNamespace(cfg=cfg, broker=SimpleNamespace(equity=lambda: 1_000.0, cancel_open_orders=lambda s: None),
+                          journal=SimpleNamespace(write=lambda *a: armed.append(a)),
+                          book=SimpleNamespace(save=lambda: None), _arm_stop=lambda p: armed.append(p.symbol))
+    p = OpenPosition(symbol="AAA", asset_class="stock", qty=2.0, entry_price=90.0, entry_date="2020-01-01",
+                     r_per_share=10.0, stop_price=80.0, highest_close=100.0)
+    DailyRun._guard_heat(run, [("AAA", p, 100.0)])                    # 40 at risk, 4 allowed
+    assert p.stop_price == pytest.approx(98.0) and "AAA" in armed and armed[-1][0] == "heat_guard"
+
+
+def test_a_score_made_on_a_few_lucky_evaluations_does_not_outrank_a_steady_one():
+    from hive.operator.sweep import rank_key
+
+    r = PropRules(eval_horizon_days=60, eval_step_days=5)
+    idx = pd.date_range("2020-01-01", periods=1300, freq="D")
+    rng = np.random.default_rng(1)
+    m = prop_metrics(pd.Series(100 * np.cumprod(1 + rng.normal(0.001, 0.012, 1300)), index=idx), r)
+    p, b = m["prop_pass_rate"], m["prop_fail_daily_rate"] + m["prop_fail_total_rate"]
+    sd = np.sqrt(p + 0.25 * b - m["prop_score"] ** 2)                  # the spread of 1 / -0.5 / 0 outcomes
+    n = m["prop_n"]
+    assert m["prop_score_se"] == pytest.approx(sd * np.sqrt(n / (n - 1)) / np.sqrt(n * 5 / 60), rel=1e-9)
+    lucky = {"oos_score": 0.14, "oos_score_se": 0.08}
+    steady = {"oos_score": 0.11, "oos_score_se": 0.02}
+    assert rank_key(steady, "prop") < rank_key(lucky, "prop")

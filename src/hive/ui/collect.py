@@ -355,7 +355,7 @@ def _lab(ldir: Path, state: Path, cfg: StrategyConfig, hive: dict) -> dict[str, 
             row["name"] = t.get("name")
         row["verdict"] = (t.get("verdict") or "")[:110]
         for k in ("is_cagr", "oos_cagr", "is_dd", "oos_dd", "parent_oos_cagr", "oos_prop", "parent_oos_prop",
-                  "oos_score", "parent_oos_score", "oos_breach", "oos_prop_days"):
+                  "oos_score", "oos_score_se", "parent_oos_score", "oos_breach", "oos_prop_days"):
             row[k] = r5(t.get(k))
         row["oos"] = {k: r5((t.get("outofsample") or {}).get(k)) for k in metric_keys if k in ("sharpe", "n_trades")}
         row["child_status"] = child_status.get(t.get("child_id")) if t.get("child_id") else None

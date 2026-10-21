@@ -34,7 +34,10 @@ import pandas as pd
 from hive.config import PropRules
 
 PROP_KEYS = ("prop_pass_rate", "prop_fail_daily_rate", "prop_fail_total_rate", "prop_timeout_rate",
-             "prop_median_days", "prop_n", "prop_score")
+             "prop_median_days", "prop_n", "prop_score", "prop_score_se")
+# What a score record carries beyond the rules (config 2.7.0: its standard error); a record
+# without it is rescored like one made under other rules.
+SCORE_FORMAT = "se"
 
 
 @dataclass
@@ -51,7 +54,7 @@ def rules_key(rules: PropRules) -> str:
     return (f"{rules.profit_target_pct:g}/{rules.phase2_target_pct:g}/{rules.max_daily_loss_pct:g}/"
             f"{rules.max_total_loss_pct:g}/{'trail' if rules.trailing_total_loss else 'static'}/"
             f"{rules.min_trading_days}d/{rules.eval_horizon_days}h/{rules.eval_step_days}s/{rules.breach_penalty:g}"
-            + ("/intraday" if rules.intraday_breach else ""))
+            + ("/intraday" if rules.intraday_breach else "") + f"/{SCORE_FORMAT}")
 
 
 def _walk(eq: np.ndarray, start: int, rules: PropRules, *, horizon: int | None,
@@ -130,6 +133,12 @@ def prop_metrics(equity: pd.Series, rules: PropRules, low: pd.Series | None = No
     # lost) costs breach_penalty, running out of time costs nothing
     out["prop_score"] = out["prop_pass_rate"] - rules.breach_penalty * (out["prop_fail_daily_rate"]
                                                                         + out["prop_fail_total_rate"])
+    # how far chance alone could move it: overlapping evaluations share their days, so only about
+    # one in horizon / step of them is independent
+    pts = np.array([1.0 if e.outcome == "passed" else -rules.breach_penalty if e.outcome.startswith("failed")
+                    else 0.0 for e in evals])
+    n_ind = min(float(n), max(1.0, n * max(1, rules.eval_step_days) / max(1, h)))
+    out["prop_score_se"] = float(pts.std(ddof=1) / np.sqrt(n_ind)) if n > 1 else 0.0
     return out
 
 

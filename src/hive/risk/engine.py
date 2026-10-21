@@ -183,7 +183,8 @@ class RiskEngine:
                 if notional > room_crypto:
                     notional, _ = room_crypto, reasons.append("clipped: crypto sleeve")
             r_per_share = it.price - it.stop_price
-            room_heat = max(lim.max_open_risk_pct - heat, 0.0) * snap.equity
+            heat_cap = min(lim.max_open_risk_pct, lim.heat_guard_pct) if lim.heat_guard_pct > 0 else lim.max_open_risk_pct
+            room_heat = max(heat_cap - heat, 0.0) * snap.equity
             if (notional / it.price) * r_per_share > room_heat:
                 notional, _ = room_heat / r_per_share * it.price, reasons.append("clipped: open-risk heat")
             if lim.max_leverage <= 1.0 and notional > cash:
