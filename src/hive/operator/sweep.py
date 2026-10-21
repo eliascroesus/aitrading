@@ -16,6 +16,7 @@ from __future__ import annotations
 import logging
 import random
 from datetime import UTC, date, datetime
+from itertools import zip_longest
 from typing import Any
 
 from hive.config import REPO_ROOT, StrategyConfig, Tier
@@ -318,7 +319,9 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
                  with_refine: bool = True) -> list[tuple[str, dict[str, Any], str]]:
     """What the lab will test next, in order, with the stage each cell comes from: untested grid
     cells, then refinements around the best cells, then mutations of the best cells (stage three
-    never runs out), the sleeves interleaved so the cheap crypto cells never wait behind stocks."""
+    never runs out), the sleeves interleaved so the cheap crypto cells never wait behind stocks.
+    Cells scored under other prop rules are rescored, the seated ones first, taking every other
+    turn of their sleeve so the search goes on while the backlog drains."""
     results = results_so_far(registry, ldir)
     staged: list[tuple[Cell, str]] = []
     rescore: set[str] = set()
@@ -330,6 +333,7 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
         def same(r: dict[str, Any]) -> tuple:     # cells with identical results differ only in inert knobs
             return tuple(round(float(r.get(k) or 0.0), 6) for k in ("oos_cagr", "oos_dd", "is_cagr"))
 
+        live = {cell_key(c.sleeve, c.overrides or {}) for c in registry.active() if c.kind == "variant"}
         for sl in SLEEVES:
             done = {same(r) for r in results if r["sleeve"] == sl and r.get("oos_score") is not None
                     and r.get("prop_key") == pkey}
@@ -337,7 +341,7 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
                                and (r.get("oos_score") is None or r.get("prop_key") != pkey)
                                and r.get("oos_cagr") is not None and _in_bounds(r["overrides"], bounds) == r["overrides"]
                                and not str(r.get("verdict", "")).startswith("rejected: backtest failed")),
-                              key=lambda r: rank_key(r, "growth"))
+                              key=lambda r: (cell_key(sl, r["overrides"]) not in live, rank_key(r, "growth")))
             picked = 0
             for r in unscored:
                 if picked >= RESCORE_TOP or same(r) in done:
@@ -359,7 +363,11 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
         rescore.discard(k)
         seen.add(k)
         pending.append((sl, ov, stage))
-    by_sleeve = {s: [c for c in pending if c[0] == s] for s in SLEEVES}
+    by_sleeve: dict[str, list[tuple[str, dict[str, Any], str]]] = {}
+    for s in SLEEVES:
+        old = [c for c in pending if c[0] == s and c[2] == "rescore"]
+        new = [c for c in pending if c[0] == s and c[2] != "rescore"]
+        by_sleeve[s] = [c for pair in zip_longest(old, new) for c in pair if c is not None]
     out: list[tuple[str, dict[str, Any], str]] = []
     while any(by_sleeve.values()):
         for s in SLEEVES:
@@ -378,10 +386,12 @@ def describe(sleeve: str, overrides: dict[str, Any], *, stage: str = "sweep") ->
     return f"{stage} {sleeve}: " + ", ".join(f"{k.split('.')[-1]}={v}" for k, v in overrides.items())
 
 
-def waiting_list(registry: HiveRegistry, ldir=None, objective: str | None = None) -> list[dict[str, Any]]:
-    """Cells that passed the verdict while every seat was taken, best out-of-sample return first,
+def waiting_list(registry: HiveRegistry, ldir=None, objective: str | None = None,
+                 prop_key: str | None = None) -> list[dict[str, Any]]:
+    """Cells that passed the verdict while every seat was taken, best first under the objective,
     from the lab's complete record (the registry keeps only its last 200 iterations) and the
-    registry; cells that were ever seated (any status) are left out."""
+    registry; cells that were ever seated (any status) are left out. Given today's ``prop_key``,
+    a cell judged under other prop rules waits behind every cell judged under today's."""
     seated = {cell_key(c.sleeve, c.overrides or {}) for c in registry.children}
     src = (read_tests(ldir, with_curves=False) if ldir is not None else []) + list(registry.iterations)
     latest: dict[str, dict[str, Any]] = {}
@@ -401,7 +411,8 @@ def waiting_list(registry: HiveRegistry, ldir=None, objective: str | None = None
                      "date": it.get("date"), "is_cagr": it.get("is_cagr"), "oos_cagr": it.get("oos_cagr"),
                      "oos_dd": it.get("oos_dd"), "parent_oos_cagr": it.get("parent_oos_cagr")}
     objective = objective or "growth"
-    return sorted(rows.values(), key=lambda r: rank_key(r, objective))
+    return sorted(rows.values(), key=lambda r: (prop_key is not None and r.get("prop_key") != prop_key,
+                                                *rank_key(r, objective)))
 
 
 DISPLACE_MARGIN = 0.05      # how much better (prop score) a waiting cell must be to take a seat
@@ -445,11 +456,12 @@ def seat_waiting(registry: HiveRegistry, tier: Tier, on: date, ldir=None, object
     seated twice."""
     out: list[dict[str, Any]] = []
     seated: set[str] = set()
-    waiting = waiting_list(registry, ldir, objective)
-    if waiting and objective == "prop" and cfg is not None and not registry.can_spawn(tier)[0]:
-        from hive.hive.propfirm import rules_key
+    from hive.hive.propfirm import rules_key
 
-        rec = _displace_weakest(registry, waiting[0], ldir, on, rules_key(cfg.prop))
+    pkey = rules_key(cfg.prop) if cfg is not None and objective == "prop" else None
+    waiting = waiting_list(registry, ldir, objective, pkey)
+    if waiting and pkey is not None and not registry.can_spawn(tier)[0]:
+        rec = _displace_weakest(registry, waiting[0], ldir, on, pkey)
         if rec:
             out.append(rec)
     for it in waiting:

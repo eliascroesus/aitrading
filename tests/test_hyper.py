@@ -108,3 +108,48 @@ def test_a_clearly_better_cell_takes_the_weakest_seat_once_a_day(tmp_path):
                           "sleeve": "stocks", "oos_cagr": 0.1, "oos_dd": -0.1, "is_cagr": 0.02, "oos_score": 0.5,
                           "prop_key": key, "verdict": "passed but not spawned: tier base allows 4 children; 4 active"})
     assert seat_waiting(reg, tier, date(2026, 10, 21), None, "prop", cfg) == []            # once a day
+
+
+def test_a_cell_judged_under_old_rules_waits_behind_todays_and_never_blocks_a_seat(tmp_path):
+    from hive.hive.propfirm import rules_key
+    from hive.hive.registry import Child
+    from hive.operator.sweep import seat_waiting, waiting_list
+
+    cfg = StrategyConfig()
+    reg = HiveRegistry(tmp_path / "hive.json", cfg.survival)
+    tier = next(t for t in cfg.survival.tiers if t.name == "base")
+    key = rules_key(cfg.prop)
+    for i in range(tier.max_children):
+        c = reg.spawn(Child(id="", name=f"v{i}", kind="variant", sleeve="stocks",
+                            overrides={"stocks.trail_atr": 4.0 + i}), tier)
+        reg.mark(c.id, 99.0, 100.0, on=date(2026, 10, 20))
+    wait = "passed but not spawned: tier base allows 4 children; 4 active"
+    reg.record_iteration({"date": "2026-10-20", "proposal": "old rules", "overrides": {"stocks.trail_atr": 9.0},
+                          "sleeve": "stocks", "oos_cagr": 0.3, "oos_dd": -0.1, "is_cagr": 0.02, "oos_prop": 0.6,
+                          "oos_score": 0.6, "prop_key": "0.1/0.0/old", "verdict": wait})
+    reg.record_iteration({"date": "2026-10-21", "proposal": "today", "overrides": {"stocks.take_profit_r": 2.0},
+                          "sleeve": "stocks", "oos_cagr": 0.1, "oos_dd": -0.1, "is_cagr": 0.02, "oos_score": 0.2,
+                          "prop_key": key, "verdict": wait})
+    assert [w["proposal"] for w in waiting_list(reg, None, "prop")] == ["old rules", "today"]
+    assert [w["proposal"] for w in waiting_list(reg, None, "prop", key)] == ["today", "old rules"]
+    out = seat_waiting(reg, tier, date(2026, 10, 21), None, "prop", cfg)
+    assert [r["kind"] for r in out] == ["displaced", "seated"]
+    assert any(c.overrides == {"stocks.take_profit_r": 2.0} and c.status == "shadow" for c in reg.children)
+
+
+def test_rescores_take_every_other_turn_and_the_seated_cells_go_first(tmp_path):
+    from hive.hive.registry import Child
+
+    cfg = StrategyConfig()
+    reg = HiveRegistry(tmp_path / "hive.json", cfg.survival)
+    tier = next(t for t in cfg.survival.tiers if t.name == "hive")
+    for i in range(5):                                         # scored under other prop rules
+        reg.record_iteration({"date": "2026-10-20", "proposal": f"old{i}", "sleeve": "stocks",
+                              "overrides": {"stocks.trail_atr": 4.0 + 0.5 * i}, "oos_cagr": 0.3 - 0.01 * i,
+                              "oos_dd": -0.1, "is_cagr": 0.01 * i, "oos_score": 0.1, "prop_key": "old",
+                              "verdict": "rejected: x"})
+    reg.spawn(Child(id="", name="seat", kind="variant", sleeve="stocks", overrides={"stocks.trail_atr": 6.0}), tier)
+    q = [(ov, st) for sl, ov, st in queue_staged(reg, cfg, load_bounds(REPO_ROOT / "config" / "bounds.toml"))
+         if sl == "stocks"]
+    assert q[0] == ({"stocks.trail_atr": 6.0}, "rescore")      # the seated cell, though it ranks last
+    assert [st for _, st in q[:10]] == ["rescore", "sweep"] * 5
