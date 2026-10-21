@@ -1,5 +1,5 @@
 {
-  "cash": 34.3846025825975,
+  "cash": 31.983497122636642,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -39,9 +39,20 @@
       "symbol": "Melonie",
       "qty": 52018.19293606118,
       "entry_price": 4.245e-05,
-      "peak_price": 4.475e-05,
+      "peak_price": 6.762e-05,
       "entered_at": "2026-10-20T23:51:29.698462+00:00",
       "cost_usd": 2.3406626275439453,
+      "took_half": false,
+      "misses": 0
+    },
+    "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "qty": 4482.869246292809,
+      "entry_price": 0.0005053,
+      "peak_price": 0.0005053,
+      "entered_at": "2026-10-21T00:07:30.532825+00:00",
+      "cost_usd": 2.4011054599608617,
       "took_half": false,
       "misses": 0
     }
@@ -1167,6 +1178,15 @@
       "notional": 2.3406626275439453,
       "liquidity_usd": 16793.97,
       "age_hours": 1.0623161777750652
+    },
+    {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "event": "entry",
+      "price": 0.0005053,
+      "notional": 2.4011054599608617,
+      "liquidity_usd": 60835.76,
+      "age_hours": 1.118391110297309
     }
   ]
 }
