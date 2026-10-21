@@ -1,12 +1,12 @@
 {
-  "cash": 22.580061995082257,
+  "cash": 25.044427835081684,
   "positions": {
     "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump": {
       "mint": "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump",
       "symbol": "PHP",
       "qty": 6576.105811693058,
       "entry_price": 0.0001237,
-      "peak_price": 0.0006583,
+      "peak_price": 0.0007711,
       "entered_at": "2026-10-21T05:47:04.670783+00:00",
       "cost_usd": 1.7245442924816345,
       "took_half": true,
@@ -15,12 +15,12 @@
     "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
       "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
       "symbol": "KIMCHIBOSS",
-      "qty": 9935.038040409927,
+      "qty": 4967.519020204963,
       "entry_price": 0.0001571,
-      "peak_price": 0.0003074,
+      "peak_price": 0.0003382,
       "entered_at": "2026-10-21T06:32:14.894479+00:00",
       "cost_usd": 1.6544421447173037,
-      "took_half": false,
+      "took_half": true,
       "misses": 0
     },
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
@@ -34,25 +34,14 @@
       "took_half": false,
       "misses": 0
     },
-    "8FGreSHZeiinbu3zPeBA3vawxvz2phvyomnPn1NEpump": {
-      "mint": "8FGreSHZeiinbu3zPeBA3vawxvz2phvyomnPn1NEpump",
-      "symbol": "Clout",
-      "qty": 13688.567577294487,
-      "entry_price": 0.0001189,
-      "peak_price": 0.0001929,
-      "entered_at": "2026-10-21T07:18:21.213934+00:00",
-      "cost_usd": 1.7252249260367336,
-      "took_half": false,
-      "misses": 0
-    },
-    "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
-      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
-      "symbol": "CPU",
-      "qty": 36492.47209785048,
-      "entry_price": 4.467e-05,
-      "peak_price": 5.144e-05,
-      "entered_at": "2026-10-21T07:33:05.480486+00:00",
-      "cost_usd": 1.7279258523276395,
+    "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "qty": 1639.4594336655082,
+      "entry_price": 0.001017,
+      "peak_price": 0.001017,
+      "entered_at": "2026-10-21T07:48:24.303182+00:00",
+      "cost_usd": 1.767370058680091,
       "took_half": false,
       "misses": 0
     }
@@ -2027,6 +2016,42 @@
       "notional": 1.7279258523276395,
       "liquidity_usd": 17717.1,
       "age_hours": 5.58803075636122
+    },
+    {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "event": "take_half",
+      "price": 0.0003382,
+      "proceeds": 1.5792140366753191
+    },
+    {
+      "mint": "8FGreSHZeiinbu3zPeBA3vawxvz2phvyomnPn1NEpump",
+      "symbol": "Clout",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.000107,
+      "proceeds": 1.3767961269242794,
+      "pnl_approx": -0.34842879911245417,
+      "age_hours": 0.5008581244444444
+    },
+    {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "event": "exit",
+      "reason": "trail",
+      "price": 3.719e-05,
+      "proceeds": 1.2757257350799158,
+      "pnl_approx": -0.4522001172477237,
+      "age_hours": 0.2552285266666667
+    },
+    {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "event": "entry",
+      "price": 0.001017,
+      "notional": 1.767370058680091,
+      "liquidity_usd": 89476.25,
+      "age_hours": 8.799945129394532
     }
   ]
 }
