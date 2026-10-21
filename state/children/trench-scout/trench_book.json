@@ -1,5 +1,5 @@
 {
-  "cash": 23.818761274718444,
+  "cash": 23.449654499581623,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
@@ -34,17 +34,6 @@
       "took_half": true,
       "misses": 0
     },
-    "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump": {
-      "mint": "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump",
-      "symbol": "smol",
-      "qty": 40122.59544440126,
-      "entry_price": 3.992e-05,
-      "peak_price": 4.598e-05,
-      "entered_at": "2026-10-21T06:01:51.394681+00:00",
-      "cost_usd": 1.6977956507489282,
-      "took_half": false,
-      "misses": 0
-    },
     "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
       "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
       "symbol": "Pokecity",
@@ -64,6 +53,17 @@
       "peak_price": 0.0001043,
       "entered_at": "2026-10-21T06:24:40.408819+00:00",
       "cost_usd": 1.702957270532269,
+      "took_half": false,
+      "misses": 0
+    },
+    "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "qty": 9935.038040409927,
+      "entry_price": 0.0001571,
+      "peak_price": 0.0001571,
+      "entered_at": "2026-10-21T06:32:14.894479+00:00",
+      "cost_usd": 1.6544421447173037,
       "took_half": false,
       "misses": 0
     }
@@ -1914,6 +1914,25 @@
       "notional": 1.702957270532269,
       "liquidity_usd": 27643.53,
       "age_hours": 4.447792842814128
+    },
+    {
+      "mint": "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump",
+      "symbol": "smol",
+      "event": "exit",
+      "reason": "trail",
+      "price": 3.408e-05,
+      "proceeds": 1.285335369580483,
+      "pnl_approx": -0.41246028116844524,
+      "age_hours": 0.5065277216666667
+    },
+    {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "event": "entry",
+      "price": 0.0001571,
+      "notional": 1.6544421447173037,
+      "liquidity_usd": 34915.1,
+      "age_hours": 6.486521968044705
     }
   ]
 }
