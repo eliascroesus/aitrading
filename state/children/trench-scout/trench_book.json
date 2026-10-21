@@ -1,12 +1,12 @@
 {
-  "cash": 26.660611548378817,
+  "cash": 23.21016169630535,
   "positions": {
     "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump": {
       "mint": "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump",
       "symbol": "PHP",
       "qty": 6576.105811693058,
       "entry_price": 0.0001237,
-      "peak_price": 0.0005272,
+      "peak_price": 0.0006583,
       "entered_at": "2026-10-21T05:47:04.670783+00:00",
       "cost_usd": 1.7245442924816345,
       "took_half": true,
@@ -28,9 +28,31 @@
       "symbol": "KIMCHI",
       "qty": 145.6386878621956,
       "entry_price": 0.01101,
-      "peak_price": 0.01101,
+      "peak_price": 0.0112,
       "entered_at": "2026-10-21T07:03:08.053792+00:00",
       "cost_usd": 1.6996908705645404,
+      "took_half": false,
+      "misses": 0
+    },
+    "7k1S1H4VgTXafzgMJcVRUs3qBXPMKV6prytKe32apump": {
+      "mint": "7k1S1H4VgTXafzgMJcVRUs3qBXPMKV6prytKe32apump",
+      "symbol": "Clout",
+      "qty": 23404.812840671766,
+      "entry_price": 6.954e-05,
+      "peak_price": 6.954e-05,
+      "entered_at": "2026-10-21T07:18:21.213934+00:00",
+      "cost_usd": 1.7252249260367336,
+      "took_half": false,
+      "misses": 0
+    },
+    "8FGreSHZeiinbu3zPeBA3vawxvz2phvyomnPn1NEpump": {
+      "mint": "8FGreSHZeiinbu3zPeBA3vawxvz2phvyomnPn1NEpump",
+      "symbol": "Clout",
+      "qty": 13688.567577294487,
+      "entry_price": 0.0001189,
+      "peak_price": 0.0001189,
+      "entered_at": "2026-10-21T07:18:21.213934+00:00",
+      "cost_usd": 1.7252249260367336,
       "took_half": false,
       "misses": 0
     }
@@ -1968,6 +1990,24 @@
       "proceeds": 1.3323749476489941,
       "pnl_approx": -0.3167524447115806,
       "age_hours": 0.2552772138888889
+    },
+    {
+      "mint": "7k1S1H4VgTXafzgMJcVRUs3qBXPMKV6prytKe32apump",
+      "symbol": "Clout",
+      "event": "entry",
+      "price": 6.954e-05,
+      "notional": 1.7252249260367336,
+      "liquidity_usd": 21810.62,
+      "age_hours": 0.9801723155381944
+    },
+    {
+      "mint": "8FGreSHZeiinbu3zPeBA3vawxvz2phvyomnPn1NEpump",
+      "symbol": "Clout",
+      "event": "entry",
+      "price": 0.0001189,
+      "notional": 1.7252249260367336,
+      "liquidity_usd": 29003.24,
+      "age_hours": 0.9515611933051216
     }
   ]
 }
