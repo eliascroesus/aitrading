@@ -52,11 +52,12 @@ EDGE_KNOBS = ("risk.edge_fraction", "risk.edge_min_trades", "risk.edge_lookback_
 REFINE_TOP = 3
 REFINE_DIVISORS = (1, 2, 4)   # coarse steps first (a sixth of the range), then finer
 EVOLVE_TOP = 8                # the evolve stage mutates the best EVOLVE_TOP cells per sleeve ...
-EVOLVE_PER_SLEEVE = 150       # ... into this many fresh candidates per call
-EVOLVE_MAX_KNOBS = 6          # a candidate never changes more than this many settings
+EVOLVE_PER_SLEEVE = 400       # ... into this many fresh candidates per call
+EVOLVE_MAX_KNOBS = 16          # a candidate never changes more than this many settings (the best cells stack many)
 # Cells per turn of the queue: forex and gold first (what prop firms trade most), then crypto,
 # then stocks (a stock cell also costs the most time: hundreds of markets).
 SLEEVE_WEIGHTS = {"macro": 3, "crypto": 2, "stocks": 1}
+QUEUE_BATCH = 60              # a timed run rebuilds its queue after this many cells
 RESCORE_TOP = 15              # best distinct results per sleeve re-tested once to get their prop score
 STAGES = ("rescore", "sweep", "refine", "evolve")
 
@@ -190,7 +191,7 @@ def refine(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
         rows = [r for r in results if r["sleeve"] == sleeve and r.get("oos_cagr") is not None
                 and not str(r.get("verdict", "")).startswith("rejected: backtest failed")]
         rows.sort(key=lambda r: rank_key(r, cfg.operator.objective))
-        best = rows[:top]
+        best = [{**r, "overrides": _in_bounds(r["overrides"], bounds)} for r in rows[:top]]
         if not best:
             continue
         # pairwise merges of winners with disjoint knobs (same entry family or none)
@@ -215,6 +216,12 @@ def refine(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
                             continue
                         add(sleeve, {**r["overrides"], k: v})
     return out
+
+
+def _in_bounds(ov: dict[str, Any], bounds: dict[str, Bound]) -> dict[str, Any]:
+    """A cell's settings without the ones no longer in the search space (a lever removed from
+    bounds, like the drawdown halt in 2.3.0): new cells are built from what is still searchable."""
+    return {k: v for k, v in ov.items() if k in bounds}
 
 
 def _inert(k: str, ov: dict[str, Any], cfg: StrategyConfig, sleeve: str) -> bool:
@@ -257,7 +264,7 @@ def evolve(results: list[dict[str, Any]], bounds: dict[str, Bound], cfg: Strateg
         rows = [r for r in results if r["sleeve"] == sleeve and r.get("oos_cagr") is not None
                 and not str(r.get("verdict", "")).startswith("rejected: backtest failed")]
         rows.sort(key=lambda r: rank_key(r, cfg.operator.objective))
-        best = [r["overrides"] for r in rows[:top]] or [{}]
+        best = [_in_bounds(r["overrides"], bounds) for r in rows[:top]] or [{}]
         numeric, categorical = _sleeve_keys(bounds, sleeve)
         mode_key = f"{sleeve}.entry_mode"
         other_cats = [k for k in categorical if k != mode_key]
@@ -313,7 +320,7 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
         for sl in SLEEVES:
             done = {same(r) for r in results if r["sleeve"] == sl and r.get("oos_score") is not None}
             unscored = sorted((r for r in results if r["sleeve"] == sl and r.get("oos_score") is None
-                               and r.get("oos_cagr") is not None
+                               and r.get("oos_cagr") is not None and _in_bounds(r["overrides"], bounds) == r["overrides"]
                                and not str(r.get("verdict", "")).startswith("rejected: backtest failed")),
                               key=lambda r: rank_key(r, "growth"))
             picked = 0
@@ -480,7 +487,9 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
         return True
 
     def cells():
-        """The queue, refreshed with this run's own results whenever a timed run outgrows it."""
+        """The queue, rebuilt from this run's own results every QUEUE_BATCH cells of a timed run,
+        so the sleeves keep their turns (a fast sleeve does not run dry and leave only stocks)
+        and refinements follow the newest winners."""
         seen_now: set[str] = set()
         while True:
             fresh = 0
@@ -491,6 +500,8 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
                 seen_now.add(k)
                 fresh += 1
                 yield sleeve, ov, stage
+                if budget_s is not None and fresh >= QUEUE_BATCH:
+                    break
             if budget_s is None or fresh == 0 or elapsed() >= budget_s:
                 return
 
