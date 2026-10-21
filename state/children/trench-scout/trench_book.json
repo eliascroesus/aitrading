@@ -1,17 +1,6 @@
 {
-  "cash": 23.1715243206135,
+  "cash": 27.63830473657114,
   "positions": {
-    "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump": {
-      "mint": "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump",
-      "symbol": "PHP",
-      "qty": 6576.105811693058,
-      "entry_price": 0.0001237,
-      "peak_price": 0.001025,
-      "entered_at": "2026-10-21T05:47:04.670783+00:00",
-      "cost_usd": 1.7245442924816345,
-      "took_half": true,
-      "misses": 0
-    },
     "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
       "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
       "symbol": "KIMCHIBOSS",
@@ -50,7 +39,7 @@
       "symbol": "CPU",
       "qty": 36771.90651381587,
       "entry_price": 4.805e-05,
-      "peak_price": 4.866e-05,
+      "peak_price": 5.239e-05,
       "entered_at": "2026-10-21T07:55:43.706782+00:00",
       "cost_usd": 1.8729035144681838,
       "took_half": false,
@@ -2072,6 +2061,16 @@
       "notional": 1.8729035144681838,
       "liquidity_usd": 18329.27,
       "age_hours": 5.965318743896485
+    },
+    {
+      "mint": "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump",
+      "symbol": "PHP",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0007226,
+      "proceeds": 4.466780415957639,
+      "pnl_approx": 3.6045082697168223,
+      "age_hours": 2.4000816430555556
     }
   ]
 }
