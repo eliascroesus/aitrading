@@ -1,17 +1,6 @@
 {
-  "cash": 26.837078549119877,
+  "cash": 30.102671518465712,
   "positions": {
-    "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
-      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
-      "symbol": "GTAa",
-      "qty": 35664.04962295624,
-      "entry_price": 9.887e-05,
-      "peak_price": 0.0001071,
-      "entered_at": "2026-10-20T19:35:42.405748+00:00",
-      "cost_usd": 3.7376708613949847,
-      "took_half": false,
-      "misses": 0
-    },
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
       "symbol": "SASONA",
@@ -1320,6 +1309,16 @@
       "proceeds": 1.3855517476614605,
       "pnl_approx": -0.7498189204250372,
       "age_hours": 0.12783153083333335
+    },
+    {
+      "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
+      "symbol": "GTAa",
+      "event": "exit",
+      "reason": "time_stop",
+      "price": 9.741e-05,
+      "proceeds": 3.265592969345837,
+      "pnl_approx": -0.4720778920491475,
+      "age_hours": 6.066570725555555
     }
   ]
 }
