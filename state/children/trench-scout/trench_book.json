@@ -1,5 +1,5 @@
 {
-  "cash": 24.87297514638688,
+  "cash": 26.10931281082326,
   "positions": {
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
@@ -17,7 +17,7 @@
       "symbol": "Pokecity",
       "qty": 4482.869246292809,
       "entry_price": 0.0005053,
-      "peak_price": 0.0008898,
+      "peak_price": 0.0009062,
       "entered_at": "2026-10-21T00:07:30.532825+00:00",
       "cost_usd": 2.4011054599608617,
       "took_half": false,
@@ -39,20 +39,9 @@
       "symbol": "KIMCHIBOSS",
       "qty": 2623.7576466894257,
       "entry_price": 0.0007895,
-      "peak_price": 0.0009496,
+      "peak_price": 0.0009784,
       "entered_at": "2026-10-21T01:09:26.283904+00:00",
       "cost_usd": 2.1957440617849797,
-      "took_half": false,
-      "misses": 0
-    },
-    "9mUsvixt7axzYFNxux2ppM2VSBUm6P1wP9WyA1yCgato": {
-      "mint": "9mUsvixt7axzYFNxux2ppM2VSBUm6P1wP9WyA1yCgato",
-      "symbol": "LORENZO",
-      "qty": 22945.792646664035,
-      "entry_price": 8.496e-05,
-      "peak_price": 8.496e-05,
-      "entered_at": "2026-10-21T01:47:07.319300+00:00",
-      "cost_usd": 2.066443015856211,
       "took_half": false,
       "misses": 0
     },
@@ -61,7 +50,7 @@
       "symbol": "ORANGIE",
       "qty": 23763.03738278789,
       "entry_price": 8.022e-05,
-      "peak_price": 8.022e-05,
+      "peak_price": 0.0001423,
       "entered_at": "2026-10-21T02:09:54.157597+00:00",
       "cost_usd": 2.0206471103780794,
       "took_half": false,
@@ -1378,6 +1367,16 @@
       "notional": 2.0206471103780794,
       "liquidity_usd": 23085.0,
       "age_hours": 0.5666656391737196
+    },
+    {
+      "mint": "9mUsvixt7axzYFNxux2ppM2VSBUm6P1wP9WyA1yCgato",
+      "symbol": "LORENZO",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 5.732e-05,
+      "proceeds": 1.2363376644363755,
+      "pnl_approx": -0.8301053514198355,
+      "age_hours": 0.5104299663888889
     }
   ]
 }
