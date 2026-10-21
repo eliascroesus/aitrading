@@ -1,5 +1,5 @@
 {
-  "cash": 26.295203665742214,
+  "cash": 24.08730606219589,
   "positions": {
     "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
       "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
@@ -12,25 +12,36 @@
       "took_half": false,
       "misses": 0
     },
-    "65ruvkKxdqmR2aaohdLykPQ9GmYQkjrVcWhX8Lcrpump": {
-      "mint": "65ruvkKxdqmR2aaohdLykPQ9GmYQkjrVcWhX8Lcrpump",
-      "symbol": "MEME",
-      "qty": 42622.03917851553,
-      "entry_price": 3.652e-05,
-      "peak_price": 3.652e-05,
-      "entered_at": "2026-10-21T09:17:38.652863+00:00",
-      "cost_usd": 1.6499502830473505,
-      "took_half": false,
-      "misses": 0
-    },
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
       "symbol": "KIMCHI",
       "qty": 196.52790508190841,
       "entry_price": 0.007401,
-      "peak_price": 0.007401,
+      "peak_price": 0.00754,
       "entered_at": "2026-10-21T09:25:29.357323+00:00",
       "cost_usd": 1.5417732070418764,
+      "took_half": false,
+      "misses": 0
+    },
+    "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump": {
+      "mint": "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump",
+      "symbol": "MEME",
+      "qty": 8022.884914833125,
+      "entry_price": 0.0001777,
+      "peak_price": 0.0001777,
+      "entered_at": "2026-10-21T09:33:29.397394+00:00",
+      "cost_usd": 1.5112066483277973,
+      "took_half": false,
+      "misses": 0
+    },
+    "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "qty": 3050.8595107336755,
+      "entry_price": 0.0004673,
+      "peak_price": 0.0004673,
+      "entered_at": "2026-10-21T09:33:29.397394+00:00",
+      "cost_usd": 1.5112066483277973,
       "took_half": false,
       "misses": 0
     }
@@ -2146,6 +2157,34 @@
       "notional": 1.5417732070418764,
       "liquidity_usd": 258508.07,
       "age_hours": 9.58393954691569
+    },
+    {
+      "mint": "65ruvkKxdqmR2aaohdLykPQ9GmYQkjrVcWhX8Lcrpump",
+      "symbol": "MEME",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 2.033e-05,
+      "proceeds": 0.8145156931092674,
+      "pnl_approx": -0.8354345899380831,
+      "age_hours": 0.2640957030555556
+    },
+    {
+      "mint": "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump",
+      "symbol": "MEME",
+      "event": "entry",
+      "price": 0.0001777,
+      "notional": 1.5112066483277973,
+      "liquidity_usd": 36873.12,
+      "age_hours": 0.9150100263807509
+    },
+    {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "event": "entry",
+      "price": 0.0004673,
+      "notional": 1.5112066483277973,
+      "liquidity_usd": 63080.12,
+      "age_hours": 9.507266804199219
     }
   ]
 }
