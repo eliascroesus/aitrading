@@ -1,17 +1,6 @@
 {
-  "cash": 23.85119541179724,
+  "cash": 21.79343288419011,
   "positions": {
-    "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
-      "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
-      "symbol": "KIMCHI",
-      "qty": 196.52790508190841,
-      "entry_price": 0.007401,
-      "peak_price": 0.009069,
-      "entered_at": "2026-10-21T09:25:29.357323+00:00",
-      "cost_usd": 1.5417732070418764,
-      "took_half": false,
-      "misses": 0
-    },
     "Gv6jKrrjJW9NLZujVZdxj6D9xL21qcLbHso8LYFMpump": {
       "mint": "Gv6jKrrjJW9NLZujVZdxj6D9xL21qcLbHso8LYFMpump",
       "symbol": "BOUNCER",
@@ -20,6 +9,28 @@
       "peak_price": 3.641e-05,
       "entered_at": "2026-10-21T10:13:03.640875+00:00",
       "cost_usd": 1.3902850547757515,
+      "took_half": false,
+      "misses": 0
+    },
+    "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump": {
+      "mint": "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump",
+      "symbol": "MEME",
+      "qty": 18197.342249037338,
+      "entry_price": 6.636e-05,
+      "peak_price": 6.636e-05,
+      "entered_at": "2026-10-21T10:29:17.185583+00:00",
+      "cost_usd": 1.2800301695448848,
+      "took_half": false,
+      "misses": 0
+    },
+    "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "qty": 1818.6379994670447,
+      "entry_price": 0.000664,
+      "peak_price": 0.000664,
+      "entered_at": "2026-10-21T10:29:17.185583+00:00",
+      "cost_usd": 1.2800301695448848,
       "took_half": false,
       "misses": 0
     }
@@ -2278,6 +2289,34 @@
       "proceeds": 0.6556182293516627,
       "pnl_approx": -0.743618906055388,
       "age_hours": 0.2608809763888889
+    },
+    {
+      "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
+      "symbol": "KIMCHI",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 0.002719,
+      "proceeds": 0.5022978114826464,
+      "pnl_approx": -1.03947539555923,
+      "age_hours": 1.0632856277777778
+    },
+    {
+      "mint": "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump",
+      "symbol": "MEME",
+      "event": "entry",
+      "price": 6.636e-05,
+      "notional": 1.2800301695448848,
+      "liquidity_usd": 21792.66,
+      "age_hours": 1.8449527322048611
+    },
+    {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "event": "entry",
+      "price": 0.000664,
+      "notional": 1.2800301695448848,
+      "liquidity_usd": 72352.75,
+      "age_hours": 11.481380232476129
     }
   ]
 }
