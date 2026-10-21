@@ -1,5 +1,5 @@
 {
-  "cash": 31.983497122636642,
+  "cash": 29.585460174321756,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -17,7 +17,7 @@
       "symbol": "SASONA",
       "qty": 53136.882848257366,
       "entry_price": 5.336e-05,
-      "peak_price": 7.969e-05,
+      "peak_price": 8.192e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
       "took_half": false,
@@ -39,7 +39,7 @@
       "symbol": "Melonie",
       "qty": 52018.19293606118,
       "entry_price": 4.245e-05,
-      "peak_price": 6.762e-05,
+      "peak_price": 7.029e-05,
       "entered_at": "2026-10-20T23:51:29.698462+00:00",
       "cost_usd": 2.3406626275439453,
       "took_half": false,
@@ -53,6 +53,17 @@
       "peak_price": 0.0005053,
       "entered_at": "2026-10-21T00:07:30.532825+00:00",
       "cost_usd": 2.4011054599608617,
+      "took_half": false,
+      "misses": 0
+    },
+    "CzkL8THZY8m1fu77cdLuKqNjXtyiBDiv4YXVP3fNpump": {
+      "mint": "CzkL8THZY8m1fu77cdLuKqNjXtyiBDiv4YXVP3fNpump",
+      "symbol": "BabyKimchi",
+      "qty": 23079.973554827895,
+      "entry_price": 9.802e-05,
+      "peak_price": 9.802e-05,
+      "entered_at": "2026-10-21T00:15:25.228074+00:00",
+      "cost_usd": 2.3980369483148842,
       "took_half": false,
       "misses": 0
     }
@@ -1187,6 +1198,15 @@
       "notional": 2.4011054599608617,
       "liquidity_usd": 60835.76,
       "age_hours": 1.118391110297309
+    },
+    {
+      "mint": "CzkL8THZY8m1fu77cdLuKqNjXtyiBDiv4YXVP3fNpump",
+      "symbol": "BabyKimchi",
+      "event": "entry",
+      "price": 9.802e-05,
+      "notional": 2.3980369483148842,
+      "liquidity_usd": 27671.29,
+      "age_hours": 0.3917823355441623
     }
   ]
 }
