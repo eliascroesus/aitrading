@@ -1,5 +1,5 @@
 {
-  "cash": 26.04397350319025,
+  "cash": 29.176450308401144,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -20,17 +20,6 @@
       "peak_price": 8.231e-05,
       "entered_at": "2026-10-20T22:26:06.835387+00:00",
       "cost_usd": 3.0055071129099935,
-      "took_half": false,
-      "misses": 0
-    },
-    "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump": {
-      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
-      "symbol": "DTC",
-      "qty": 2195.18319129925,
-      "entry_price": 0.001002,
-      "peak_price": 0.001275,
-      "entered_at": "2026-10-20T23:43:22.701913+00:00",
-      "cost_usd": 2.33154797114276,
       "took_half": false,
       "misses": 0
     },
@@ -56,23 +45,12 @@
       "took_half": false,
       "misses": 0
     },
-    "8zemVcC8974xhtHva7wuY64B6viXsfj24b6LH41mpump": {
-      "mint": "8zemVcC8974xhtHva7wuY64B6viXsfj24b6LH41mpump",
-      "symbol": "UMI",
-      "qty": 18528.71305482794,
-      "entry_price": 0.0001217,
-      "peak_price": 0.0001217,
-      "entered_at": "2026-10-21T00:23:32.378057+00:00",
-      "cost_usd": 2.390241041498914,
-      "took_half": false,
-      "misses": 0
-    },
     "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump": {
       "mint": "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump",
       "symbol": "claytonkimm",
       "qty": 6648.427261688098,
       "entry_price": 0.000334,
-      "peak_price": 0.0003618,
+      "peak_price": 0.0003833,
       "entered_at": "2026-10-21T00:32:01.469729+00:00",
       "cost_usd": 2.3538091877280545,
       "took_half": false,
@@ -1246,6 +1224,26 @@
       "notional": 2.3538091877280545,
       "liquidity_usd": 49600.85,
       "age_hours": 0.5499915825059679
+    },
+    {
+      "mint": "FP9HKxKKzBfQrRJHY5DNoMvNgEqCaMJoKejvtvtopump",
+      "symbol": "DTC",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.000956,
+      "proceeds": 1.9726794230291582,
+      "pnl_approx": -0.3588685481136018,
+      "age_hours": 1.1819634780555557
+    },
+    {
+      "mint": "8zemVcC8974xhtHva7wuY64B6viXsfj24b6LH41mpump",
+      "symbol": "UMI",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 6.659e-05,
+      "proceeds": 1.1597973821817327,
+      "pnl_approx": -1.2304436593171815,
+      "age_hours": 0.5126089936111111
     }
   ]
 }
