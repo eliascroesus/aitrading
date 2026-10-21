@@ -30,6 +30,15 @@ def stop_request(sym: str, qty: float, stop_price: float, asset_class: str, tif)
     return StopOrderRequest(symbol=sym, qty=qty, side=OrderSide.SELL, time_in_force=tif, stop_price=stop)
 
 
+def book_symbol(order) -> str:
+    """An Alpaca order's symbol in the book's spelling (``BTC/USD`` and ``BTCUSD`` are ``BTC``)."""
+    sym = str(order.symbol).upper().replace("/USD", "")
+    if (sym.endswith("USD") and len(sym) > 3 and "/" not in str(order.symbol)
+            and str(getattr(order, "asset_class", "")).lower().endswith("crypto")):
+        sym = sym[:-3]
+    return sym
+
+
 def alpaca_symbol(symbol: str, asset_class: str) -> str:
     """Alpaca spot crypto symbols look like ``BTC/USD``."""
     if asset_class == "crypto" and "/" not in symbol:
@@ -133,11 +142,28 @@ class AlpacaBroker:
         out = []
         try:
             for o in self.client.get_orders(GetOrdersRequest(status=QueryOrderStatus.OPEN)):
-                sym = str(o.symbol).upper().replace("/USD", "")
-                sym = sym[:-3] if sym.endswith("USD") and len(sym) > 3 and "/" not in str(o.symbol) and str(getattr(o, "asset_class", "")).lower().endswith("crypto") else sym
-                out.append({"symbol": sym, "id": str(o.id), "side": str(getattr(o, "side", "")).lower()})
+                out.append({"symbol": book_symbol(o), "id": str(o.id), "side": str(getattr(o, "side", "")).lower()})
         except Exception as exc:
             log.warning("alpaca pending_orders failed: %s", exc)
+        return out
+
+    def open_stops(self) -> dict[str, str] | None:
+        """Resting sell stops by symbol, in the book's spelling; None when Alpaca could not be
+        asked (then nothing is assumed). A fractional stock stop is a day order and lapses at
+        the close, so a stop the book armed may be gone."""
+        from alpaca.trading.enums import QueryOrderStatus
+        from alpaca.trading.requests import GetOrdersRequest
+
+        try:
+            orders = self.client.get_orders(GetOrdersRequest(status=QueryOrderStatus.OPEN))
+        except Exception as exc:
+            log.warning("alpaca open_stops failed: %s", exc)
+            return None
+        out: dict[str, str] = {}
+        for o in orders:
+            kind = str(getattr(o, "order_type", None) or getattr(o, "type", "")).lower()
+            if "sell" in str(getattr(o, "side", "")).lower() and "stop" in kind:
+                out[book_symbol(o)] = str(o.id)
         return out
 
     def cancel_open_orders(self, symbol: str | None = None) -> int:

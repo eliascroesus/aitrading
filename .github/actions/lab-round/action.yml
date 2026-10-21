@@ -50,6 +50,10 @@ runs:
       if: steps.gate.outputs.go == 'true'
       shell: bash
       run: .venv/bin/hive watch || echo "heartbeat skipped"
+    - name: Stop guardian (every held position has a resting stop)
+      if: steps.gate.outputs.go == 'true'
+      shell: bash
+      run: .venv/bin/hive guard || echo "stop guardian skipped"
     - name: Rebuild the dashboard
       if: steps.gate.outputs.go == 'true'
       shell: bash

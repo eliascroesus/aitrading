@@ -164,7 +164,8 @@ def collect(settings: Settings, cfg: StrategyConfig) -> dict[str, Any]:
                     timeline.append({"ts": ts, "who": who, "kind": "decision",
                                      "text": f"{d.get('action')} {d.get('symbol')}"
                                              + (f" ({d.get('confidence'):.2f})" if d.get("confidence") is not None else "")})
-            elif k in ("order", "exit", "fill", "fill_confirmed", "untradable", "reconcile", "death", "kill_switch"):
+            elif k in ("order", "exit", "fill", "fill_confirmed", "untradable", "reconcile", "death", "kill_switch",
+                       "guard_stop", "stop_lapsed"):
                 sym = pl.get("symbol", "")
                 detail = pl.get("reason") or pl.get("event") or pl.get("message") or ""
                 timeline.append({"ts": ts, "who": who, "kind": k, "text": f"{sym} {detail}".strip()})

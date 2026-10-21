@@ -390,3 +390,23 @@ challenges quickly.
   * Room-to-floor sizing hurts under a deadline (-6 points at 60 days).
   * Leverage for the forex and gold sleeve is still the owner's decision.
 
+### Protective stops that stay protective (2026-10-21)
+
+* **Found from the owner's Alpaca screenshot.** TRV's and COP's stops, submitted
+  on Monday, show "expired"; CVX, bought on Wednesday's open, has none. Alpaca
+  accepts fractional stock stops only as day orders, which lapse at the close,
+  and the daily run treated any stored stop id as armed, so it never re-armed
+  them: the two positions had no resting stop on Tuesday and Wednesday. A buy
+  queued before the open also had no stop until the next daily run (about 11
+  hours, including the whole session).
+* **Fixes.**
+  * The daily run counts a stop as armed only while it rests at the broker
+    (`open_stops`); a lapsed one is re-armed, and one placed by the guardian
+    is adopted.
+  * `hive guard`, after every lab round (about every eight minutes, never at
+    the same time as a daily run: the two share the state lock), arms a stop
+    for every held position without one. For an unconfirmed fill it uses the
+    fill price less the planned risk. In the session it closes a position
+    already through its stop. It never buys or moves a stop.
+  * When the broker cannot be asked, nothing is cleared or re-armed.
+

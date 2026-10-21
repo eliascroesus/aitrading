@@ -99,6 +99,10 @@ class PaperBroker:
     def pending_orders(self) -> list[dict]:
         return list(self._pending)
 
+    def open_stops(self) -> dict[str, str] | None:
+        """Resting stops by symbol (a paper stop never lapses)."""
+        return {s: f"stop-{s}" for s in self._stops}
+
     def is_market_open(self) -> bool:
         return True
 

@@ -497,6 +497,9 @@ class DailyRun:
         open_orders = self.broker.pending_orders() if hasattr(self.broker, "pending_orders") else []
         pending_symbols = {str(o.get("symbol")) for o in open_orders}
         pending_ids = {str(o.get("id", "")) for o in open_orders}
+        # a stop counts as armed only while it rests at the broker: Alpaca's fractional stops
+        # are day orders and lapse at every close (None: the broker could not be asked)
+        stops = self.broker.open_stops() if hasattr(self.broker, "open_stops") else None
         for sym, pos in list(self.book.positions.items()):
             bp = held.get(sym)
             if bp is not None:
@@ -508,6 +511,11 @@ class DailyRun:
                     self.journal.write("fill_confirmed", {"symbol": sym, "qty": bp.qty, "price": bp.avg_price})
                 elif abs(bp.qty - pos.qty) > 1e-6:
                     pos.qty = bp.qty
+                if stops is not None and stops.get(sym, "") != pos.stop_order_id:
+                    live = stops.get(sym, "")
+                    self.journal.write("stop_adopted" if live else "stop_lapsed",
+                                       {"symbol": sym, "was": pos.stop_order_id, "now": live})
+                    pos.stop_order_id = live          # an empty id is re-armed by _ensure_stops
                 continue
             if pos.meta.get("fill_pending") and keep_pending(pos, pending_symbols, pending_ids, self.run_date.date()):
                 continue  # still queued at the broker (orders placed after the close fill at the next open)

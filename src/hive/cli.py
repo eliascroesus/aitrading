@@ -392,6 +392,69 @@ def watch() -> None:
            f"market {'open' if hb['market_open'] else 'closed'}")
 
 
+def guard_stops(broker, book, journal) -> list[dict]:
+    """Every position the primary book holds at the broker gets a resting stop: Alpaca's
+    fractional stock stops are day orders that lapse at each close, and a buy that fills at the
+    open has none until the next daily run. Only protective sells: a stop at the book's price
+    (for a fill the book has not confirmed yet, the fill price less the planned risk), or, when
+    the price is already through that stop in the session, the position is closed as the stop
+    would have been (outside the session it waits: a resting stop only triggers in it)."""
+    stops = broker.open_stops()
+    if stops is None:
+        return []
+    held = broker.positions()
+    selling = {o["symbol"] for o in broker.pending_orders() if "sell" in str(o.get("side", ""))}   # an exit is queued
+    out = []
+    for sym, pos in book.positions.items():
+        bp = held.get(sym)
+        if bp is None or bp.qty <= 0 or sym in stops or sym in selling:
+            continue
+        stop = bp.avg_price - pos.r_per_share if pos.meta.get("fill_pending") else pos.stop_price
+        if stop <= 0:
+            continue
+        if bp.current_price and bp.current_price <= stop:
+            if not broker.is_market_open():
+                continue
+            res = broker.close_position(sym)
+            rec = {"symbol": sym, "action": "closed_through_stop", "stop": stop, "price": bp.current_price,
+                   "ok": res.ok, "message": res.message}
+        else:
+            res = broker.submit_stop(sym, bp.qty, stop, asset_class=pos.asset_class)
+            rec = {"symbol": sym, "action": "armed", "stop": stop, "qty": bp.qty, "ok": res.ok,
+                   "order_id": res.order_id, "message": res.message}
+        journal.write("guard_stop", rec)
+        out.append(rec)
+    return out
+
+
+@app.command()
+def guard() -> None:
+    """Stop guardian (each lab round): every position the primary holds at the broker has a
+    resting protective stop. Places protective sell stops (or, in the session, closes a position
+    already through its stop); never buys, never moves a stop."""
+    from datetime import UTC, datetime
+
+    import pandas as pd
+
+    from hive.data.store import BarStore
+    from hive.orchestrator.app import asset_classes_from_store, build_primary_broker
+    from hive.orchestrator.book import PositionBook
+    from hive.orchestrator.journal import Journal
+
+    s = get_settings()
+    setup_logging()
+    cfg = StrategyConfig.load()
+    store = BarStore(s.hive_data_dir / "cache")
+    now = datetime.now(UTC)
+    broker = build_primary_broker(s, store, asset_classes_from_store(store, cfg), pd.Timestamp(now.date()),
+                                  cfg.survival.starting_bankroll_usd)
+    book = PositionBook(s.hive_state_dir / "book_primary.json")
+    out = guard_stops(broker, book, Journal(s.hive_state_dir / "journal", f"{now.date().isoformat()}-guard"))
+    rprint(f"stop guardian: {len(book.positions)} positions, "
+           + (", ".join(f"{r['symbol']} {r['action']} at {r['stop']:.2f} ({'ok' if r['ok'] else r['message']})"
+                        for r in out) or "every one has a resting stop"))
+
+
 @app.command()
 def sweep(cells: int = typer.Option(3, help="Untested cells to backtest this run (ignored with --minutes)"),
           minutes: float | None = typer.Option(None, help="Backtest cells until this many minutes have passed"),
