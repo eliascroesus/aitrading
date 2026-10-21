@@ -1,36 +1,14 @@
 {
-  "cash": 21.640957583430065,
+  "cash": 23.491358620628166,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
       "symbol": "KIMCHI",
       "qty": 196.52790508190841,
       "entry_price": 0.007401,
-      "peak_price": 0.008227,
+      "peak_price": 0.008541,
       "entered_at": "2026-10-21T09:25:29.357323+00:00",
       "cost_usd": 1.5417732070418764,
-      "took_half": false,
-      "misses": 0
-    },
-    "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
-      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
-      "symbol": "KIMCHIBOSS",
-      "qty": 3050.8595107336755,
-      "entry_price": 0.0004673,
-      "peak_price": 0.0005204,
-      "entered_at": "2026-10-21T09:33:29.397394+00:00",
-      "cost_usd": 1.5112066483277973,
-      "took_half": false,
-      "misses": 0
-    },
-    "CymGUyYFMxtwdfHeA8rj7rywS1NkrTCGVt1cw1x5pump": {
-      "mint": "CymGUyYFMxtwdfHeA8rj7rywS1NkrTCGVt1cw1x5pump",
-      "symbol": "TRENCHPAD",
-      "qty": 21305.45751577036,
-      "entry_price": 6.574e-05,
-      "peak_price": 8.577e-05,
-      "entered_at": "2026-10-21T09:41:26.469176+00:00",
-      "cost_usd": 1.484658023711948,
       "took_half": false,
       "misses": 0
     },
@@ -39,7 +17,7 @@
       "symbol": "BOUNCER",
       "qty": 37610.65459416604,
       "entry_price": 3.724e-05,
-      "peak_price": 5.099e-05,
+      "peak_price": 5.902e-05,
       "entered_at": "2026-10-21T09:41:26.469176+00:00",
       "cost_usd": 1.484658023711948,
       "took_half": false,
@@ -2243,6 +2221,26 @@
       "notional": 1.5072994896168073,
       "liquidity_usd": 84069.43,
       "age_hours": 10.827191460232205
+    },
+    {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 0.0002499,
+      "proceeds": 0.7166652042284047,
+      "pnl_approx": -0.7945414440993925,
+      "age_hours": 0.41168684833333336
+    },
+    {
+      "mint": "CymGUyYFMxtwdfHeA8rj7rywS1NkrTCGVt1cw1x5pump",
+      "symbol": "TRENCHPAD",
+      "event": "exit",
+      "reason": "trail",
+      "price": 5.661e-05,
+      "proceeds": 1.1337358329696945,
+      "pnl_approx": -0.3509221907422535,
+      "age_hours": 0.2791669088888889
     }
   ]
 }
