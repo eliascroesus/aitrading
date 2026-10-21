@@ -1,5 +1,5 @@
 {
-  "cash": 19.972286264610837,
+  "cash": 21.784267029111454,
   "positions": {
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
@@ -15,12 +15,12 @@
     "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
       "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
       "symbol": "Pokecity",
-      "qty": 4482.869246292809,
+      "qty": 2241.4346231464046,
       "entry_price": 0.0005053,
-      "peak_price": 0.0009808,
+      "peak_price": 0.001139,
       "entered_at": "2026-10-21T00:07:30.532825+00:00",
       "cost_usd": 2.4011054599608617,
-      "took_half": false,
+      "took_half": true,
       "misses": 0
     },
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
@@ -34,23 +34,12 @@
       "took_half": false,
       "misses": 0
     },
-    "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
-      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
-      "symbol": "CPU",
-      "qty": 28554.2677982126,
-      "entry_price": 6.572e-05,
-      "peak_price": 7.469e-05,
-      "entered_at": "2026-10-21T02:32:31.147170+00:00",
-      "cost_usd": 1.989181668480444,
-      "took_half": false,
-      "misses": 0
-    },
     "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
       "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
       "symbol": "KIMCHIBOSS",
       "qty": 2262.8494142485238,
       "entry_price": 0.000839,
-      "peak_price": 0.0008518,
+      "peak_price": 0.0008543,
       "entered_at": "2026-10-21T02:48:10.152934+00:00",
       "cost_usd": 2.012442498067782,
       "took_half": false,
@@ -86,6 +75,17 @@
       "peak_price": 9.195e-05,
       "entered_at": "2026-10-21T02:55:38.049222+00:00",
       "cost_usd": 1.9454356493101408,
+      "took_half": false,
+      "misses": 0
+    },
+    "9mUsvixt7axzYFNxux2ppM2VSBUm6P1wP9WyA1yCgato": {
+      "mint": "9mUsvixt7axzYFNxux2ppM2VSBUm6P1wP9WyA1yCgato",
+      "symbol": "LORENZO",
+      "qty": 23332.85163014536,
+      "entry_price": 8.224e-05,
+      "peak_price": 8.224e-05,
+      "entered_at": "2026-10-21T03:10:32.337651+00:00",
+      "cost_usd": 2.0340273411469436,
       "took_half": false,
       "misses": 0
     }
@@ -1475,6 +1475,32 @@
       "notional": 1.9454356493101408,
       "liquidity_usd": 25128.71,
       "age_hours": 1.3288441213650173
+    },
+    {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "event": "take_half",
+      "price": 0.001139,
+      "proceeds": 2.3998143936179295
+    },
+    {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "event": "exit",
+      "reason": "trail",
+      "price": 5.388e-05,
+      "proceeds": 1.446193712029633,
+      "pnl_approx": -0.5429879564508109,
+      "age_hours": 0.6336640225
+    },
+    {
+      "mint": "9mUsvixt7axzYFNxux2ppM2VSBUm6P1wP9WyA1yCgato",
+      "symbol": "LORENZO",
+      "event": "entry",
+      "price": 8.224e-05,
+      "notional": 2.0340273411469436,
+      "liquidity_usd": 23111.52,
+      "age_hours": 7.1184168764241535
     }
   ]
 }
