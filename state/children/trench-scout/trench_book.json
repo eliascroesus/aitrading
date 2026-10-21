@@ -1,5 +1,5 @@
 {
-  "cash": 26.89362225676496,
+  "cash": 24.87297514638688,
   "positions": {
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
@@ -39,7 +39,7 @@
       "symbol": "KIMCHIBOSS",
       "qty": 2623.7576466894257,
       "entry_price": 0.0007895,
-      "peak_price": 0.0008776,
+      "peak_price": 0.0009496,
       "entered_at": "2026-10-21T01:09:26.283904+00:00",
       "cost_usd": 2.1957440617849797,
       "took_half": false,
@@ -53,6 +53,17 @@
       "peak_price": 8.496e-05,
       "entered_at": "2026-10-21T01:47:07.319300+00:00",
       "cost_usd": 2.066443015856211,
+      "took_half": false,
+      "misses": 0
+    },
+    "CdXHgb7CboQfbTRZwH2AFnmVnDKuwkrPUFp4jt53pump": {
+      "mint": "CdXHgb7CboQfbTRZwH2AFnmVnDKuwkrPUFp4jt53pump",
+      "symbol": "ORANGIE",
+      "qty": 23763.03738278789,
+      "entry_price": 8.022e-05,
+      "peak_price": 8.022e-05,
+      "entered_at": "2026-10-21T02:09:54.157597+00:00",
+      "cost_usd": 2.0206471103780794,
       "took_half": false,
       "misses": 0
     }
@@ -1358,6 +1369,15 @@
       "proceeds": 0.9238367700116711,
       "pnl_approx": -1.14260624584454,
       "age_hours": 0.2557113097222222
+    },
+    {
+      "mint": "CdXHgb7CboQfbTRZwH2AFnmVnDKuwkrPUFp4jt53pump",
+      "symbol": "ORANGIE",
+      "event": "entry",
+      "price": 8.022e-05,
+      "notional": 2.0206471103780794,
+      "liquidity_usd": 23085.0,
+      "age_hours": 0.5666656391737196
     }
   ]
 }
