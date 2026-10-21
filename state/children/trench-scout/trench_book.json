@@ -1,5 +1,5 @@
 {
-  "cash": 26.331467400310444,
+  "cash": 24.196096732223946,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -61,9 +61,20 @@
       "symbol": "KIMCHIBOSS",
       "qty": 2623.7576466894257,
       "entry_price": 0.0007895,
-      "peak_price": 0.0007895,
+      "peak_price": 0.0008538,
       "entered_at": "2026-10-21T01:09:26.283904+00:00",
       "cost_usd": 2.1957440617849797,
+      "took_half": false,
+      "misses": 0
+    },
+    "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump": {
+      "mint": "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump",
+      "symbol": "claytonkimm",
+      "qty": 6894.2526703295025,
+      "entry_price": 0.0002922,
+      "peak_price": 0.0002922,
+      "entered_at": "2026-10-21T01:17:21.085528+00:00",
+      "cost_usd": 2.1353706680864977,
       "took_half": false,
       "misses": 0
     }
@@ -1302,6 +1313,15 @@
       "notional": 2.1957440617849797,
       "liquidity_usd": 77911.6,
       "age_hours": 1.1063352613661024
+    },
+    {
+      "mint": "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump",
+      "symbol": "claytonkimm",
+      "event": "entry",
+      "price": 0.0002922,
+      "notional": 2.1353706680864977,
+      "liquidity_usd": 46373.91,
+      "age_hours": 1.3055053975423176
     }
   ]
 }
