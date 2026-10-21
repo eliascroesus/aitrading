@@ -1,5 +1,5 @@
 {
-  "cash": 26.10931281082326,
+  "cash": 26.03689100589082,
   "positions": {
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
@@ -45,14 +45,14 @@
       "took_half": false,
       "misses": 0
     },
-    "CdXHgb7CboQfbTRZwH2AFnmVnDKuwkrPUFp4jt53pump": {
-      "mint": "CdXHgb7CboQfbTRZwH2AFnmVnDKuwkrPUFp4jt53pump",
-      "symbol": "ORANGIE",
-      "qty": 23763.03738278789,
-      "entry_price": 8.022e-05,
-      "peak_price": 0.0001423,
-      "entered_at": "2026-10-21T02:09:54.157597+00:00",
-      "cost_usd": 2.0206471103780794,
+    "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "qty": 28554.2677982126,
+      "entry_price": 6.572e-05,
+      "peak_price": 6.572e-05,
+      "entered_at": "2026-10-21T02:32:31.147170+00:00",
+      "cost_usd": 1.989181668480444,
       "took_half": false,
       "misses": 0
     }
@@ -1377,6 +1377,25 @@
       "proceeds": 1.2363376644363755,
       "pnl_approx": -0.8301053514198355,
       "age_hours": 0.5104299663888889
+    },
+    {
+      "mint": "CdXHgb7CboQfbTRZwH2AFnmVnDKuwkrPUFp4jt53pump",
+      "symbol": "ORANGIE",
+      "event": "exit",
+      "reason": "trail",
+      "price": 8.581e-05,
+      "proceeds": 1.916759863548007,
+      "pnl_approx": -0.10388724683007244,
+      "age_hours": 0.3769415480555556
+    },
+    {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "event": "entry",
+      "price": 6.572e-05,
+      "notional": 1.989181668480444,
+      "liquidity_usd": 21781.91,
+      "age_hours": 0.5785350186496311
     }
   ]
 }
