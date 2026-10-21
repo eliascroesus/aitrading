@@ -1,5 +1,5 @@
 {
-  "cash": 22.72577959112017,
+  "cash": 23.494358685297186,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
@@ -28,7 +28,7 @@
       "symbol": "smol",
       "qty": 23624.168142191815,
       "entry_price": 7.413e-05,
-      "peak_price": 0.0001109,
+      "peak_price": 0.0001338,
       "entered_at": "2026-10-21T04:21:00.350319+00:00",
       "cost_usd": 1.8563351594435202,
       "took_half": false,
@@ -45,23 +45,12 @@
       "took_half": false,
       "misses": 0
     },
-    "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
-      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
-      "symbol": "KIMCHIBOSS",
-      "qty": 2462.7630549122578,
-      "entry_price": 0.0006878,
-      "peak_price": 0.0006878,
-      "entered_at": "2026-10-21T04:44:15.778812+00:00",
-      "cost_usd": 1.79552173491877,
-      "took_half": false,
-      "misses": 0
-    },
     "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
       "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
       "symbol": "CPU",
       "qty": 28600.485421246405,
       "entry_price": 5.954e-05,
-      "peak_price": 5.954e-05,
+      "peak_price": 6.001e-05,
       "entered_at": "2026-10-21T04:52:20.303882+00:00",
       "cost_usd": 1.8050452760998716,
       "took_half": false,
@@ -1742,6 +1731,16 @@
       "notional": 1.8050452760998716,
       "liquidity_usd": 15106.15,
       "age_hours": 4.444398576660157
+    },
+    {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 0.000332,
+      "proceeds": 0.7685790941770173,
+      "pnl_approx": -1.0269426407417526,
+      "age_hours": 0.2677975538888889
     }
   ]
 }
