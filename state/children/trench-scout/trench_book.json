@@ -1,5 +1,5 @@
 {
-  "cash": 20.107902094229267,
+  "cash": 22.07586489227205,
   "positions": {
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
@@ -53,28 +53,6 @@
       "peak_price": 8.224e-05,
       "entered_at": "2026-10-21T03:10:32.337651+00:00",
       "cost_usd": 2.0340273411469436,
-      "took_half": false,
-      "misses": 0
-    },
-    "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
-      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
-      "symbol": "CPU",
-      "qty": 25674.232206409684,
-      "entry_price": 6.862e-05,
-      "peak_price": 6.862e-05,
-      "entered_at": "2026-10-21T03:17:52.816276+00:00",
-      "cost_usd": 1.8674717628440627,
-      "took_half": false,
-      "misses": 0
-    },
-    "ANrmxCwhQHxp9g3gumWE3jYcfdbnA6MWBaJ9A6NYpump": {
-      "mint": "ANrmxCwhQHxp9g3gumWE3jYcfdbnA6MWBaJ9A6NYpump",
-      "symbol": "NORMIE",
-      "qty": 20296.431525710486,
-      "entry_price": 8.671e-05,
-      "peak_price": 8.671e-05,
-      "entered_at": "2026-10-21T03:25:09.792361+00:00",
-      "cost_usd": 1.865497792250018,
       "took_half": false,
       "misses": 0
     },
@@ -1558,6 +1536,26 @@
       "notional": 1.865497792250018,
       "liquidity_usd": 289948.19,
       "age_hours": 3.5786090483262805
+    },
+    {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "event": "exit",
+      "reason": "trail",
+      "price": 5.046e-05,
+      "proceeds": 1.2177904517073066,
+      "pnl_approx": -0.6496813111367561,
+      "age_hours": 0.2503393061111111
+    },
+    {
+      "mint": "ANrmxCwhQHxp9g3gumWE3jYcfdbnA6MWBaJ9A6NYpump",
+      "symbol": "NORMIE",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 3.932e-05,
+      "proceeds": 0.7501723463354801,
+      "pnl_approx": -1.1153254459145379,
+      "age_hours": 0.12895706027777776
     }
   ]
 }
