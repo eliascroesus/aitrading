@@ -1,12 +1,12 @@
 {
-  "cash": 23.590424654419824,
+  "cash": 22.20013959964407,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
       "symbol": "KIMCHI",
       "qty": 196.52790508190841,
       "entry_price": 0.007401,
-      "peak_price": 0.008756,
+      "peak_price": 0.009037,
       "entered_at": "2026-10-21T09:25:29.357323+00:00",
       "cost_usd": 1.5417732070418764,
       "took_half": false,
@@ -31,6 +31,17 @@
       "peak_price": 0.0001061,
       "entered_at": "2026-10-21T10:05:35.486784+00:00",
       "cost_usd": 1.3992371354070507,
+      "took_half": false,
+      "misses": 0
+    },
+    "Gv6jKrrjJW9NLZujVZdxj6D9xL21qcLbHso8LYFMpump": {
+      "mint": "Gv6jKrrjJW9NLZujVZdxj6D9xL21qcLbHso8LYFMpump",
+      "symbol": "BOUNCER",
+      "qty": 36022.78699029791,
+      "entry_price": 3.641e-05,
+      "peak_price": 3.641e-05,
+      "entered_at": "2026-10-21T10:13:03.640875+00:00",
+      "cost_usd": 1.3902850547757515,
       "took_half": false,
       "misses": 0
     }
@@ -2260,6 +2271,15 @@
       "notional": 1.3992371354070507,
       "liquidity_usd": 28117.93,
       "age_hours": 1.4501250132921006
+    },
+    {
+      "mint": "Gv6jKrrjJW9NLZujVZdxj6D9xL21qcLbHso8LYFMpump",
+      "symbol": "BOUNCER",
+      "event": "entry",
+      "price": 3.641e-05,
+      "notional": 1.3902850547757515,
+      "liquidity_usd": 15105.24,
+      "age_hours": 0.8700595713975694
     }
   ]
 }
