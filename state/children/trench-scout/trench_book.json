@@ -1,23 +1,12 @@
 {
-  "cash": 21.912717539716443,
+  "cash": 23.573678567837597,
   "positions": {
-    "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
-      "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
-      "symbol": "SASONA",
-      "qty": 53136.882848257366,
-      "entry_price": 5.336e-05,
-      "peak_price": 8.231e-05,
-      "entered_at": "2026-10-20T22:26:06.835387+00:00",
-      "cost_usd": 3.0055071129099935,
-      "took_half": false,
-      "misses": 0
-    },
     "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
       "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
       "symbol": "KIMCHIBOSS",
       "qty": 2262.8494142485238,
       "entry_price": 0.000839,
-      "peak_price": 0.0008576,
+      "peak_price": 0.0008865,
       "entered_at": "2026-10-21T02:48:10.152934+00:00",
       "cost_usd": 2.012442498067782,
       "took_half": false,
@@ -50,7 +39,7 @@
       "symbol": "Trencher",
       "qty": 14588.930480442927,
       "entry_price": 0.000115,
-      "peak_price": 0.0001687,
+      "peak_price": 0.0001984,
       "entered_at": "2026-10-21T03:56:14.927957+00:00",
       "cost_usd": 1.778390625565993,
       "took_half": false,
@@ -61,9 +50,20 @@
       "symbol": "smol",
       "qty": 23624.168142191815,
       "entry_price": 7.413e-05,
-      "peak_price": 7.413e-05,
+      "peak_price": 8.221e-05,
       "entered_at": "2026-10-21T04:21:00.350319+00:00",
       "cost_usd": 1.8563351594435202,
+      "took_half": false,
+      "misses": 0
+    },
+    "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "qty": 18346.642399590957,
+      "entry_price": 9.664e-05,
+      "peak_price": 9.664e-05,
+      "entered_at": "2026-10-21T04:28:21.328916+00:00",
+      "cost_usd": 1.8794006927862583,
       "took_half": false,
       "misses": 0
     }
@@ -1639,6 +1639,25 @@
       "notional": 1.8563351594435202,
       "liquidity_usd": 23273.11,
       "age_hours": 0.5552420111083984
+    },
+    {
+      "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
+      "symbol": "SASONA",
+      "event": "exit",
+      "reason": "time_stop",
+      "price": 7.088e-05,
+      "proceeds": 3.540361720907413,
+      "pnl_approx": 0.5348546079974197,
+      "age_hours": 6.037359313611111
+    },
+    {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "event": "entry",
+      "price": 9.664e-05,
+      "notional": 1.8794006927862583,
+      "liquidity_usd": 26279.5,
+      "age_hours": 2.509131478339301
     }
   ]
 }
