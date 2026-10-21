@@ -1,12 +1,12 @@
 {
-  "cash": 23.125395160588397,
+  "cash": 26.335870143319912,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
       "symbol": "KIMCHI",
       "qty": 179.98604802560405,
       "entry_price": 0.009778,
-      "peak_price": 0.01155,
+      "peak_price": 0.01241,
       "entered_at": "2026-10-21T03:25:09.792361+00:00",
       "cost_usd": 1.865497792250018,
       "took_half": false,
@@ -15,23 +15,12 @@
     "9Mxu4MMPv4cdCnAUqMqGxHtopZZv756aM36CtZ34pump": {
       "mint": "9Mxu4MMPv4cdCnAUqMqGxHtopZZv756aM36CtZ34pump",
       "symbol": "KIMCHI",
-      "qty": 39802.001061785006,
+      "qty": 19901.000530892503,
       "entry_price": 4.219e-05,
-      "peak_price": 8.132e-05,
+      "peak_price": 8.447e-05,
       "entered_at": "2026-10-21T03:48:12.757703+00:00",
       "cost_usd": 1.780001210284512,
-      "took_half": false,
-      "misses": 0
-    },
-    "Ety3BtYenUFm2Hvz6a6VGRTs8p9sgXggJ3M9XtpZpump": {
-      "mint": "Ety3BtYenUFm2Hvz6a6VGRTs8p9sgXggJ3M9XtpZpump",
-      "symbol": "Trencher",
-      "qty": 14588.930480442927,
-      "entry_price": 0.000115,
-      "peak_price": 0.0002197,
-      "entered_at": "2026-10-21T03:56:14.927957+00:00",
-      "cost_usd": 1.778390625565993,
-      "took_half": false,
+      "took_half": true,
       "misses": 0
     },
     "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump": {
@@ -45,17 +34,6 @@
       "took_half": false,
       "misses": 0
     },
-    "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
-      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
-      "symbol": "CPU",
-      "qty": 18346.642399590957,
-      "entry_price": 9.664e-05,
-      "peak_price": 9.664e-05,
-      "entered_at": "2026-10-21T04:28:21.328916+00:00",
-      "cost_usd": 1.8794006927862583,
-      "took_half": false,
-      "misses": 0
-    },
     "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
       "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
       "symbol": "Pokecity",
@@ -64,6 +42,17 @@
       "peak_price": 0.0007949,
       "entered_at": "2026-10-21T04:36:11.228778+00:00",
       "cost_usd": 1.8353512640987775,
+      "took_half": false,
+      "misses": 0
+    },
+    "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "qty": 2462.7630549122578,
+      "entry_price": 0.0006878,
+      "peak_price": 0.0006878,
+      "entered_at": "2026-10-21T04:44:15.778812+00:00",
+      "cost_usd": 1.79552173491877,
       "took_half": false,
       "misses": 0
     }
@@ -1677,6 +1666,42 @@
       "notional": 1.8353512640987775,
       "liquidity_usd": 77711.67,
       "age_hours": 5.596331178114149
+    },
+    {
+      "mint": "9Mxu4MMPv4cdCnAUqMqGxHtopZZv756aM36CtZ34pump",
+      "symbol": "KIMCHI",
+      "event": "take_half",
+      "price": 8.447e-05,
+      "proceeds": 1.5801752639538202
+    },
+    {
+      "mint": "Ety3BtYenUFm2Hvz6a6VGRTs8p9sgXggJ3M9XtpZpump",
+      "symbol": "Trencher",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0001627,
+      "proceeds": 2.23120184981798,
+      "pnl_approx": 0.45281122425198705,
+      "age_hours": 0.8002363486111111
+    },
+    {
+      "mint": "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY",
+      "symbol": "CPU",
+      "event": "exit",
+      "reason": "trail",
+      "price": 6.927e-05,
+      "proceeds": 1.1946196038784858,
+      "pnl_approx": -0.6847810889077726,
+      "age_hours": 0.2651249711111111
+    },
+    {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "event": "entry",
+      "price": 0.0006878,
+      "notional": 1.79552173491877,
+      "liquidity_usd": 73943.43,
+      "age_hours": 4.6867796824815535
     }
   ]
 }
