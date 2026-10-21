@@ -1,5 +1,5 @@
 {
-  "cash": 22.629945764578594,
+  "cash": 20.8515551390126,
   "positions": {
     "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd": {
       "mint": "8xH5RFEkSyneYBhCZh5gi2svgdyrDCREW9SxCfKuYgFd",
@@ -61,9 +61,20 @@
       "symbol": "KIMCHI",
       "qty": 39802.001061785006,
       "entry_price": 4.219e-05,
-      "peak_price": 4.219e-05,
+      "peak_price": 5.582e-05,
       "entered_at": "2026-10-21T03:48:12.757703+00:00",
       "cost_usd": 1.780001210284512,
+      "took_half": false,
+      "misses": 0
+    },
+    "Ety3BtYenUFm2Hvz6a6VGRTs8p9sgXggJ3M9XtpZpump": {
+      "mint": "Ety3BtYenUFm2Hvz6a6VGRTs8p9sgXggJ3M9XtpZpump",
+      "symbol": "Trencher",
+      "qty": 14588.930480442927,
+      "entry_price": 0.000115,
+      "peak_price": 0.000115,
+      "entered_at": "2026-10-21T03:56:14.927957+00:00",
+      "cost_usd": 1.778390625565993,
       "took_half": false,
       "misses": 0
     }
@@ -1601,6 +1612,15 @@
       "notional": 1.780001210284512,
       "liquidity_usd": 15908.92,
       "age_hours": 1.1070149443901909
+    },
+    {
+      "mint": "Ety3BtYenUFm2Hvz6a6VGRTs8p9sgXggJ3M9XtpZpump",
+      "symbol": "Trencher",
+      "event": "entry",
+      "price": 0.000115,
+      "notional": 1.778390625565993,
+      "liquidity_usd": 29561.25,
+      "age_hours": 2.6253977366807724
     }
   ]
 }
