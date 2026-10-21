@@ -1,23 +1,12 @@
 {
-  "cash": 24.078095312456853,
+  "cash": 26.660611548378817,
   "positions": {
-    "G9WuTdRa3UErXAAZaF6gpkA4g4bQ6vcqPqs1YB6kTKXB": {
-      "mint": "G9WuTdRa3UErXAAZaF6gpkA4g4bQ6vcqPqs1YB6kTKXB",
-      "symbol": "$DUKE",
-      "qty": 23829.73554409475,
-      "entry_price": 3.573e-05,
-      "peak_price": 7.606e-05,
-      "entered_at": "2026-10-21T04:52:20.303882+00:00",
-      "cost_usd": 1.8050452760998716,
-      "took_half": true,
-      "misses": 0
-    },
     "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump": {
       "mint": "Cbkg5w7V7W2J2sUmecnyN825CbvwvXwasfhduVtNpump",
       "symbol": "PHP",
       "qty": 6576.105811693058,
       "entry_price": 0.0001237,
-      "peak_price": 0.0003888,
+      "peak_price": 0.0005272,
       "entered_at": "2026-10-21T05:47:04.670783+00:00",
       "cost_usd": 1.7245442924816345,
       "took_half": true,
@@ -31,17 +20,6 @@
       "peak_price": 0.0002003,
       "entered_at": "2026-10-21T06:32:14.894479+00:00",
       "cost_usd": 1.6544421447173037,
-      "took_half": false,
-      "misses": 0
-    },
-    "7k1S1H4VgTXafzgMJcVRUs3qBXPMKV6prytKe32apump": {
-      "mint": "7k1S1H4VgTXafzgMJcVRUs3qBXPMKV6prytKe32apump",
-      "symbol": "Clout",
-      "qty": 23814.182746528866,
-      "entry_price": 6.533e-05,
-      "peak_price": 8.02e-05,
-      "entered_at": "2026-10-21T06:55:13.497368+00:00",
-      "cost_usd": 1.6491273923605747,
       "took_half": false,
       "misses": 0
     },
@@ -1970,6 +1948,26 @@
       "notional": 1.6996908705645404,
       "liquidity_usd": 311471.03,
       "age_hours": 7.211262597520617
+    },
+    {
+      "mint": "G9WuTdRa3UErXAAZaF6gpkA4g4bQ6vcqPqs1YB6kTKXB",
+      "symbol": "$DUKE",
+      "event": "exit",
+      "reason": "trail",
+      "price": 5.581e-05,
+      "proceeds": 1.2501412882729723,
+      "pnl_approx": 0.3476186502230365,
+      "age_hours": 2.3033865155555557
+    },
+    {
+      "mint": "7k1S1H4VgTXafzgMJcVRUs3qBXPMKV6prytKe32apump",
+      "symbol": "Clout",
+      "event": "exit",
+      "reason": "trail",
+      "price": 5.952e-05,
+      "proceeds": 1.3323749476489941,
+      "pnl_approx": -0.3167524447115806,
+      "age_hours": 0.2552772138888889
     }
   ]
 }
