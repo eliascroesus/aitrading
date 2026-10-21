@@ -104,6 +104,14 @@ def grid() -> list[Cell]:
         else:
             cells += [(sleeve, {f"{pre}.direction": d}) for d in ("both", "short")]
             cells += [(sleeve, {f"{pre}.direction": "both", f"{pre}.short_green_mult": 0.5})]
+        # prop-challenge speed: 1:2 and 1:3 targets, tighter stops, short holds, more risk (2.5.0)
+        tp = f"{pre}.take_profit_r"
+        cells += [(sleeve, {tp: 2.0}), (sleeve, {tp: 3.0}),
+                  (sleeve, {tp: 2.0, f"{pre}.stop_initial_atr": 1.5}),
+                  (sleeve, {tp: 2.0, f"{pre}.max_hold_bars": 10}),
+                  (sleeve, {tp: 2.0, "risk.risk_per_trade_pct": 0.02}),
+                  (sleeve, {tp: 3.0, f"{pre}.stop_initial_atr": 2.0, "risk.risk_per_trade_pct": 0.02,
+                            "risk.max_new_entries_per_day": 4})]
         # no position caps at all, and risk per trade chosen by each book's own record (2.2.0)
         edge = {"risk.sizing_mode": "edge"}
         cells += [(sleeve, dict(no_caps)), (sleeve, dict(edge)),
@@ -130,7 +138,8 @@ def results_so_far(registry: HiveRegistry, ldir=None) -> list[dict[str, Any]]:
                    "oos_dd": it.get("oos_dd"), "is_cagr": it.get("is_cagr"), "verdict": it.get("verdict") or "",
                    "oos_prop": it.get("oos_prop", (it.get("outofsample") or {}).get("prop_pass_rate")),
                    "oos_score": it.get("oos_score", (it.get("outofsample") or {}).get("prop_score")),
-                   "oos_prop_days": it.get("oos_prop_days", (it.get("outofsample") or {}).get("prop_median_days"))}
+                   "oos_prop_days": it.get("oos_prop_days", (it.get("outofsample") or {}).get("prop_median_days")),
+                   "prop_key": it.get("prop_key")}
     return list(rows.values())
 
 
@@ -314,12 +323,18 @@ def queue_staged(registry: HiveRegistry, cfg: StrategyConfig, bounds: dict[str, 
     staged: list[tuple[Cell, str]] = []
     rescore: set[str] = set()
     if cfg.operator.objective == "prop":
+        from hive.hive.propfirm import rules_key
+
+        pkey = rules_key(cfg.prop)     # a score made under other prop rules is rescored
+
         def same(r: dict[str, Any]) -> tuple:     # cells with identical results differ only in inert knobs
             return tuple(round(float(r.get(k) or 0.0), 6) for k in ("oos_cagr", "oos_dd", "is_cagr"))
 
         for sl in SLEEVES:
-            done = {same(r) for r in results if r["sleeve"] == sl and r.get("oos_score") is not None}
-            unscored = sorted((r for r in results if r["sleeve"] == sl and r.get("oos_score") is None
+            done = {same(r) for r in results if r["sleeve"] == sl and r.get("oos_score") is not None
+                    and r.get("prop_key") == pkey}
+            unscored = sorted((r for r in results if r["sleeve"] == sl
+                               and (r.get("oos_score") is None or r.get("prop_key") != pkey)
                                and r.get("oos_cagr") is not None and _in_bounds(r["overrides"], bounds) == r["overrides"]
                                and not str(r.get("verdict", "")).startswith("rejected: backtest failed")),
                               key=lambda r: rank_key(r, "growth"))
@@ -462,6 +477,9 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
     started = datetime.now(UTC)
     n_done = 0
     keep = ldir is not None
+    from hive.hive.propfirm import rules_key
+
+    prop_key = rules_key(cfg.prop)
     hypothesis = {"rescore": "a top cell re-tested to score it on the prop objective",
                   "sweep": "systematic sweep of the strategy space",
                   "refine": "refinement around the best cells found so far",
@@ -544,7 +562,8 @@ def run_sweep(settings, cfg: StrategyConfig, registry: HiveRegistry, tier: Tier,
                     "is_dd": ev.insample["max_drawdown"], "oos_dd": ev.outofsample["max_drawdown"],
                     "parent_oos_cagr": parent.outofsample["cagr"],
                     "oos_prop": ev.outofsample.get("prop_pass_rate"), "parent_oos_prop": parent.outofsample.get("prop_pass_rate"),
-                    "oos_score": ev.outofsample.get("prop_score"), "oos_prop_days": ev.outofsample.get("prop_median_days")})
+                    "oos_score": ev.outofsample.get("prop_score"), "oos_prop_days": ev.outofsample.get("prop_median_days"),
+                    "prop_key": prop_key})
         passed, why = verdict(parent, ev, cfg.operator.max_drawdown_tolerance, cfg.operator.objective)
         child_id = None
         seated_as = next((c.id for c in registry.children if cell_key(c.sleeve, c.overrides or {}) == cell_key(sleeve, ov)), None)

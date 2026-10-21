@@ -174,6 +174,10 @@ class TrendRules(BaseModel):
     # is green (a bull market); red allows full size, yellow the yellow multiplier.
     direction: Literal["long", "short", "both"] = "long"
     short_green_mult: float = 0.0
+    # Take profit at a reward-to-risk multiple (config 2.5.0): a close at or beyond entry plus
+    # take_profit_r x the initial risk exits at the next open, the same way in the backtest and
+    # in the daily run. 0 = no fixed target (the trailing stop and exits decide).
+    take_profit_r: float = 0.0
 
     # --- stops & exits --------------------------------------------------------
     stop_swing_low_bars: int = 10
@@ -420,11 +424,15 @@ class PropRules(BaseModel):
     relying on them). The lab climbs the simulated pass rate; live paper records are read
     as evaluations for punishment and for readiness."""
 
-    profit_target_pct: float = 0.10
+    # A typical two-step challenge (FundedNext Stellar 2-Step style, config 2.5.0): 8% in phase 1,
+    # then 5% in phase 2 from a fresh balance, the same loss limits in both, five trading days
+    # minimum in each. FTMO's 2-Step is 10% / 5% with four days. phase2_target_pct = 0 is one phase.
+    profit_target_pct: float = 0.08
+    phase2_target_pct: float = 0.05
     max_daily_loss_pct: float = 0.05      # from the previous close
     max_total_loss_pct: float = 0.10      # from the start, or from the peak when trailing
     trailing_total_loss: bool = False
-    min_trading_days: int = 4
+    min_trading_days: int = 5
     eval_horizon_days: int = 60           # simulated evaluations end after this many days
     eval_step_days: int = 5               # a new simulated evaluation starts every this many days
     # The lab's score per evaluation: a pass earns 1, a breach of the daily or total loss limit
@@ -481,7 +489,7 @@ class UniverseConfig(BaseModel):
 
 class StrategyConfig(BaseModel):
     name: str = "trend-reset-v1"
-    version: str = "2.4.0"
+    version: str = "2.5.0"
     stocks: TrendRules = Field(default_factory=TrendRules)
     crypto: TrendRules = Field(default_factory=TrendRules.crypto)
     macro: TrendRules = Field(default_factory=TrendRules.macro)

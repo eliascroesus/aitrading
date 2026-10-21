@@ -124,10 +124,12 @@ hive status
 
 ## 5. How the hive grows (the one rule)
 
-* **The objective** (config 2.1.0): pass prop-firm evaluations. Every backtest
-  is also run as a series of simulated evaluations (one starting every 5 days:
-  reach +10% within 60 trading days, at least 4 of them, without a day worse
-  than −5% or a fall of 10% below the start), and the lab ranks and judges
+* **The objective** (config 2.1.0, rules updated in 2.5.0): pass prop-firm
+  evaluations. Every backtest is also run as a series of simulated two-phase
+  challenges (one starting every 5 days: +8% in phase 1, then +5% from a fresh
+  balance in phase 2, at least 5 trading days in each, within 60 trading days,
+  without a day worse than −5% or a fall of 10% below the phase's start; a
+  FundedNext Stellar 2-Step style challenge), and the lab ranks and judges
   cells by the share they pass out of sample, growth breaking ties. A cell
   earns a paper seat when its pass rate beats the parent's and it made money
   in sample (today's code still also rejects a cell whose out-of-sample
@@ -140,6 +142,10 @@ hive status
   nothing; ties go to the faster median pass. The lab runs one backtest per CPU
   core (four on a GitHub runner), reuses every computed indicator across cells
   that share it, and gives forex and gold three turns for every one stock cell.
+  Since 2.5.0 the lab also searches fixed reward-to-risk exits
+  (`take_profit_r`: 2 is the 1:2 trade, decided on the close and sold at the next
+  open, the same in the backtest and in the daily run), tighter initial stops,
+  holds as short as 5 days, up to 12 positions and 6 new entries a day.
 * **Punishment** follows the same rules: a sub-agent whose own paper book
   breaks the daily or total loss limit is retired that day, as a firm would
   close the account; one that lags the parent for 10 days is retired; one

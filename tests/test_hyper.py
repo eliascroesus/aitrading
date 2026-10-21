@@ -69,3 +69,13 @@ def test_parallel_workers_judge_and_record_every_cell(tmp_path):
     tests = [t for t in read_tests(ldir) if t["by"] != "parent"]
     assert len(tests) == 4 and all(t["curves"]["outofsample"]["dates"] for t in tests)
     assert all(t.get("oos_score") is not None for t in tests)
+
+
+def test_a_reward_to_risk_target_takes_the_profit():
+    close, volume = textbook_setup(n_after=120)
+    bars = bars_from_path(close, volume)
+    cfg = StrategyConfig(stocks=TrendRules(take_profit_r=2.0))
+    t = _run(cfg, bars).trades
+    hits = t[t["reason"] == "target"]
+    assert not hits.empty and (hits["r_multiple"] >= 1.9).all()         # closed near or beyond 2R, at the next open
+    assert _run(StrategyConfig(), bars).trades["reason"].ne("target").all()   # 0 = no target

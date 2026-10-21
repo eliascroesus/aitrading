@@ -574,6 +574,8 @@ class DailyRun:
             reason = None
             if close <= pos.stop_price:
                 reason = "stop"
+            elif rules.take_profit_r > 0 and pos.r_per_share > 0 and close >= pos.entry_price + rules.take_profit_r * pos.r_per_share:
+                reason = "target"          # the reward-to-risk target, sold at the next open as in the backtest
             elif row["below_mid_streak"] >= rules.exit_closes_below_mid or bool(row["below_long"]):
                 reason = "trend_break"
             elif failure_due and close < pos.entry_price + rules.failure_stop_min_r * pos.r_per_share:

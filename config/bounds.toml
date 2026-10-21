@@ -55,7 +55,7 @@ min = 0.0
 max = 0.8
 
 ["crypto.max_hold_bars"]
-min = 30
+min = 5
 max = 365
 
 ["stocks.impulse_window"]
@@ -79,11 +79,11 @@ min = 4.0
 max = 10.0
 
 ["stocks.trail_atr"]
-min = 3.0
+min = 1.5
 max = 10.0
 
 ["stocks.trail_atr_late"]
-min = 2.0
+min = 1.0
 max = 10.0
 
 ["stocks.failure_stop_bars"]
@@ -95,7 +95,7 @@ min = 42
 max = 252
 
 ["stocks.max_hold_bars"]
-min = 63
+min = 5
 max = 504
 
 ["stocks.min_pct_of_high"]
@@ -107,7 +107,7 @@ min = 0.7
 max = 1.2
 
 ["crypto.trail_atr"]
-min = 3.0
+min = 1.5
 max = 10.0
 
 ["crypto.impulse_min_z"]
@@ -115,12 +115,12 @@ min = 1.0
 max = 2.5
 
 ["risk.max_positions"]
-min = 3
-max = 8
+min = 1
+max = 12
 
 ["risk.max_new_entries_per_day"]
 min = 1
-max = 3
+max = 6
 
 # --- sizing and concentration (config 2.0.0: levers, not limits) --------------------
 
@@ -222,11 +222,11 @@ min = 1
 max = 1000
 
 ["macro.trail_atr"]
-min = 3.0
+min = 1.5
 max = 10.0
 
 ["macro.max_hold_bars"]
-min = 63
+min = 5
 max = 504
 
 ["macro.min_pct_of_high"]
@@ -240,3 +240,31 @@ max = 2.5
 ["risk.max_position_pct_macro"]
 min = 0.05
 max = 1.0
+
+# --- prop-challenge speed (config 2.5.0): fixed reward-to-risk targets, tighter stops,
+# shorter holds. take_profit_r 0 is no target; 2 is the 1:2 trade. -------------------
+
+["stocks.take_profit_r"]
+min = 0.0
+max = 6.0
+
+["crypto.take_profit_r"]
+min = 0.0
+max = 6.0
+
+["macro.take_profit_r"]
+min = 0.0
+max = 6.0
+
+["stocks.stop_initial_atr"]
+min = 1.0
+max = 5.0
+
+["crypto.stop_initial_atr"]
+min = 1.0
+max = 5.0
+
+["macro.stop_initial_atr"]
+min = 1.0
+max = 5.0
+

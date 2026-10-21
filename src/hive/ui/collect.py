@@ -475,6 +475,11 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
         lever("risk.max_daily_loss_pct", r.max_daily_loss_pct, "no new buys after losing this much in a day"),
         lever("stocks.direction", cfg.stocks.direction, "stocks: long, short, or both (a short posts its full value: no leverage)"),
         lever("crypto.direction", cfg.crypto.direction, "crypto: long, short, or both"),
+        lever("macro.direction", cfg.macro.direction, "forex, gold, indices: long, short, or both"),
+        lever("stocks.take_profit_r", cfg.stocks.take_profit_r, "stocks: take profit at this reward-to-risk (2 = 1:2; 0 = none)"),
+        lever("crypto.take_profit_r", cfg.crypto.take_profit_r, "crypto: take profit at this reward-to-risk"),
+        lever("macro.take_profit_r", cfg.macro.take_profit_r, "forex, gold, indices: take profit at this reward-to-risk"),
+        lever("stocks.stop_initial_atr", cfg.stocks.stop_initial_atr, "stocks: initial stop distance in ATRs (sets 1R)"),
         lever("risk.max_drawdown_halt_pct", r.max_drawdown_halt_pct,
               "real money only: drawdown from peak that liquidates and pauses (backtests and paper never pause)"),
         lever("risk.halt_cooldown_bars", r.halt_cooldown_bars, "real money only: days paused after a drawdown halt"),
@@ -555,7 +560,9 @@ def _rules(cfg: StrategyConfig, settings: Settings) -> dict[str, Any]:
     ]
     pr = cfg.prop
     prop_rows = [
-        {"key": "prop.profit_target_pct", "value": pr.profit_target_pct, "who": "owner", "what": "profit target of an evaluation"},
+        {"key": "prop.profit_target_pct", "value": pr.profit_target_pct, "who": "owner", "what": "phase 1 profit target"},
+        {"key": "prop.phase2_target_pct", "value": pr.phase2_target_pct, "who": "owner",
+         "what": "phase 2 profit target from a fresh balance (0 = a one-phase challenge)"},
         {"key": "prop.max_daily_loss_pct", "value": pr.max_daily_loss_pct, "who": "owner",
          "what": "daily loss limit (close to close): breaking it fails the evaluation"},
         {"key": "prop.max_total_loss_pct", "value": pr.max_total_loss_pct, "who": "owner",

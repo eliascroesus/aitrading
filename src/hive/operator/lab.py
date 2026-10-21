@@ -312,6 +312,10 @@ def lab_record(*, by: str, sleeve: str, name: str, overrides: dict[str, Any], ev
         rec["oos_breach"] = (float(ev.outofsample.get("prop_fail_daily_rate") or 0.0)
                              + float(ev.outofsample.get("prop_fail_total_rate") or 0.0))
         rec["oos_prop_days"] = ev.outofsample.get("prop_median_days")
+        if cfg is not None:
+            from hive.hive.propfirm import rules_key
+
+            rec["prop_key"] = rules_key(cfg.prop)
         rec["curves"] = ev.curves
     if parent is not None:
         rec["parent_oos_cagr"] = parent.outofsample.get("cagr")

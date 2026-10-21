@@ -283,3 +283,25 @@ challenges quickly.
   reachable. Modelling a prop account's leverage for the macro sleeve's
   evaluations is the owner's call (they asked for no leverage on 2026-10-20).
 
+### Config 2.5.0: challenges as firms run them, 1:2 trades, a search that stays alive
+
+* **Two-phase challenges.** Researched current rules (third-party sources, verify
+  on the firm's site): FundedNext Stellar 2-Step 8% then 5%, 5% daily, 10% static,
+  5 days; FTMO 2-Step 10% then 5%, 5% daily, 10% static, 4 days, no time limit.
+  The simulator now runs both phases (8% / 5%, 5 days each, 60-day horizon), and
+  a score made under other rules is rescored. Pass rates in the industry are
+  about 5% to 20%, and about 70% of failures are loss-limit breaches.
+* **Reward-to-risk exits.** `take_profit_r` per sleeve (0 to 6; 2 = 1:2),
+  decided on the close, sold at the next open, identical in backtest and daily
+  run. Initial stop distance (1 to 5 ATR), holds from 5 days, up to 12
+  positions and 6 entries a day are now in the search.
+* **The search had stalled.** Mutations were built from cells carrying levers
+  removed in 2.3.0 and failed validation, and mutations were capped at 6
+  settings while the best cells use 12: stocks and crypto produced no
+  mutations. Seeds are stripped to searchable levers, the cap is 16, and a timed
+  run rebuilds its queue every 60 cells. Measured in production after the fast
+  lab went live: about 17 to 20 cells a minute, against 2 to 2.6 before.
+* **What did not change.** Daily closes only: the simulator cannot see an
+  intraday breach of the daily limit, so real challenges are harder. The macro
+  sleeve is still unlevered (owner's decision pending).
+

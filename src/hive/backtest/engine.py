@@ -35,7 +35,7 @@ SHORT = "~S"   # suffix of the short instrument of a market
 NON_FEATURE_FIELDS = frozenset({
     "stop_swing_low_atr_pad", "stop_initial_atr", "trail_atr", "trail_atr_late", "trail_tighten_after_bars",
     "exit_closes_below_mid", "exit_closes_below_long", "failure_stop_bars", "failure_stop_min_r",
-    "review_bars", "max_hold_bars", "earnings_blackout_bars", "direction", "short_green_mult",
+    "review_bars", "max_hold_bars", "earnings_blackout_bars", "direction", "short_green_mult", "take_profit_r",
 })
 CANDIDATE_COLUMNS = ("symbol", "close", "raw_close", "atr", "swing_low", "mom_vol_adj", "pct_of_high")
 # The feature columns the backtester itself reads (a third of the frame, so a third of the memory).
@@ -388,7 +388,9 @@ class Backtester:
                 failure_due = pos.bars_held >= rules.failure_stop_bars and not pos.failure_checked
                 if failure_due:
                     pos.failure_checked = True
-                if al["below_mid_streak"][ri] >= rules.exit_closes_below_mid or (
+                if rules.take_profit_r > 0 and close >= pos.entry_price + rules.take_profit_r * pos.r_per_share:
+                    pending_exits[sym] = "target"           # the reward-to-risk target, at the next open
+                elif al["below_mid_streak"][ri] >= rules.exit_closes_below_mid or (
                     bool(al["below_long"][ri]) and rules.exit_closes_below_long <= 1
                 ):
                     pending_exits[sym] = "trend_break"

@@ -26,7 +26,7 @@
 #                      Monitors (news-channel sub-agents) and the daily sweep.
 
 name = "trend-reset-v1"
-version = "2.4.0"
+version = "2.5.0"
 
 [stocks]
 entry_mode = "reset_breakout"
@@ -35,6 +35,7 @@ pullback_touch_bars = 5
 momentum_min = 0.5
 direction = "long"
 short_green_mult = 0.0
+take_profit_r = 0.0
 bars_per_year = 252
 ma_long = 200
 ma_mid = 50
@@ -84,6 +85,7 @@ pullback_touch_bars = 5
 momentum_min = 0.5
 direction = "long"
 short_green_mult = 0.0
+take_profit_r = 0.0
 bars_per_year = 365
 ma_long = 200
 ma_mid = 50
@@ -134,6 +136,7 @@ pullback_touch_bars = 5
 momentum_min = 0.5
 direction = "both"
 short_green_mult = 0.0
+take_profit_r = 0.0
 bars_per_year = 260
 ma_long = 200
 ma_mid = 50
@@ -389,11 +392,12 @@ slippage_bps = 5.0
 # out of sample; live paper records are read as evaluations: a variant that breaches is
 # retired, and the firm says it is ready only after a long clean paper record.
 # Copy a specific firm's rules in before relying on them.
-profit_target_pct = 0.10
+profit_target_pct = 0.08
+phase2_target_pct = 0.05
 max_daily_loss_pct = 0.05
 max_total_loss_pct = 0.10
 trailing_total_loss = false
-min_trading_days = 4
+min_trading_days = 5
 eval_horizon_days = 60
 eval_step_days = 5
 breach_penalty = 0.5

@@ -6,6 +6,7 @@ from datetime import date
 
 from hive.backtest.costs import ALPACA_STOCKS
 from hive.config import REPO_ROOT, StrategyConfig
+from hive.hive.propfirm import rules_key
 from hive.hive.registry import HiveRegistry
 from hive.operator.iterate import evaluate, load_bounds, validate_overrides
 from hive.operator.lab import (
@@ -148,9 +149,16 @@ def test_queue_interleaves_sleeves_and_grid_comes_first(tmp_path):
     assert sum(1 for sl, ov, _ in staged2 if (sl, ov) == cell) == 1
     reg.record_iteration({"date": "2026-10-20", "proposal": "x", "overrides": {"stocks.entry_mode": "template_cross"},
                           "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17, "oos_prop": 0.2, "oos_score": 0.15,
-                          "verdict": "spawned"})
+                          "prop_key": rules_key(cfg.prop), "verdict": "spawned"})
     q2 = queue(reg, cfg, bounds, tmp_path / "lab")
     assert len(q2) > len(grid()) and cell not in q2                    # scored: never again
+    reg.record_iteration({"date": "2026-10-21", "proposal": "x", "overrides": {"stocks.entry_mode": "template_cross"},
+                          "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17, "oos_prop": 0.2, "oos_score": 0.15,
+                          "prop_key": "old-rules", "verdict": "spawned"})
+    assert cell in [(sl, ov) for sl, ov, st in queue_staged(reg, cfg, bounds, tmp_path / "lab") if st == "rescore"]
+    reg.record_iteration({"date": "2026-10-21", "proposal": "x", "overrides": {"stocks.entry_mode": "template_cross"},
+                          "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17, "oos_prop": 0.2, "oos_score": 0.15,
+                          "prop_key": rules_key(cfg.prop), "verdict": "spawned"})   # rescored under today's rules
     assert len(results_so_far(reg, tmp_path / "lab")) == 1
     # a cell with exactly the same results differs only in a knob that does nothing: never rescored
     reg.record_iteration({"date": "2026-10-20", "proposal": "y", "sleeve": "stocks", "oos_cagr": 0.09, "oos_dd": -0.17,

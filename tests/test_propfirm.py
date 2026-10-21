@@ -25,8 +25,11 @@ def _series(rets, start=100.0):
                      index=pd.date_range("2020-01-01", periods=len(rets), freq="D"))
 
 
+ONE_PHASE = {"profit_target_pct": 0.10, "phase2_target_pct": 0.0, "min_trading_days": 4}
+
+
 def test_steady_winner_passes_and_a_crash_fails():
-    r = PropRules(eval_horizon_days=60, eval_step_days=5)
+    r = PropRules(eval_horizon_days=60, eval_step_days=5, **ONE_PHASE)
     up = prop_metrics(_series([0.004] * 400), r)               # +0.4% a day: +10% in about 24 days
     assert up["prop_pass_rate"] == 1.0 and 20 <= up["prop_median_days"] <= 30
     crash = [0.004] * 400
@@ -40,13 +43,13 @@ def test_steady_winner_passes_and_a_crash_fails():
 
 
 def test_min_trading_days_and_trailing():
-    r = PropRules(min_trading_days=4)
+    r = PropRules(**ONE_PHASE)
     st = forward_status([("d0", 100.0), ("d1", 112.0), ("d2", 112.0), ("d3", 112.0), ("d4", 112.0)], r)
     assert st["passed"] and st["days"] == 4                    # target on day one, but four days required
-    trail = PropRules(trailing_total_loss=True)
+    trail = PropRules(trailing_total_loss=True, **ONE_PHASE)
     marks = [("d0", 100.0), ("d1", 104.0), ("d2", 108.0), ("d3", 104.0), ("d4", 99.0), ("d5", 97.0)]
     assert forward_status(marks, trail)["outcome"] == "failed_total"     # 10% below the 108 peak
-    assert forward_status(marks, PropRules())["outcome"] == "open"       # static: 97 is above 90
+    assert forward_status(marks, PropRules(**ONE_PHASE))["outcome"] == "open"   # static: 97 is above 90
 
 
 def test_readiness_needs_every_check():
@@ -79,7 +82,7 @@ def test_a_variant_that_breaches_is_retired(tmp_path):
 
 
 def test_a_breach_after_passing_still_counts_and_deposits_are_not_gains():
-    r = PropRules(min_trading_days=4)
+    r = PropRules(**ONE_PHASE)
     marks = [("d0", 100.0), ("d1", 103.0), ("d2", 106.0), ("d3", 109.0), ("d4", 111.0), ("d5", 103.0)]
     st = forward_status(marks, r)
     assert st["passed"] and st["passed_on"] == "d4"
@@ -116,3 +119,21 @@ def test_the_readiness_report_and_the_announcement(tmp_path):
     body = notice(rep, rep["ready"])
     assert "the firm (primary book)" in body and "- [x]" in body and "no connection to any prop firm" in body
     assert notice(rep, []).count("###") == 2                                    # rules and next steps only
+
+
+def test_a_two_phase_challenge_passes_only_when_both_phases_do():
+    r = PropRules(profit_target_pct=0.08, phase2_target_pct=0.05, min_trading_days=5)
+    # +2% a day: phase 1 (8%) needs five trading days, then phase 2 (5% from the new balance) five more
+    marks = [(f"d{i}", 100.0 * 1.02 ** i) for i in range(12)]
+    st = forward_status(marks, r)
+    assert st["passed"] and st["passed_on"] == "d10"
+    # the same start, but phase 2 breaks the daily limit: the challenge fails
+    bad = marks[:6] + [("d6", marks[5][1] * 0.94)] + [(f"d{i}", marks[5][1] * 0.94) for i in range(7, 12)]
+    st = forward_status(bad, r)
+    assert not st["passed"] and st["outcome"] == "failed_daily"
+    one = prop_metrics(_series([0.02] * 200), PropRules(eval_horizon_days=30, eval_step_days=5, **ONE_PHASE))
+    two = prop_metrics(_series([0.02] * 200), PropRules(eval_horizon_days=30, eval_step_days=5,
+                                                         profit_target_pct=0.08, phase2_target_pct=0.05,
+                                                         min_trading_days=5))
+    assert one["prop_median_days"] == 5 and two["prop_median_days"] == 10
+
