@@ -1,5 +1,5 @@
 {
- "ts": "2026-10-21T05:23:26+00:00",
+ "ts": "2026-10-21T09:00:55+00:00",
  "rules": {
   "profit_target_pct": 0.1,
   "max_daily_loss_pct": 0.05,
@@ -28,7 +28,7 @@
    "forward": {
     "outcome": "open",
     "days": 3,
-    "ret": 0.0034000000000000696,
+    "ret": 0.0040999999999999925,
     "worst_day": -0.0015999999999999348,
     "max_loss": -0.0015999999999999348,
     "breached": false,
@@ -53,7 +53,7 @@
     {
      "check": "reached the 10% target on paper",
      "ok": false,
-     "value": "+0.3%"
+     "value": "+0.4%"
     },
     {
      "check": "out-of-sample simulated pass rate of at least 50%",
@@ -73,7 +73,7 @@
    "forward": {
     "outcome": "open",
     "days": 1,
-    "ret": 0.001437674439139336,
+    "ret": 0.0049852704528854375,
     "worst_day": 0.0,
     "max_loss": 0.0,
     "breached": false,
@@ -98,12 +98,57 @@
     {
      "check": "reached the 10% target on paper",
      "ok": false,
-     "value": "+0.1%"
+     "value": "+0.5%"
     },
     {
      "check": "out-of-sample simulated pass rate of at least 50%",
      "ok": false,
      "value": "\u2014"
+    }
+   ],
+   "n_ok": 1
+  },
+  {
+   "id": "sweep-stocks-entry-mode-template-cross",
+   "name": "sweep stocks: entry_mode=template_cross",
+   "kind": "variant",
+   "sleeve": "stocks",
+   "since": "2026-10-19",
+   "backtest_pass_rate": 0.16274089935760172,
+   "forward": {
+    "outcome": "open",
+    "days": 1,
+    "ret": 0.0004920246170161402,
+    "worst_day": 0.0,
+    "max_loss": 0.0,
+    "breached": false,
+    "breach_day": null,
+    "passed": false,
+    "passed_on": null,
+    "start": "2026-10-19",
+    "last": "2026-10-20"
+   },
+   "ready": false,
+   "checks": [
+    {
+     "check": "at least 30 trading days of live paper record",
+     "ok": false,
+     "value": "1 days"
+    },
+    {
+     "check": "never breached the daily or total loss limit on paper",
+     "ok": true,
+     "value": "open"
+    },
+    {
+     "check": "reached the 10% target on paper",
+     "ok": false,
+     "value": "+0.0%"
+    },
+    {
+     "check": "out-of-sample simulated pass rate of at least 50%",
+     "ok": false,
+     "value": "16%"
     }
    ],
    "n_ok": 1
@@ -194,51 +239,6 @@
      "check": "out-of-sample simulated pass rate of at least 50%",
      "ok": false,
      "value": "12%"
-    }
-   ],
-   "n_ok": 1
-  },
-  {
-   "id": "sweep-stocks-entry-mode-template-cross",
-   "name": "sweep stocks: entry_mode=template_cross",
-   "kind": "variant",
-   "sleeve": "stocks",
-   "since": "2026-10-19",
-   "backtest_pass_rate": 0.16274089935760172,
-   "forward": {
-    "outcome": "open",
-    "days": 1,
-    "ret": -0.005236905483646193,
-    "worst_day": -0.005236905483646193,
-    "max_loss": -0.005236905483646193,
-    "breached": false,
-    "breach_day": null,
-    "passed": false,
-    "passed_on": null,
-    "start": "2026-10-19",
-    "last": "2026-10-20"
-   },
-   "ready": false,
-   "checks": [
-    {
-     "check": "at least 30 trading days of live paper record",
-     "ok": false,
-     "value": "1 days"
-    },
-    {
-     "check": "never breached the daily or total loss limit on paper",
-     "ok": true,
-     "value": "open"
-    },
-    {
-     "check": "reached the 10% target on paper",
-     "ok": false,
-     "value": "-0.5%"
-    },
-    {
-     "check": "out-of-sample simulated pass rate of at least 50%",
-     "ok": false,
-     "value": "16%"
     }
    ],
    "n_ok": 1

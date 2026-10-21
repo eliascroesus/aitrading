@@ -1,25 +1,71 @@
 {
-  "cash": 100.0,
-  "positions": {},
+  "cash": 90.74545885610094,
+  "positions": {
+    "ZEC": {
+      "asset_class": "crypto",
+      "qty": 0.004048981754785342,
+      "avg_price": 1153.3763999999999,
+      "current_price": 1257.6,
+      "stop_price": null
+    },
+    "LIT": {
+      "asset_class": "crypto",
+      "qty": 1.4785888709392074,
+      "avg_price": 3.097548,
+      "current_price": 3.3851,
+      "stop_price": null
+    }
+  },
   "stops": {},
   "pending": [
     {
-      "id": "child-hyperliquid-desk-2026-10-20-ZEC",
+      "id": "4bba1e740351",
       "symbol": "ZEC",
-      "side": "buy",
-      "qty": null,
-      "notional": 4.67,
+      "side": "sell",
+      "qty": 0.004048981754785342,
+      "notional": null,
       "asset_class": "crypto"
     },
     {
-      "id": "child-hyperliquid-desk-2026-10-20-LIT",
+      "id": "b5a96df0c526",
       "symbol": "LIT",
-      "side": "buy",
-      "qty": null,
-      "notional": 4.58,
+      "side": "sell",
+      "qty": 1.4785888709392074,
+      "notional": null,
       "asset_class": "crypto"
     }
   ],
-  "fills": [],
-  "saved_at": "2026-10-21T05:20:40+00:00"
+  "fills": [
+    {
+      "ts": "2026-10-21T08:59:34+00:00",
+      "symbol": "ZEC",
+      "side": "buy",
+      "qty": 0.004048981754785342,
+      "price": 1153.3763999999999,
+      "fee": 0.0021015,
+      "id": "child-hyperliquid-desk-2026-10-20-ZEC"
+    },
+    {
+      "ts": "2026-10-21T08:59:34+00:00",
+      "symbol": "LIT",
+      "side": "buy",
+      "qty": 1.4785888709392074,
+      "price": 3.097548,
+      "fee": 0.002061,
+      "id": "child-hyperliquid-desk-2026-10-20-LIT"
+    },
+    {
+      "event": "cash_adjustment",
+      "delta": -0.00019094997955567674,
+      "reason": "funding ZEC +0.000038",
+      "ts": "2026-10-21T08:59:34+00:00"
+    },
+    {
+      "event": "cash_adjustment",
+      "delta": -0.00018769391951311166,
+      "reason": "funding LIT +0.000038",
+      "ts": "2026-10-21T08:59:34+00:00"
+    }
+  ],
+  "saved_at": "2026-10-21T08:59:34+00:00"
 }

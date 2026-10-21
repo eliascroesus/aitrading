@@ -2,8 +2,8 @@
   "primary": {
     "run_date": "2026-10-20",
     "label": "primary",
-    "equity_gross": 100.34,
-    "equity_net": 99.99980496,
+    "equity_gross": 100.41,
+    "equity_net": 100.06980496,
     "tier": "base",
     "regime": {
       "state": "green",
@@ -19,165 +19,20 @@
       }
     },
     "exits": [],
-    "candidates": [
-      {
-        "symbol": "CVX",
-        "score": 0.8833,
-        "raw_close": 225.71,
-        "atr_pct": 1.9661,
-        "pct_of_high": 0.9931,
-        "z_reset": 1.5168,
-        "pullback_atr": 0.0
-      },
-      {
-        "symbol": "MRK",
-        "score": 0.8,
-        "raw_close": 148.3,
-        "atr_pct": 2.6192,
-        "pct_of_high": 0.9506,
-        "z_reset": -0.0824,
-        "pullback_atr": 1.8618
-      },
-      {
-        "symbol": "MTCH",
-        "score": 0.7,
-        "raw_close": 46.53,
-        "atr_pct": 2.7735,
-        "pct_of_high": 0.9982,
-        "z_reset": 0.8204,
-        "pullback_atr": 0.0
-      },
-      {
-        "symbol": "LLY",
-        "score": 0.6667,
-        "raw_close": 1283.66,
-        "atr_pct": 2.8376,
-        "pct_of_high": 0.9786,
-        "z_reset": 1.1114,
-        "pullback_atr": 0.0
-      },
-      {
-        "symbol": "WELL",
-        "score": 0.6333,
-        "raw_close": 238.08,
-        "atr_pct": 2.0902,
-        "pct_of_high": 0.9364,
-        "z_reset": 0.3943,
-        "pullback_atr": 2.6209
-      },
-      {
-        "symbol": "PFE",
-        "score": 0.6167,
-        "raw_close": 30.11,
-        "atr_pct": 1.8443,
-        "pct_of_high": 0.9954,
-        "z_reset": 1.4844,
-        "pullback_atr": 0.0
-      },
-      {
-        "symbol": "REGN",
-        "score": 0.5167,
-        "raw_close": 807.48,
-        "atr_pct": 2.6543,
-        "pct_of_high": 0.9397,
-        "z_reset": 0.1319,
-        "pullback_atr": 2.0786
-      },
-      {
-        "symbol": "GL",
-        "score": 0.4833,
-        "raw_close": 169.72,
-        "atr_pct": 1.8263,
-        "pct_of_high": 0.8878,
-        "z_reset": -0.1871,
-        "pullback_atr": 5.1392
-      }
+    "candidates": [],
+    "decisions": [],
+    "orders": [],
+    "ai_cost_usd": 0.0,
+    "notes": [
+      "buys blocked: this bar was already processed by an earlier run today"
     ],
-    "decisions": [
-      {
-        "symbol": "CVX",
-        "action": "reduce_half",
-        "invalidation": "close_below_entry_minus_3atr",
-        "confidence": 0.55,
-        "rationale": "Strongest score (0.88) with a solid uptrend: close above ma_mid and ma_long, and mom_long 0.38. But it is extended, with pullback_atr 0, z_reset 1.52 and price at 99% of the high. There is also an attention spike, the fundamental signal is -0.2 and earnings are 10 days out. Half size.",
-        "cost_usd": 0.01071924,
-        "note": ""
-      },
-      {
-        "symbol": "MRK",
-        "action": "veto",
-        "invalidation": "none",
-        "confidence": 0.65,
-        "rationale": "A fixed-price acquisition-target event likely caps upside and pins the price, which breaks the momentum thesis. The news is mixed: an acquirer event, a regulatory action and a medium negative. Earnings are in 9 days.",
-        "cost_usd": 0.01045666,
-        "note": ""
-      },
-      {
-        "symbol": "MTCH",
-        "action": "veto",
-        "invalidation": "none",
-        "confidence": 0.0,
-        "rationale": "material negative news or suspected injection",
-        "cost_usd": 0.00036729000000000004,
-        "note": ""
-      },
-      {
-        "symbol": "LLY",
-        "action": "veto",
-        "invalidation": "none",
-        "confidence": 0.0,
-        "rationale": "an analyst call failed (fail closed)",
-        "cost_usd": 0.0008530600000000001,
-        "note": ""
-      },
-      {
-        "symbol": "WELL",
-        "action": "veto",
-        "invalidation": "none",
-        "confidence": 0.0,
-        "rationale": "material negative news or suspected injection",
-        "cost_usd": 0.00042079000000000004,
-        "note": ""
-      },
-      {
-        "symbol": "PFE",
-        "action": "veto",
-        "invalidation": "none",
-        "confidence": 0.7,
-        "rationale": "There is a medium-materiality guidance cut. The setup is extended: z_impulse 2.2, pullback_atr 0, price at 99.5% of the high. The sentiment signal is -0.25 and the score is only 0.62.",
-        "cost_usd": 0.01037746,
-        "note": ""
-      },
-      {
-        "symbol": "REGN",
-        "action": "veto",
-        "invalidation": "none",
-        "confidence": 0.6,
-        "rationale": "Weak setup with a score of 0.52, a fundamental signal of -0.2 and a debate net signal of 0.15. There is an attention spike after several upgrades, which suggests crowding. Earnings are in 10 days.",
-        "cost_usd": 0.01046546,
-        "note": ""
-      }
-    ],
-    "orders": [
-      {
-        "symbol": "CVX",
-        "side": "buy",
-        "notional": 8.51,
-        "ok": true,
-        "fill_price": 0.0,
-        "filled_qty": 0.0,
-        "message": "OrderStatus.ACCEPTED"
-      }
-    ],
-    "ai_cost_usd": 0.043659960000000005,
-    "notes": [],
     "positions": [
       {
         "symbol": "COP",
         "qty": 0.051422,
         "entry": 146.24,
         "stop": 136.6373,
-        "bars_held": 4,
+        "bars_held": 5,
         "source": "reconciled",
         "stop_armed": true,
         "fill_pending": false
@@ -187,7 +42,7 @@
         "qty": 0.044496,
         "entry": 387.0,
         "stop": 364.626,
-        "bars_held": 4,
+        "bars_held": 5,
         "source": "reconciled",
         "stop_armed": true,
         "fill_pending": false
@@ -207,8 +62,8 @@
   "shadow": {
     "run_date": "2026-10-20",
     "label": "shadow-rules",
-    "equity_gross": 101.04187420888454,
-    "equity_net": 101.04187420888454,
+    "equity_gross": 101.64407012337162,
+    "equity_net": 101.64407012337162,
     "tier": "base",
     "regime": {
       "state": "green",
@@ -224,183 +79,20 @@
       }
     },
     "exits": [],
-    "candidates": [
-      {
-        "symbol": "MRK",
-        "score": 0.8182,
-        "raw_close": 148.3,
-        "atr_pct": 2.6192,
-        "pct_of_high": 0.9506,
-        "z_reset": -0.0824,
-        "pullback_atr": 1.8618
-      },
-      {
-        "symbol": "MTCH",
-        "score": 0.7273,
-        "raw_close": 46.53,
-        "atr_pct": 2.7735,
-        "pct_of_high": 0.9982,
-        "z_reset": 0.8204,
-        "pullback_atr": 0.0
-      },
-      {
-        "symbol": "LLY",
-        "score": 0.7273,
-        "raw_close": 1283.66,
-        "atr_pct": 2.8376,
-        "pct_of_high": 0.9786,
-        "z_reset": 1.1114,
-        "pullback_atr": 0.0
-      },
-      {
-        "symbol": "WELL",
-        "score": 0.6909,
-        "raw_close": 238.08,
-        "atr_pct": 2.0902,
-        "pct_of_high": 0.9364,
-        "z_reset": 0.3943,
-        "pullback_atr": 2.6209
-      },
-      {
-        "symbol": "PFE",
-        "score": 0.6364,
-        "raw_close": 30.11,
-        "atr_pct": 1.8443,
-        "pct_of_high": 0.9954,
-        "z_reset": 1.4844,
-        "pullback_atr": 0.0
-      },
-      {
-        "symbol": "REGN",
-        "score": 0.5636,
-        "raw_close": 807.48,
-        "atr_pct": 2.6543,
-        "pct_of_high": 0.9397,
-        "z_reset": 0.1319,
-        "pullback_atr": 2.0786
-      },
-      {
-        "symbol": "GL",
-        "score": 0.5273,
-        "raw_close": 169.72,
-        "atr_pct": 1.8263,
-        "pct_of_high": 0.8878,
-        "z_reset": -0.1871,
-        "pullback_atr": 5.1392
-      },
-      {
-        "symbol": "SJM",
-        "score": 0.4182,
-        "raw_close": 129.67,
-        "atr_pct": 2.1906,
-        "pct_of_high": 0.9542,
-        "z_reset": 1.0539,
-        "pullback_atr": 0.94
-      }
-    ],
-    "decisions": [
-      {
-        "symbol": "MRK",
-        "action": "approve",
-        "invalidation": "none",
-        "confidence": null,
-        "rationale": "rules-only",
-        "cost_usd": 0.0,
-        "note": ""
-      },
-      {
-        "symbol": "MTCH",
-        "action": "approve",
-        "invalidation": "none",
-        "confidence": null,
-        "rationale": "rules-only",
-        "cost_usd": 0.0,
-        "note": ""
-      },
-      {
-        "symbol": "LLY",
-        "action": "approve",
-        "invalidation": "none",
-        "confidence": null,
-        "rationale": "rules-only",
-        "cost_usd": 0.0,
-        "note": ""
-      },
-      {
-        "symbol": "WELL",
-        "action": "approve",
-        "invalidation": "none",
-        "confidence": null,
-        "rationale": "rules-only",
-        "cost_usd": 0.0,
-        "note": ""
-      },
-      {
-        "symbol": "PFE",
-        "action": "approve",
-        "invalidation": "none",
-        "confidence": null,
-        "rationale": "rules-only",
-        "cost_usd": 0.0,
-        "note": ""
-      },
-      {
-        "symbol": "REGN",
-        "action": "approve",
-        "invalidation": "none",
-        "confidence": null,
-        "rationale": "rules-only",
-        "cost_usd": 0.0,
-        "note": ""
-      },
-      {
-        "symbol": "GL",
-        "action": "approve",
-        "invalidation": "none",
-        "confidence": null,
-        "rationale": "rules-only",
-        "cost_usd": 0.0,
-        "note": ""
-      },
-      {
-        "symbol": "SJM",
-        "action": "approve",
-        "invalidation": "none",
-        "confidence": null,
-        "rationale": "rules-only",
-        "cost_usd": 0.0,
-        "note": ""
-      }
-    ],
-    "orders": [
-      {
-        "symbol": "MRK",
-        "side": "buy",
-        "notional": 13.2,
-        "ok": true,
-        "fill_price": 0.0,
-        "filled_qty": 0.0,
-        "message": "queued for next open"
-      },
-      {
-        "symbol": "MTCH",
-        "side": "buy",
-        "notional": 11.72,
-        "ok": true,
-        "fill_price": 0.0,
-        "filled_qty": 0.0,
-        "message": "queued for next open"
-      }
-    ],
+    "candidates": [],
+    "decisions": [],
+    "orders": [],
     "ai_cost_usd": 0.0,
-    "notes": [],
+    "notes": [
+      "buys blocked: this bar was already processed by an earlier run today"
+    ],
     "positions": [
       {
         "symbol": "TRV",
         "qty": 0.0445,
         "entry": 387.1935,
         "stop": 364.5862,
-        "bars_held": 4,
+        "bars_held": 5,
         "source": "shadow-rules",
         "stop_armed": true,
         "fill_pending": false
@@ -410,7 +102,7 @@
         "qty": 0.074958,
         "entry": 223.9919448852539,
         "stop": 210.5941,
-        "bars_held": 4,
+        "bars_held": 5,
         "source": "shadow-rules",
         "stop_armed": true,
         "fill_pending": false
@@ -420,30 +112,30 @@
         "qty": 0.333827,
         "entry": 45.44270816802978,
         "stop": 42.3722,
-        "bars_held": 3,
+        "bars_held": 4,
         "source": "shadow-rules",
         "stop_armed": true,
         "fill_pending": false
       },
       {
         "symbol": "MRK",
-        "qty": 0.089009,
-        "entry": 148.3000030517578,
-        "stop": 136.9478,
-        "bars_held": 0,
+        "qty": 0.090187,
+        "entry": 146.36313828277588,
+        "stop": 135.011,
+        "bars_held": 1,
         "source": "shadow-rules",
-        "stop_armed": false,
-        "fill_pending": true
+        "stop_armed": true,
+        "fill_pending": false
       },
       {
         "symbol": "MTCH",
-        "qty": 0.251881,
-        "entry": 46.529998779296875,
-        "stop": 42.6585,
-        "bars_held": 0,
+        "qty": 0.261068,
+        "entry": 44.89243393135071,
+        "stop": 41.021,
+        "bars_held": 1,
         "source": "shadow-rules",
-        "stop_armed": false,
-        "fill_pending": true
+        "stop_armed": true,
+        "fill_pending": false
       }
     ]
   },
@@ -452,17 +144,17 @@
     "BTC buy&hold": 101.86606637636233
   },
   "survival": {
-    "equity_gross": 100.34,
-    "equity_net": 99.99980496,
+    "equity_gross": 100.41,
+    "equity_net": 100.06980496,
     "ai_cost_total": 0.34019504,
     "ai_cost_today": 0.043659960000000005,
-    "budget_today": 0.049999902480000004,
-    "budget_remaining": 0.006339942479999999,
-    "runway_days": 1543.2283631178161,
+    "budget_today": 0.05003490248,
+    "budget_remaining": 0.006374942479999993,
+    "runway_days": 1544.6687133357382,
     "tier": "base",
     "dead": false,
     "death_reason": "",
     "in_halt_cooldown": false,
-    "peak_equity": 100.34
+    "peak_equity": 100.41
   }
 }

@@ -1,5 +1,5 @@
 {
-  "cash": 50.80999999999999,
+  "cash": 25.889999999999986,
   "positions": {
     "TRV": {
       "asset_class": "stock",
@@ -21,6 +21,20 @@
       "avg_price": 45.44270816802978,
       "current_price": 47.040000915527344,
       "stop_price": 42.372222444761604
+    },
+    "MRK": {
+      "asset_class": "stock",
+      "qty": 0.09018664231220154,
+      "avg_price": 146.36313828277588,
+      "current_price": 148.3000030517578,
+      "stop_price": 135.01097088084757
+    },
+    "MTCH": {
+      "asset_class": "stock",
+      "qty": 0.26106849136142113,
+      "avg_price": 44.89243393135071,
+      "current_price": 46.529998779296875,
+      "stop_price": 41.0209737762411
     }
   },
   "stops": {
@@ -35,26 +49,17 @@
     "MNST": [
       0.33382693531175855,
       42.372222444761604
+    ],
+    "MRK": [
+      0.09018664231220154,
+      135.01097088084757
+    ],
+    "MTCH": [
+      0.26106849136142113,
+      41.0209737762411
     ]
   },
-  "pending": [
-    {
-      "id": "shadow-rules-2026-10-20-MRK",
-      "symbol": "MRK",
-      "side": "buy",
-      "qty": null,
-      "notional": 13.2,
-      "asset_class": "stock"
-    },
-    {
-      "id": "shadow-rules-2026-10-20-MTCH",
-      "symbol": "MTCH",
-      "side": "buy",
-      "qty": null,
-      "notional": 11.72,
-      "asset_class": "stock"
-    }
-  ],
+  "pending": [],
   "fills": [
     {
       "ts": "2026-10-19T15:24:56+00:00",
@@ -82,7 +87,25 @@
       "price": 45.44270816802978,
       "fee": 0.0,
       "id": "shadow-rules-2026-10-19-MNST"
+    },
+    {
+      "ts": "2026-10-21T08:59:22+00:00",
+      "symbol": "MRK",
+      "side": "buy",
+      "qty": 0.09018664231220154,
+      "price": 146.36313828277588,
+      "fee": 0.0,
+      "id": "shadow-rules-2026-10-20-MRK"
+    },
+    {
+      "ts": "2026-10-21T08:59:22+00:00",
+      "symbol": "MTCH",
+      "side": "buy",
+      "qty": 0.26106849136142113,
+      "price": 44.89243393135071,
+      "fee": 0.0,
+      "id": "shadow-rules-2026-10-20-MTCH"
     }
   ],
-  "saved_at": "2026-10-21T05:20:01+00:00"
+  "saved_at": "2026-10-21T08:59:22+00:00"
 }

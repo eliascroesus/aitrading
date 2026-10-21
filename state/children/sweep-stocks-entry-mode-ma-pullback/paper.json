@@ -1,5 +1,5 @@
 {
-  "cash": 67.8,
+  "cash": 42.96,
   "positions": {
     "TRV": {
       "asset_class": "stock",
@@ -14,6 +14,20 @@
       "avg_price": 295.79781889343263,
       "current_price": 292.6499938964844,
       "stop_price": 276.2852504712379
+    },
+    "MRK": {
+      "asset_class": "stock",
+      "qty": 0.08936676374572698,
+      "avg_price": 146.36313828277588,
+      "current_price": 148.3000030517578,
+      "stop_price": 135.01097088084757
+    },
+    "LLY": {
+      "asset_class": "stock",
+      "qty": 0.009302827810471495,
+      "avg_price": 1264.13175,
+      "current_price": 1283.6600341796875,
+      "stop_price": 1154.857164271908
     }
   },
   "stops": {
@@ -24,26 +38,17 @@
     "TRGP": [
       0.0507441199402747,
       276.2852504712379
+    ],
+    "MRK": [
+      0.08936676374572698,
+      135.01097088084757
+    ],
+    "LLY": [
+      0.009302827810471495,
+      1154.857164271908
     ]
   },
-  "pending": [
-    {
-      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-20-MRK",
-      "symbol": "MRK",
-      "side": "buy",
-      "qty": null,
-      "notional": 13.08,
-      "asset_class": "stock"
-    },
-    {
-      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-20-LLY",
-      "symbol": "LLY",
-      "side": "buy",
-      "qty": null,
-      "notional": 11.76,
-      "asset_class": "stock"
-    }
-  ],
+  "pending": [],
   "fills": [
     {
       "ts": "2026-10-21T05:20:16+00:00",
@@ -62,7 +67,25 @@
       "price": 295.79781889343263,
       "fee": 0.0,
       "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-19-TRGP"
+    },
+    {
+      "ts": "2026-10-21T08:59:22+00:00",
+      "symbol": "MRK",
+      "side": "buy",
+      "qty": 0.08936676374572698,
+      "price": 146.36313828277588,
+      "fee": 0.0,
+      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-20-MRK"
+    },
+    {
+      "ts": "2026-10-21T08:59:22+00:00",
+      "symbol": "LLY",
+      "side": "buy",
+      "qty": 0.009302827810471495,
+      "price": 1264.13175,
+      "fee": 0.0,
+      "id": "child-sweep-stocks-entry-mode-ma-pullback-2026-10-20-LLY"
     }
   ],
-  "saved_at": "2026-10-21T05:20:29+00:00"
+  "saved_at": "2026-10-21T08:59:22+00:00"
 }

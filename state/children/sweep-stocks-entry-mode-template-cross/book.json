@@ -3,38 +3,38 @@
     "VTR": {
       "symbol": "VTR",
       "asset_class": "stock",
-      "qty": 0.1799051957951088,
-      "entry_price": 86.48999786376953,
+      "qty": 0.182623569977319,
+      "entry_price": 85.20258366394043,
       "entry_date": "2026-10-20",
       "r_per_share": 5.515178447767511,
-      "stop_price": 80.97481941600202,
+      "stop_price": 79.68740521617292,
       "highest_close": 86.48999786376953,
-      "bars_held": 0,
+      "bars_held": 1,
       "invalidation_condition": "none",
       "source": "child-sweep-stocks-entry-mode-template-cross",
-      "stop_order_id": "",
+      "stop_order_id": "stop-VTR",
       "below_mid_streak": 0,
       "meta": {
-        "fill_pending": true,
+        "fill_pending": false,
         "order_id": "child-sweep-stocks-entry-mode-template-cross-2026-10-20-VTR"
       }
     },
     "SBUX": {
       "symbol": "SBUX",
       "asset_class": "stock",
-      "qty": 0.13857300613261417,
-      "entry_price": 99.37000274658203,
+      "qty": 0.14009689271232553,
+      "entry_price": 98.28911786270142,
       "entry_date": "2026-10-20",
       "r_per_share": 7.160983092560016,
-      "stop_price": 92.20901965402201,
+      "stop_price": 91.1281347701414,
       "highest_close": 99.37000274658203,
-      "bars_held": 0,
+      "bars_held": 1,
       "invalidation_condition": "none",
       "source": "child-sweep-stocks-entry-mode-template-cross",
-      "stop_order_id": "",
+      "stop_order_id": "stop-SBUX",
       "below_mid_streak": 0,
       "meta": {
-        "fill_pending": true,
+        "fill_pending": false,
         "order_id": "child-sweep-stocks-entry-mode-template-cross-2026-10-20-SBUX"
       }
     }
