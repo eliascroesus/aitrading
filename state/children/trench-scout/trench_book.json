@@ -1,25 +1,14 @@
 {
-  "cash": 23.491358620628166,
+  "cash": 23.590424654419824,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
       "symbol": "KIMCHI",
       "qty": 196.52790508190841,
       "entry_price": 0.007401,
-      "peak_price": 0.008541,
+      "peak_price": 0.008756,
       "entered_at": "2026-10-21T09:25:29.357323+00:00",
       "cost_usd": 1.5417732070418764,
-      "took_half": false,
-      "misses": 0
-    },
-    "Gv6jKrrjJW9NLZujVZdxj6D9xL21qcLbHso8LYFMpump": {
-      "mint": "Gv6jKrrjJW9NLZujVZdxj6D9xL21qcLbHso8LYFMpump",
-      "symbol": "BOUNCER",
-      "qty": 37610.65459416604,
-      "entry_price": 3.724e-05,
-      "peak_price": 5.902e-05,
-      "entered_at": "2026-10-21T09:41:26.469176+00:00",
-      "cost_usd": 1.484658023711948,
       "took_half": false,
       "misses": 0
     },
@@ -31,6 +20,17 @@
       "peak_price": 0.00089,
       "entered_at": "2026-10-21T09:50:02.091159+00:00",
       "cost_usd": 1.5072994896168073,
+      "took_half": false,
+      "misses": 0
+    },
+    "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump": {
+      "mint": "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump",
+      "symbol": "MEME",
+      "qty": 12441.423500498378,
+      "entry_price": 0.0001061,
+      "peak_price": 0.0001061,
+      "entered_at": "2026-10-21T10:05:35.486784+00:00",
+      "cost_usd": 1.3992371354070507,
       "took_half": false,
       "misses": 0
     }
@@ -2241,6 +2241,25 @@
       "proceeds": 1.1337358329696945,
       "pnl_approx": -0.3509221907422535,
       "age_hours": 0.2791669088888889
+    },
+    {
+      "mint": "Gv6jKrrjJW9NLZujVZdxj6D9xL21qcLbHso8LYFMpump",
+      "symbol": "BOUNCER",
+      "event": "exit",
+      "reason": "trail",
+      "price": 4.238e-05,
+      "proceeds": 1.4983031691987112,
+      "pnl_approx": 0.01364514548676321,
+      "age_hours": 0.40250489111111115
+    },
+    {
+      "mint": "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump",
+      "symbol": "MEME",
+      "event": "entry",
+      "price": 0.0001061,
+      "notional": 1.3992371354070507,
+      "liquidity_usd": 28117.93,
+      "age_hours": 1.4501250132921006
     }
   ]
 }
