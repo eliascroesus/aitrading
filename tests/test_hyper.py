@@ -213,3 +213,6 @@ def test_a_score_made_on_a_few_lucky_evaluations_does_not_outrank_a_steady_one()
     lucky = {"oos_score": 0.14, "oos_score_se": 0.08}
     steady = {"oos_score": 0.11, "oos_score_se": 0.02}
     assert rank_key(steady, "prop") < rank_key(lucky, "prop")
+    idle = {"oos_score": 0.0, "oos_score_se": 0.0}                    # never passes, never breaches
+    small = {"oos_score": 0.03, "oos_score_se": 0.035, "oos_prop_days": 31}
+    assert rank_key(small, "prop") < rank_key(idle, "prop")

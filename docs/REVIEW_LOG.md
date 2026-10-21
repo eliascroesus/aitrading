@@ -380,6 +380,10 @@ challenges quickly.
   evaluations), and cells rank by score less one standard error. The verdict
   against the parent is unchanged. The score format is part of the rules key,
   so every cell is rescored.
+* **Fixed the same day.** A cell that never passes nor breaches scores 0 with
+  no spread, so "score less one standard error" ranked it above a small, noisy
+  winner; the forex and gold leaderboard filled with such idle cells. A cell
+  with a positive score now always ranks first, then the lower bound orders.
 * **Not done, and why.**
   * Intraday entries (opening-range breakouts and similar) need intraday data;
     the owner asked for no new data sources for now.

@@ -168,17 +168,19 @@ def untested(registry: HiveRegistry, cells: list[Cell], ldir=None) -> list[Cell]
 
 
 def rank_key(r: dict[str, Any], objective: str = "growth") -> tuple:
-    """Best first under the firm's objective: the prop score less one standard error (a score made
-    on a few lucky evaluations does not outrank a steady one; config 2.7.0), then the faster
-    median pass, then growth, then the shallower drawdown. A cell tested before the score existed
-    ranks by its pass rate until it is rescored."""
+    """Best first under the firm's objective: cells with a positive prop score first, ordered by
+    the score less one standard error (a score made on a few lucky evaluations does not outrank a
+    steady one; config 2.7.0), then the faster median pass, then growth, then the shallower
+    drawdown. A cell that never passes nor breaches scores 0 with no spread; it never outranks
+    one that passes. A cell tested before the score existed ranks by its pass rate until it is
+    rescored."""
     if objective != "prop":
-        return (0.0, 0.0, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
-    score = r.get("oos_score")
-    score = (float(r.get("oos_prop") or 0.0) if score is None
-             else float(score) - float(r.get("oos_score_se") or 0.0))
+        return (0.0, 0.0, 0.0, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
+    raw = r.get("oos_score")
+    raw = float(r.get("oos_prop") or 0.0) if raw is None else float(raw)
+    score = raw - float(r.get("oos_score_se") or 0.0) if r.get("oos_score") is not None else raw
     days = float(r.get("oos_prop_days") or 0.0) or 999.0
-    return (-score, days, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
+    return (0.0 if raw > 0 else 1.0, -score, days, -(r.get("oos_cagr") or 0.0), -(r.get("oos_dd") or 0.0))
 
 
 def _step(cur: float, lo: float, hi: float, div: int, sign: int, like: Any) -> Any:
