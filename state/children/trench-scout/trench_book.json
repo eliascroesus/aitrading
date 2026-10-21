@@ -1,5 +1,5 @@
 {
-  "cash": 24.196096732223946,
+  "cash": 26.837078549119877,
   "positions": {
     "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump": {
       "mint": "G6dHfpt5nD77RBNgoKSMkSuH8KFHQif3KTPge9A2pump",
@@ -39,18 +39,7 @@
       "symbol": "KIMCHI",
       "qty": 190.31394873053335,
       "entry_price": 0.01097,
-      "peak_price": 0.01207,
-      "entered_at": "2026-10-21T01:01:57.988883+00:00",
-      "cost_usd": 2.213008658628388,
-      "took_half": false,
-      "misses": 0
-    },
-    "8zemVcC8974xhtHva7wuY64B6viXsfj24b6LH41mpump": {
-      "mint": "8zemVcC8974xhtHva7wuY64B6viXsfj24b6LH41mpump",
-      "symbol": "UMI",
-      "qty": 32903.7670224421,
-      "entry_price": 6.345e-05,
-      "peak_price": 6.706e-05,
+      "peak_price": 0.01232,
       "entered_at": "2026-10-21T01:01:57.988883+00:00",
       "cost_usd": 2.213008658628388,
       "took_half": false,
@@ -64,17 +53,6 @@
       "peak_price": 0.0008538,
       "entered_at": "2026-10-21T01:09:26.283904+00:00",
       "cost_usd": 2.1957440617849797,
-      "took_half": false,
-      "misses": 0
-    },
-    "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump": {
-      "mint": "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump",
-      "symbol": "claytonkimm",
-      "qty": 6894.2526703295025,
-      "entry_price": 0.0002922,
-      "peak_price": 0.0002922,
-      "entered_at": "2026-10-21T01:17:21.085528+00:00",
-      "cost_usd": 2.1353706680864977,
       "took_half": false,
       "misses": 0
     }
@@ -1322,6 +1300,26 @@
       "notional": 2.1353706680864977,
       "liquidity_usd": 46373.91,
       "age_hours": 1.3055053975423176
+    },
+    {
+      "mint": "8zemVcC8974xhtHva7wuY64B6viXsfj24b6LH41mpump",
+      "symbol": "UMI",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 4.059e-05,
+      "proceeds": 1.2554300692344695,
+      "pnl_approx": -0.9575785893939186,
+      "age_hours": 0.38424726555555555
+    },
+    {
+      "mint": "4VKPhhDDuVRqCSQGTLXj33jK22cmM9KhN62TN5oGpump",
+      "symbol": "claytonkimm",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0002138,
+      "proceeds": 1.3855517476614605,
+      "pnl_approx": -0.7498189204250372,
+      "age_hours": 0.12783153083333335
     }
   ]
 }
