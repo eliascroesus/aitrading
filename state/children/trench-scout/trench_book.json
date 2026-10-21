@@ -1,5 +1,5 @@
 {
-  "cash": 25.080827919950636,
+  "cash": 23.382215060478067,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
@@ -53,6 +53,17 @@
       "peak_price": 0.0003349,
       "entered_at": "2026-10-21T05:09:00.097317+00:00",
       "cost_usd": 1.7338835454389407,
+      "took_half": false,
+      "misses": 0
+    },
+    "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump": {
+      "mint": "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump",
+      "symbol": "smol",
+      "qty": 24725.581881909795,
+      "entry_price": 6.481e-05,
+      "peak_price": 6.481e-05,
+      "entered_at": "2026-10-21T05:31:59.736756+00:00",
+      "cost_usd": 1.6986128594725682,
       "took_half": false,
       "misses": 0
     }
@@ -1766,6 +1777,15 @@
       "event": "take_half",
       "price": 0.0001343,
       "proceeds": 1.8052912402744945
+    },
+    {
+      "mint": "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump",
+      "symbol": "smol",
+      "event": "entry",
+      "price": 6.481e-05,
+      "notional": 1.6986128594725682,
+      "liquidity_usd": 21760.91,
+      "age_hours": 1.7385296975368925
     }
   ]
 }
