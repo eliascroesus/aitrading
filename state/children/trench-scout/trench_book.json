@@ -1,36 +1,14 @@
 {
-  "cash": 22.20013959964407,
+  "cash": 23.85119541179724,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
       "symbol": "KIMCHI",
       "qty": 196.52790508190841,
       "entry_price": 0.007401,
-      "peak_price": 0.009037,
+      "peak_price": 0.009069,
       "entered_at": "2026-10-21T09:25:29.357323+00:00",
       "cost_usd": 1.5417732070418764,
-      "took_half": false,
-      "misses": 0
-    },
-    "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
-      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
-      "symbol": "Pokecity",
-      "qty": 1597.7310680695434,
-      "entry_price": 0.00089,
-      "peak_price": 0.00089,
-      "entered_at": "2026-10-21T09:50:02.091159+00:00",
-      "cost_usd": 1.5072994896168073,
-      "took_half": false,
-      "misses": 0
-    },
-    "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump": {
-      "mint": "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump",
-      "symbol": "MEME",
-      "qty": 12441.423500498378,
-      "entry_price": 0.0001061,
-      "peak_price": 0.0001061,
-      "entered_at": "2026-10-21T10:05:35.486784+00:00",
-      "cost_usd": 1.3992371354070507,
       "took_half": false,
       "misses": 0
     },
@@ -2280,6 +2258,26 @@
       "notional": 1.3902850547757515,
       "liquidity_usd": 15105.24,
       "age_hours": 0.8700595713975694
+    },
+    {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0006628,
+      "proceeds": 0.9954375828015036,
+      "pnl_approx": -0.5118619068153036,
+      "age_hours": 0.5201575388888889
+    },
+    {
+      "mint": "4gk3n1iCFj2n84MkuRenGHDRZHBRvXy81vLa35krpump",
+      "symbol": "MEME",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 5.606e-05,
+      "proceeds": 0.6556182293516627,
+      "pnl_approx": -0.743618906055388,
+      "age_hours": 0.2608809763888889
     }
   ]
 }
