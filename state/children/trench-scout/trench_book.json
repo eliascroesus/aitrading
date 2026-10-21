@@ -1,5 +1,5 @@
 {
-  "cash": 23.494358685297186,
+  "cash": 22.20139772742059,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
@@ -10,17 +10,6 @@
       "entered_at": "2026-10-21T03:25:09.792361+00:00",
       "cost_usd": 1.865497792250018,
       "took_half": false,
-      "misses": 0
-    },
-    "9Mxu4MMPv4cdCnAUqMqGxHtopZZv756aM36CtZ34pump": {
-      "mint": "9Mxu4MMPv4cdCnAUqMqGxHtopZZv756aM36CtZ34pump",
-      "symbol": "KIMCHI",
-      "qty": 19901.000530892503,
-      "entry_price": 4.219e-05,
-      "peak_price": 9.147e-05,
-      "entered_at": "2026-10-21T03:48:12.757703+00:00",
-      "cost_usd": 1.780001210284512,
-      "took_half": true,
       "misses": 0
     },
     "8bBQP9ngcjyr7g1ytggodjaaQSHSyNcnxCrm8YN9pump": {
@@ -50,7 +39,7 @@
       "symbol": "CPU",
       "qty": 28600.485421246405,
       "entry_price": 5.954e-05,
-      "peak_price": 6.001e-05,
+      "peak_price": 6.677e-05,
       "entered_at": "2026-10-21T04:52:20.303882+00:00",
       "cost_usd": 1.8050452760998716,
       "took_half": false,
@@ -61,9 +50,20 @@
       "symbol": "$DUKE",
       "qty": 47659.4710881895,
       "entry_price": 3.573e-05,
-      "peak_price": 3.573e-05,
+      "peak_price": 4.77e-05,
       "entered_at": "2026-10-21T04:52:20.303882+00:00",
       "cost_usd": 1.8050452760998716,
+      "took_half": false,
+      "misses": 0
+    },
+    "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump": {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "qty": 4884.261552135925,
+      "entry_price": 0.0003349,
+      "peak_price": 0.0003349,
+      "entered_at": "2026-10-21T05:09:00.097317+00:00",
+      "cost_usd": 1.7338835454389407,
       "took_half": false,
       "misses": 0
     }
@@ -1741,6 +1741,25 @@
       "proceeds": 0.7685790941770173,
       "pnl_approx": -1.0269426407417526,
       "age_hours": 0.2677975538888889
+    },
+    {
+      "mint": "9Mxu4MMPv4cdCnAUqMqGxHtopZZv756aM36CtZ34pump",
+      "symbol": "KIMCHI",
+      "event": "exit",
+      "reason": "hard_stop",
+      "price": 2.357e-05,
+      "proceeds": 0.4409225875623481,
+      "pnl_approx": -0.44907801757990784,
+      "age_hours": 1.3464832261111113
+    },
+    {
+      "mint": "AMuS3KCHeipZwTZmEFRuzW6Dr9YMYksWU8Rgboaupump",
+      "symbol": "KIMCHIBOSS",
+      "event": "entry",
+      "price": 0.0003349,
+      "notional": 1.7338835454389407,
+      "liquidity_usd": 51183.07,
+      "age_hours": 5.0990627218967015
     }
   ]
 }
