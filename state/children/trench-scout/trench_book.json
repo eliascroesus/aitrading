@@ -1,5 +1,5 @@
 {
-  "cash": 23.449654499581623,
+  "cash": 24.633195657947137,
   "positions": {
     "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump": {
       "mint": "7thgKgtK1rp1UtLpWUZEuu9vakedTMoZzuyps6RGpump",
@@ -28,21 +28,10 @@
       "symbol": "PHP",
       "qty": 6576.105811693058,
       "entry_price": 0.0001237,
-      "peak_price": 0.0002641,
+      "peak_price": 0.0002991,
       "entered_at": "2026-10-21T05:47:04.670783+00:00",
       "cost_usd": 1.7245442924816345,
       "took_half": true,
-      "misses": 0
-    },
-    "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump": {
-      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
-      "symbol": "Pokecity",
-      "qty": 1707.9304648490495,
-      "entry_price": 0.001002,
-      "peak_price": 0.001002,
-      "entered_at": "2026-10-21T06:09:37.198176+00:00",
-      "cost_usd": 1.8140271053254726,
-      "took_half": false,
       "misses": 0
     },
     "cpuxtvVNNVGDHpk1MHyv4cC6d1rFmHBf7xAJCPHF3NY": {
@@ -61,7 +50,7 @@
       "symbol": "KIMCHIBOSS",
       "qty": 9935.038040409927,
       "entry_price": 0.0001571,
-      "peak_price": 0.0001658,
+      "peak_price": 0.0001747,
       "entered_at": "2026-10-21T06:32:14.894479+00:00",
       "cost_usd": 1.6544421447173037,
       "took_half": false,
@@ -1933,6 +1922,16 @@
       "notional": 1.6544421447173037,
       "liquidity_usd": 34915.1,
       "age_hours": 6.486521968044705
+    },
+    {
+      "mint": "4wopERxtKHjzaANSywo9BVVycGJ7q7uXJ38Q6EoCpump",
+      "symbol": "Pokecity",
+      "event": "exit",
+      "reason": "trail",
+      "price": 0.0007372,
+      "proceeds": 1.183541158365516,
+      "pnl_approx": -0.6304859469599566,
+      "age_hours": 0.6284800933333333
     }
   ]
 }
