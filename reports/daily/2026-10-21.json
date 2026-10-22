@@ -1,0 +1,468 @@
+{
+  "primary": {
+    "run_date": "2026-10-21",
+    "label": "primary",
+    "equity_gross": 100.59,
+    "equity_net": 100.21251480000001,
+    "tier": "base",
+    "regime": {
+      "state": "green",
+      "crash_guard": false,
+      "risk_multiplier": 1.0,
+      "allow_new_stock": true,
+      "allow_new_etf": true,
+      "class_multipliers": {
+        "stock": 1.0,
+        "crypto": 1.0,
+        "etf": 1.0,
+        "macro": 1.0
+      }
+    },
+    "exits": [],
+    "candidates": [
+      {
+        "symbol": "MRK",
+        "score": 0.9556,
+        "raw_close": 149.88,
+        "atr_pct": 2.5585,
+        "pct_of_high": 0.9608,
+        "z_reset": -0.0705,
+        "pullback_atr": 1.4739
+      },
+      {
+        "symbol": "SWK",
+        "score": 0.8,
+        "raw_close": 95.44,
+        "atr_pct": 2.802,
+        "pct_of_high": 0.9197,
+        "z_reset": 0.4198,
+        "pullback_atr": 2.8654
+      },
+      {
+        "symbol": "VRTX",
+        "score": 0.7111,
+        "raw_close": 524.52,
+        "atr_pct": 2.4878,
+        "pct_of_high": 0.9362,
+        "z_reset": 0.2316,
+        "pullback_atr": 2.5627
+      },
+      {
+        "symbol": "BBY",
+        "score": 0.6667,
+        "raw_close": 94.12,
+        "atr_pct": 3.1245,
+        "pct_of_high": 0.975,
+        "z_reset": -0.0681,
+        "pullback_atr": 0.238
+      },
+      {
+        "symbol": "DDOG",
+        "score": 0.6444,
+        "raw_close": 273.09,
+        "atr_pct": 4.919,
+        "pct_of_high": 0.9082,
+        "z_reset": 0.4777,
+        "pullback_atr": 1.5015
+      },
+      {
+        "symbol": "ROK",
+        "score": 0.4222,
+        "raw_close": 438.51,
+        "atr_pct": 2.5465,
+        "pct_of_high": 0.8844,
+        "z_reset": 0.3444,
+        "pullback_atr": 3.671
+      },
+      {
+        "symbol": "ESS",
+        "score": 0.3556,
+        "raw_close": 274.11,
+        "atr_pct": 1.6514,
+        "pct_of_high": 0.9122,
+        "z_reset": 0.1341,
+        "pullback_atr": 4.3927
+      },
+      {
+        "symbol": "HPQ",
+        "score": 0.2444,
+        "raw_close": 31.32,
+        "atr_pct": 4.0401,
+        "pct_of_high": 0.8645,
+        "z_reset": -0.1526,
+        "pullback_atr": 3.2876
+      }
+    ],
+    "decisions": [
+      {
+        "symbol": "MRK",
+        "action": "reduce_half",
+        "invalidation": "close_below_ma50_2d",
+        "confidence": 0.55,
+        "rationale": "Strongest setup: score 0.96, close 149.88 above ma_mid 145.77 and ma_long 124.22, mom_vol_adj 2.75. But earnings are 8 days out, there is an attention spike (crowding risk), and the fundamental signal is -0.2. Half size.",
+        "cost_usd": 0.011934356666666665,
+        "note": ""
+      },
+      {
+        "symbol": "SWK",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.0,
+        "rationale": "material negative news or suspected injection",
+        "cost_usd": 0.00042369000000000006,
+        "note": ""
+      },
+      {
+        "symbol": "VRTX",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.6,
+        "rationale": "Weaker setup: score 0.71, mom_vol_adj 0.80, close 524.52 barely above ma_mid 522.37, pullback 2.56 ATR. Attention spike, fundamental signal 0.0 at low confidence, and earnings in 12 days. Not clean enough to add a fourth or fifth position.",
+        "cost_usd": 0.011623776666666665,
+        "note": ""
+      },
+      {
+        "symbol": "BBY",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.0,
+        "rationale": "material negative news or suspected injection",
+        "cost_usd": 0.00047709000000000006,
+        "note": ""
+      },
+      {
+        "symbol": "DDOG",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.65,
+        "rationale": "Lowest score at 0.64, high vol_ann 0.71 with atr_pct 4.9, fundamental signal -0.1, and debate net only 0.1. Analyst-upgrade attention spike suggests crowding. Risk-reward is poor for a small bankroll.",
+        "cost_usd": 0.011385276666666666,
+        "note": ""
+      },
+      {
+        "symbol": "ROK",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.0,
+        "rationale": "material negative news or suspected injection",
+        "cost_usd": 0.00039179000000000004,
+        "note": ""
+      },
+      {
+        "symbol": "ESS",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.0,
+        "rationale": "material negative news or suspected injection",
+        "cost_usd": 0.0006302899999999999,
+        "note": ""
+      },
+      {
+        "symbol": "HPQ",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.0,
+        "rationale": "material negative news or suspected injection",
+        "cost_usd": 0.00042389,
+        "note": ""
+      }
+    ],
+    "orders": [
+      {
+        "symbol": "MRK",
+        "side": "buy",
+        "notional": 6.55,
+        "ok": true,
+        "fill_price": 0.0,
+        "filled_qty": 0.0,
+        "message": "OrderStatus.ACCEPTED"
+      }
+    ],
+    "ai_cost_usd": 0.037290159999999996,
+    "notes": [],
+    "positions": [
+      {
+        "symbol": "COP",
+        "qty": 0.051422,
+        "entry": 146.24,
+        "stop": 136.6373,
+        "bars_held": 6,
+        "source": "reconciled",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "TRV",
+        "qty": 0.044496,
+        "entry": 387.0,
+        "stop": 364.626,
+        "bars_held": 6,
+        "source": "reconciled",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "CVX",
+        "qty": 0.037612,
+        "entry": 225.99,
+        "stop": 212.6771,
+        "bars_held": 1,
+        "source": "primary",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "MRK",
+        "qty": 0.043702,
+        "entry": 149.8800048828125,
+        "stop": 138.3762,
+        "bars_held": 0,
+        "source": "primary",
+        "stop_armed": false,
+        "fill_pending": true
+      }
+    ]
+  },
+  "shadow": {
+    "run_date": "2026-10-21",
+    "label": "shadow-rules",
+    "equity_gross": 101.81314421219757,
+    "equity_net": 101.81314421219757,
+    "tier": "base",
+    "regime": {
+      "state": "green",
+      "crash_guard": false,
+      "risk_multiplier": 1.0,
+      "allow_new_stock": true,
+      "allow_new_etf": true,
+      "class_multipliers": {
+        "stock": 1.0,
+        "crypto": 1.0,
+        "etf": 1.0,
+        "macro": 1.0
+      }
+    },
+    "exits": [],
+    "candidates": [
+      {
+        "symbol": "SWK",
+        "score": 0.9,
+        "raw_close": 95.44,
+        "atr_pct": 2.802,
+        "pct_of_high": 0.9197,
+        "z_reset": 0.4198,
+        "pullback_atr": 2.8654
+      },
+      {
+        "symbol": "VRTX",
+        "score": 0.8,
+        "raw_close": 524.52,
+        "atr_pct": 2.4878,
+        "pct_of_high": 0.9362,
+        "z_reset": 0.2316,
+        "pullback_atr": 2.5627
+      },
+      {
+        "symbol": "DDOG",
+        "score": 0.725,
+        "raw_close": 273.09,
+        "atr_pct": 4.919,
+        "pct_of_high": 0.9082,
+        "z_reset": 0.4777,
+        "pullback_atr": 1.5015
+      },
+      {
+        "symbol": "BBY",
+        "score": 0.7,
+        "raw_close": 94.12,
+        "atr_pct": 3.1245,
+        "pct_of_high": 0.975,
+        "z_reset": -0.0681,
+        "pullback_atr": 0.238
+      },
+      {
+        "symbol": "ROK",
+        "score": 0.475,
+        "raw_close": 438.51,
+        "atr_pct": 2.5465,
+        "pct_of_high": 0.8844,
+        "z_reset": 0.3444,
+        "pullback_atr": 3.671
+      },
+      {
+        "symbol": "ESS",
+        "score": 0.4,
+        "raw_close": 274.11,
+        "atr_pct": 1.6514,
+        "pct_of_high": 0.9122,
+        "z_reset": 0.1341,
+        "pullback_atr": 4.3927
+      },
+      {
+        "symbol": "HPQ",
+        "score": 0.275,
+        "raw_close": 31.32,
+        "atr_pct": 4.0401,
+        "pct_of_high": 0.8645,
+        "z_reset": -0.1526,
+        "pullback_atr": 3.2876
+      },
+      {
+        "symbol": "CINF",
+        "score": 0.225,
+        "raw_close": 173.63,
+        "atr_pct": 1.6695,
+        "pct_of_high": 0.8964,
+        "z_reset": 1.011,
+        "pullback_atr": 3.2965
+      }
+    ],
+    "decisions": [
+      {
+        "symbol": "SWK",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "VRTX",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "DDOG",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "BBY",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "ROK",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "ESS",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "HPQ",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "CINF",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      }
+    ],
+    "orders": [],
+    "ai_cost_usd": 0.0,
+    "notes": [],
+    "positions": [
+      {
+        "symbol": "TRV",
+        "qty": 0.0445,
+        "entry": 387.1935,
+        "stop": 364.5862,
+        "bars_held": 6,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "CVX",
+        "qty": 0.074958,
+        "entry": 223.9919448852539,
+        "stop": 210.5941,
+        "bars_held": 6,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "MNST",
+        "qty": 0.333827,
+        "entry": 45.44270816802978,
+        "stop": 42.3722,
+        "bars_held": 5,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "MRK",
+        "qty": 0.090187,
+        "entry": 146.36313828277588,
+        "stop": 135.011,
+        "bars_held": 2,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "MTCH",
+        "qty": 0.261068,
+        "entry": 44.89243393135071,
+        "stop": 41.021,
+        "bars_held": 2,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      }
+    ]
+  },
+  "benchmarks": {
+    "SPY buy&hold": 101.28922723294711,
+    "BTC buy&hold": 103.31020739537973
+  },
+  "survival": {
+    "equity_gross": 100.59,
+    "equity_net": 100.21251480000001,
+    "ai_cost_total": 0.3774852,
+    "ai_cost_today": 0.037290159999999996,
+    "budget_today": 0.05010625740000001,
+    "budget_remaining": 0.01281609740000001,
+    "runway_days": 1394.7238291726405,
+    "tier": "base",
+    "dead": false,
+    "death_reason": "",
+    "in_halt_cooldown": false,
+    "peak_equity": 100.59
+  }
+}

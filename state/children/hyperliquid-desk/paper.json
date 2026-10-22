@@ -1,37 +1,22 @@
 {
-  "cash": 90.74545885610094,
-  "positions": {
-    "ZEC": {
-      "asset_class": "crypto",
-      "qty": 0.004048981754785342,
-      "avg_price": 1153.3763999999999,
-      "current_price": 1257.6,
-      "stop_price": null
-    },
-    "LIT": {
-      "asset_class": "crypto",
-      "qty": 1.4785888709392074,
-      "avg_price": 3.097548,
-      "current_price": 3.3851,
-      "stop_price": null
-    }
-  },
+  "cash": 100.83348261305221,
+  "positions": {},
   "stops": {},
   "pending": [
     {
-      "id": "4bba1e740351",
+      "id": "child-hyperliquid-desk-2026-10-21-ZEC",
       "symbol": "ZEC",
-      "side": "sell",
-      "qty": 0.004048981754785342,
-      "notional": null,
+      "side": "buy",
+      "qty": null,
+      "notional": 4.06,
       "asset_class": "crypto"
     },
     {
-      "id": "b5a96df0c526",
+      "id": "child-hyperliquid-desk-2026-10-21-LIT",
       "symbol": "LIT",
-      "side": "sell",
-      "qty": 1.4785888709392074,
-      "notional": null,
+      "side": "buy",
+      "qty": null,
+      "notional": 3.38,
       "asset_class": "crypto"
     }
   ],
@@ -65,7 +50,25 @@
       "delta": -0.00018769391951311166,
       "reason": "funding LIT +0.000038",
       "ts": "2026-10-21T08:59:34+00:00"
+    },
+    {
+      "ts": "2026-10-22T05:25:39+00:00",
+      "symbol": "ZEC",
+      "side": "sell",
+      "qty": 0.004048981754785342,
+      "price": 1256.9712,
+      "fee": 0.0022902540547907867,
+      "id": "4bba1e740351"
+    },
+    {
+      "ts": "2026-10-22T05:25:39+00:00",
+      "symbol": "LIT",
+      "side": "sell",
+      "qty": 1.4785888709392074,
+      "price": 3.3837073,
+      "fee": 0.0022514003803330894,
+      "id": "b5a96df0c526"
     }
   ],
-  "saved_at": "2026-10-21T08:59:34+00:00"
+  "saved_at": "2026-10-22T05:25:39+00:00"
 }

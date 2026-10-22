@@ -9,10 +9,10 @@
       "r_per_share": 9.602674842452714,
       "stop_price": 136.6373251575473,
       "highest_close": 145.9499969482422,
-      "bars_held": 5,
+      "bars_held": 6,
       "invalidation_condition": "none",
       "source": "reconciled",
-      "stop_order_id": "3de0a84e-d1af-44cd-88cc-6c6ce5dbd615",
+      "stop_order_id": "74c7f7a1-1a2d-44dc-a7ec-cc1083181abf",
       "below_mid_streak": 0,
       "meta": {}
     },
@@ -24,31 +24,50 @@
       "entry_date": "2026-10-19",
       "r_per_share": 22.373953426167276,
       "stop_price": 364.6260465738327,
-      "highest_close": 395.7300109863281,
-      "bars_held": 5,
+      "highest_close": 398.95001220703125,
+      "bars_held": 6,
       "invalidation_condition": "none",
       "source": "reconciled",
-      "stop_order_id": "78f4ce4f-6b57-489c-8abb-d5284250613f",
+      "stop_order_id": "88381703-6ac9-436a-9990-b60cd9828ac8",
       "below_mid_streak": 0,
       "meta": {}
     },
     "CVX": {
       "symbol": "CVX",
       "asset_class": "stock",
-      "qty": 0.03770324640851274,
-      "entry_price": 225.7100067138672,
+      "qty": 0.037612283,
+      "entry_price": 225.99,
       "entry_date": "2026-10-20",
       "r_per_share": 13.312918612303406,
-      "stop_price": 212.39708810156378,
-      "highest_close": 225.7100067138672,
-      "bars_held": 0,
+      "stop_price": 212.6770813876966,
+      "highest_close": 226.77999877929688,
+      "bars_held": 1,
       "invalidation_condition": "close_below_entry_minus_3atr",
+      "source": "primary",
+      "stop_order_id": "90a01ec2-1170-4066-8934-53c15c0e44ca",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": false,
+        "order_id": "f237f586-887d-442f-a74a-00ee83675f23"
+      }
+    },
+    "MRK": {
+      "symbol": "MRK",
+      "asset_class": "stock",
+      "qty": 0.04370162654532393,
+      "entry_price": 149.8800048828125,
+      "entry_date": "2026-10-21",
+      "r_per_share": 11.503833250915989,
+      "stop_price": 138.3761716318965,
+      "highest_close": 149.8800048828125,
+      "bars_held": 0,
+      "invalidation_condition": "close_below_ma50_2d",
       "source": "primary",
       "stop_order_id": "",
       "below_mid_streak": 0,
       "meta": {
         "fill_pending": true,
-        "order_id": "f237f586-887d-442f-a74a-00ee83675f23"
+        "order_id": "948fb118-c756-4c3a-a6dc-29baefda2b4e"
       }
     }
   }

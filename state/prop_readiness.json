@@ -1,13 +1,16 @@
 {
- "ts": "2026-10-21T09:00:55+00:00",
+ "ts": "2026-10-22T05:26:36+00:00",
  "rules": {
-  "profit_target_pct": 0.1,
+  "profit_target_pct": 0.08,
+  "phase2_target_pct": 0.05,
   "max_daily_loss_pct": 0.05,
   "max_total_loss_pct": 0.1,
   "trailing_total_loss": false,
-  "min_trading_days": 4,
+  "intraday_breach": true,
+  "min_trading_days": 5,
   "eval_horizon_days": 60,
   "eval_step_days": 5,
+  "breach_penalty": 0.5,
   "retire_on_breach": true,
   "ready_min_forward_days": 30,
   "ready_min_backtest_pass_rate": 0.5
@@ -20,15 +23,15 @@
    "kind": "primary",
    "sleeve": "stocks+crypto",
    "since": null,
-   "backtest_pass_rate": 0.0642570281124498,
+   "backtest_pass_rate": 0.004273504273504274,
    "backtest_by_sleeve": {
-    "stocks": 0.08333333333333333,
-    "crypto": 0.0642570281124498
+    "stocks": 0.004273504273504274,
+    "crypto": 0.048144433299899696
    },
    "forward": {
     "outcome": "open",
-    "days": 3,
-    "ret": 0.0040999999999999925,
+    "days": 4,
+    "ret": 0.005900000000000016,
     "worst_day": -0.0015999999999999348,
     "max_loss": -0.0015999999999999348,
     "breached": false,
@@ -36,14 +39,14 @@
     "passed": false,
     "passed_on": null,
     "start": "2026-10-16",
-    "last": "2026-10-20"
+    "last": "2026-10-21"
    },
    "ready": false,
    "checks": [
     {
      "check": "at least 30 trading days of live paper record",
      "ok": false,
-     "value": "3 days"
+     "value": "4 days"
     },
     {
      "check": "never breached the daily or total loss limit on paper",
@@ -51,118 +54,28 @@
      "value": "open"
     },
     {
-     "check": "reached the 10% target on paper",
+     "check": "reached the 8% target on paper",
      "ok": false,
-     "value": "+0.4%"
+     "value": "+0.6%"
     },
     {
      "check": "out-of-sample simulated pass rate of at least 50%",
      "ok": false,
-     "value": "6%"
+     "value": "0%"
     }
    ],
    "n_ok": 1
   },
   {
-   "id": "sweep-stocks-entry-mode-ma-pullback",
-   "name": "sweep stocks: entry_mode=ma_pullback",
-   "kind": "variant",
-   "sleeve": "stocks",
-   "since": "2026-10-19",
-   "backtest_pass_rate": null,
-   "forward": {
-    "outcome": "open",
-    "days": 1,
-    "ret": 0.0049852704528854375,
-    "worst_day": 0.0,
-    "max_loss": 0.0,
-    "breached": false,
-    "breach_day": null,
-    "passed": false,
-    "passed_on": null,
-    "start": "2026-10-19",
-    "last": "2026-10-20"
-   },
-   "ready": false,
-   "checks": [
-    {
-     "check": "at least 30 trading days of live paper record",
-     "ok": false,
-     "value": "1 days"
-    },
-    {
-     "check": "never breached the daily or total loss limit on paper",
-     "ok": true,
-     "value": "open"
-    },
-    {
-     "check": "reached the 10% target on paper",
-     "ok": false,
-     "value": "+0.5%"
-    },
-    {
-     "check": "out-of-sample simulated pass rate of at least 50%",
-     "ok": false,
-     "value": "\u2014"
-    }
-   ],
-   "n_ok": 1
-  },
-  {
-   "id": "sweep-stocks-entry-mode-template-cross",
-   "name": "sweep stocks: entry_mode=template_cross",
-   "kind": "variant",
-   "sleeve": "stocks",
-   "since": "2026-10-19",
-   "backtest_pass_rate": 0.16274089935760172,
-   "forward": {
-    "outcome": "open",
-    "days": 1,
-    "ret": 0.0004920246170161402,
-    "worst_day": 0.0,
-    "max_loss": 0.0,
-    "breached": false,
-    "breach_day": null,
-    "passed": false,
-    "passed_on": null,
-    "start": "2026-10-19",
-    "last": "2026-10-20"
-   },
-   "ready": false,
-   "checks": [
-    {
-     "check": "at least 30 trading days of live paper record",
-     "ok": false,
-     "value": "1 days"
-    },
-    {
-     "check": "never breached the daily or total loss limit on paper",
-     "ok": true,
-     "value": "open"
-    },
-    {
-     "check": "reached the 10% target on paper",
-     "ok": false,
-     "value": "+0.0%"
-    },
-    {
-     "check": "out-of-sample simulated pass rate of at least 50%",
-     "ok": false,
-     "value": "16%"
-    }
-   ],
-   "n_ok": 1
-  },
-  {
-   "id": "refine-crypto-entry-mode-high-breakout",
+   "id": "refine-crypto-entry-mode-high-breakout-3",
    "name": "refine crypto: entry_mode=high_breakout,",
    "kind": "variant",
    "sleeve": "crypto",
-   "since": "2026-10-19",
-   "backtest_pass_rate": 0.12449799196787148,
+   "since": "2026-10-21",
+   "backtest_pass_rate": 0.17753259779338015,
    "forward": {
+    "days": 0,
     "outcome": "open",
-    "days": 1,
     "ret": 0.0,
     "worst_day": 0.0,
     "max_loss": 0.0,
@@ -170,15 +83,15 @@
     "breach_day": null,
     "passed": false,
     "passed_on": null,
-    "start": "2026-10-19",
-    "last": "2026-10-20"
+    "start": "2026-10-21",
+    "last": "2026-10-21"
    },
    "ready": false,
    "checks": [
     {
      "check": "at least 30 trading days of live paper record",
      "ok": false,
-     "value": "1 days"
+     "value": "0 days"
     },
     {
      "check": "never breached the daily or total loss limit on paper",
@@ -186,28 +99,28 @@
      "value": "open"
     },
     {
-     "check": "reached the 10% target on paper",
+     "check": "reached the 8% target on paper",
      "ok": false,
      "value": "+0.0%"
     },
     {
      "check": "out-of-sample simulated pass rate of at least 50%",
      "ok": false,
-     "value": "12%"
+     "value": "18%"
     }
    ],
    "n_ok": 1
   },
   {
-   "id": "refine-crypto-entry-mode-high-breakout-2",
+   "id": "refine-crypto-entry-mode-high-breakout-4",
    "name": "refine crypto: entry_mode=high_breakout,",
    "kind": "variant",
    "sleeve": "crypto",
-   "since": "2026-10-19",
-   "backtest_pass_rate": 0.11746987951807229,
+   "since": "2026-10-21",
+   "backtest_pass_rate": 0.17051153460381144,
    "forward": {
+    "days": 0,
     "outcome": "open",
-    "days": 1,
     "ret": 0.0,
     "worst_day": 0.0,
     "max_loss": 0.0,
@@ -215,15 +128,15 @@
     "breach_day": null,
     "passed": false,
     "passed_on": null,
-    "start": "2026-10-19",
-    "last": "2026-10-20"
+    "start": "2026-10-21",
+    "last": "2026-10-21"
    },
    "ready": false,
    "checks": [
     {
      "check": "at least 30 trading days of live paper record",
      "ok": false,
-     "value": "1 days"
+     "value": "0 days"
     },
     {
      "check": "never breached the daily or total loss limit on paper",
@@ -231,14 +144,104 @@
      "value": "open"
     },
     {
-     "check": "reached the 10% target on paper",
+     "check": "reached the 8% target on paper",
      "ok": false,
      "value": "+0.0%"
     },
     {
      "check": "out-of-sample simulated pass rate of at least 50%",
      "ok": false,
-     "value": "12%"
+     "value": "17%"
+    }
+   ],
+   "n_ok": 1
+  },
+  {
+   "id": "evolve-crypto-entry-mode-high-breakout",
+   "name": "evolve crypto: entry_mode=high_breakout,",
+   "kind": "variant",
+   "sleeve": "crypto",
+   "since": "2026-10-21",
+   "backtest_pass_rate": 0.17853560682046138,
+   "forward": {
+    "days": 0,
+    "outcome": "open",
+    "ret": 0.0,
+    "worst_day": 0.0,
+    "max_loss": 0.0,
+    "breached": false,
+    "breach_day": null,
+    "passed": false,
+    "passed_on": null,
+    "start": "2026-10-21",
+    "last": "2026-10-21"
+   },
+   "ready": false,
+   "checks": [
+    {
+     "check": "at least 30 trading days of live paper record",
+     "ok": false,
+     "value": "0 days"
+    },
+    {
+     "check": "never breached the daily or total loss limit on paper",
+     "ok": true,
+     "value": "open"
+    },
+    {
+     "check": "reached the 8% target on paper",
+     "ok": false,
+     "value": "+0.0%"
+    },
+    {
+     "check": "out-of-sample simulated pass rate of at least 50%",
+     "ok": false,
+     "value": "18%"
+    }
+   ],
+   "n_ok": 1
+  },
+  {
+   "id": "evolve-crypto-entry-mode-high-breakout-2",
+   "name": "evolve crypto: entry_mode=high_breakout,",
+   "kind": "variant",
+   "sleeve": "crypto",
+   "since": "2026-10-21",
+   "backtest_pass_rate": 0.1905717151454363,
+   "forward": {
+    "days": 0,
+    "outcome": "open",
+    "ret": 0.0,
+    "worst_day": 0.0,
+    "max_loss": 0.0,
+    "breached": false,
+    "breach_day": null,
+    "passed": false,
+    "passed_on": null,
+    "start": "2026-10-21",
+    "last": "2026-10-21"
+   },
+   "ready": false,
+   "checks": [
+    {
+     "check": "at least 30 trading days of live paper record",
+     "ok": false,
+     "value": "0 days"
+    },
+    {
+     "check": "never breached the daily or total loss limit on paper",
+     "ok": true,
+     "value": "open"
+    },
+    {
+     "check": "reached the 8% target on paper",
+     "ok": false,
+     "value": "+0.0%"
+    },
+    {
+     "check": "out-of-sample simulated pass rate of at least 50%",
+     "ok": false,
+     "value": "19%"
     }
    ],
    "n_ok": 1
