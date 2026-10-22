@@ -3,39 +3,20 @@
     "ZEC": {
       "symbol": "ZEC",
       "asset_class": "crypto",
-      "qty": 0.0030874524714828893,
-      "entry_price": 1315.0,
+      "qty": 0.0032267581222111593,
+      "entry_price": 1258.2287999999999,
       "entry_date": "2026-10-21",
       "r_per_share": 326.5243070373539,
-      "stop_price": 988.4756929626461,
+      "stop_price": 931.704492962646,
       "highest_close": 1315.0,
-      "bars_held": 0,
+      "bars_held": 1,
       "invalidation_condition": "none",
       "source": "child-hyperliquid-desk",
-      "stop_order_id": "",
+      "stop_order_id": "stop-ZEC",
       "below_mid_streak": 0,
       "meta": {
-        "fill_pending": true,
+        "fill_pending": false,
         "order_id": "child-hyperliquid-desk-2026-10-21-ZEC"
-      }
-    },
-    "LIT": {
-      "symbol": "LIT",
-      "asset_class": "crypto",
-      "qty": 0.8981240367752564,
-      "entry_price": 3.7634,
-      "entry_date": "2026-10-21",
-      "r_per_share": 1.123357820974345,
-      "stop_price": 2.640042179025655,
-      "highest_close": 3.7634,
-      "bars_held": 0,
-      "invalidation_condition": "none",
-      "source": "child-hyperliquid-desk",
-      "stop_order_id": "",
-      "below_mid_streak": 0,
-      "meta": {
-        "fill_pending": true,
-        "order_id": "child-hyperliquid-desk-2026-10-21-LIT"
       }
     }
   }

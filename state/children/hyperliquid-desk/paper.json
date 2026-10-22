@@ -1,22 +1,34 @@
 {
-  "cash": 100.83348261305221,
-  "positions": {},
-  "stops": {},
+  "cash": 93.3902757653367,
+  "positions": {
+    "ZEC": {
+      "asset_class": "crypto",
+      "qty": 0.0032267581222111593,
+      "avg_price": 1258.2287999999999,
+      "current_price": 1315.0,
+      "stop_price": 931.704492962646
+    },
+    "LIT": {
+      "asset_class": "crypto",
+      "qty": 0.9979059622430764,
+      "avg_price": 3.3870927,
+      "current_price": 3.7634,
+      "stop_price": null
+    }
+  },
+  "stops": {
+    "ZEC": [
+      0.0032267581222111593,
+      931.704492962646
+    ]
+  },
   "pending": [
     {
-      "id": "child-hyperliquid-desk-2026-10-21-ZEC",
-      "symbol": "ZEC",
-      "side": "buy",
-      "qty": null,
-      "notional": 4.06,
-      "asset_class": "crypto"
-    },
-    {
-      "id": "child-hyperliquid-desk-2026-10-21-LIT",
+      "id": "5bed736180ff",
       "symbol": "LIT",
-      "side": "buy",
-      "qty": null,
-      "notional": 3.38,
+      "side": "sell",
+      "qty": 0.9979059622430764,
+      "notional": null,
       "asset_class": "crypto"
     }
   ],
@@ -68,7 +80,37 @@
       "price": 3.3837073,
       "fee": 0.0022514003803330894,
       "id": "b5a96df0c526"
+    },
+    {
+      "ts": "2026-10-22T08:56:52+00:00",
+      "symbol": "ZEC",
+      "side": "buy",
+      "qty": 0.0032267581222111593,
+      "price": 1258.2287999999999,
+      "fee": 0.0018269999999999998,
+      "id": "child-hyperliquid-desk-2026-10-21-ZEC"
+    },
+    {
+      "ts": "2026-10-22T08:56:52+00:00",
+      "symbol": "LIT",
+      "side": "buy",
+      "qty": 0.9979059622430764,
+      "price": 3.3870927,
+      "fee": 0.001521,
+      "id": "child-hyperliquid-desk-2026-10-21-LIT"
+    },
+    {
+      "event": "cash_adjustment",
+      "delta": -0.0001591195099015378,
+      "reason": "funding ZEC +0.000038",
+      "ts": "2026-10-22T08:56:52+00:00"
+    },
+    {
+      "event": "cash_adjustment",
+      "delta": 0.0003002717943921641,
+      "reason": "funding LIT -0.000080",
+      "ts": "2026-10-22T08:56:52+00:00"
     }
   ],
-  "saved_at": "2026-10-22T05:25:39+00:00"
+  "saved_at": "2026-10-22T08:56:52+00:00"
 }
