@@ -192,3 +192,4 @@
 {"ts": "2026-10-23T05:23:54.437+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
 {"ts": "2026-10-23T05:23:56.110+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
 {"ts": "2026-10-23T05:24:06.081+00:00", "level": "INFO", "logger": "httpx2", "msg": "HTTP Request: POST https://api.anthropic.com/v1/messages \"HTTP/1.1 200 OK\""}
+{"ts": "2026-10-23T08:58:12.403+00:00", "level": "ERROR", "logger": "hive.execution.alpaca", "msg": "alpaca submit_stop failed for MRK: {\"available\":\"0\",\"code\":40310000,\"existing_qty\":\"0.0433687\",\"held_for_orders\":\"0.0433687\",\"message\":\"insufficient qty available for order (requested: 0.0433687, available: 0)\",\"related_orders\":[\"c9b1d390-e7f3-4af7-9f7b-f191bfa97714\"],\"symbol\":\"MRK\"}"}

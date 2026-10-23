@@ -1,8 +1,8 @@
 {
  "desks": {
   "date": "2026-10-22",
-  "value_add": null,
-  "days": 4,
-  "multiplier": 1.0
+  "value_add": -0.01495798497680556,
+  "days": 5,
+  "multiplier": 0.626050375579861
  }
 }

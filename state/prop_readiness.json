@@ -1,5 +1,5 @@
 {
- "ts": "2026-10-23T05:25:20+00:00",
+ "ts": "2026-10-23T08:59:12+00:00",
  "rules": {
   "profit_target_pct": 0.08,
   "phase2_target_pct": 0.05,
@@ -31,8 +31,8 @@
    "forward": {
     "outcome": "open",
     "days": 5,
-    "ret": 0.006699999999999928,
-    "worst_day": -0.0015999999999999348,
+    "ret": 0.0040000000000000036,
+    "worst_day": -0.0034739454094292466,
     "max_loss": -0.0015999999999999348,
     "breached": false,
     "breach_day": null,
@@ -56,7 +56,7 @@
     {
      "check": "reached the 8% target on paper",
      "ok": false,
-     "value": "+0.7%"
+     "value": "+0.4%"
     },
     {
      "check": "out-of-sample simulated pass rate of at least 50%",

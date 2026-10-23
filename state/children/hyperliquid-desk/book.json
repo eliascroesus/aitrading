@@ -9,7 +9,7 @@
       "r_per_share": 326.5243070373539,
       "stop_price": 931.704492962646,
       "highest_close": 1315.0,
-      "bars_held": 2,
+      "bars_held": 3,
       "invalidation_condition": "none",
       "source": "child-hyperliquid-desk",
       "stop_order_id": "stop-ZEC",

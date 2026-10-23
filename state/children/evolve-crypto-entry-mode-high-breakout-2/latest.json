@@ -1,1 +1,1 @@
-{"ts": "2026-10-23T05:24:18+00:00", "run_date": "2026-10-22", "equity": 100.0, "start_cash": 100.0, "since": "2026-10-21", "markets": 6, "positions": [], "trades": [], "n_trades": 0, "curve": {"dates": ["2026-10-21", "2026-10-22"], "equity": [100.0, 100.0]}}
+{"ts": "2026-10-23T08:58:23+00:00", "run_date": "2026-10-22", "equity": 100.0, "start_cash": 100.0, "since": "2026-10-21", "markets": 6, "positions": [], "trades": [], "n_trades": 0, "curve": {"dates": ["2026-10-21", "2026-10-22"], "equity": [100.0, 100.0]}}

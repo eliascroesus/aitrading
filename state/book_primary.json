@@ -9,7 +9,7 @@
       "r_per_share": 9.602674842452714,
       "stop_price": 136.6373251575473,
       "highest_close": 145.9499969482422,
-      "bars_held": 8,
+      "bars_held": 9,
       "invalidation_condition": "none",
       "source": "reconciled",
       "stop_order_id": "5f6f2b6c-79c2-4311-8868-e85f2b69a778",
@@ -25,7 +25,7 @@
       "r_per_share": 22.373953426167276,
       "stop_price": 367.3591436854442,
       "highest_close": 405.44000244140625,
-      "bars_held": 8,
+      "bars_held": 9,
       "invalidation_condition": "none",
       "source": "reconciled",
       "stop_order_id": "dc7c2648-257f-48fa-a63e-55d3356df5f0",
@@ -41,7 +41,7 @@
       "r_per_share": 13.312918612303406,
       "stop_price": 212.6770813876966,
       "highest_close": 226.77999877929688,
-      "bars_held": 3,
+      "bars_held": 4,
       "invalidation_condition": "close_below_entry_minus_3atr",
       "source": "primary",
       "stop_order_id": "41d80943-f6d1-47f3-8cb1-11e379259d69",
@@ -87,6 +87,24 @@
       "meta": {
         "fill_pending": true,
         "order_id": "de8f271e-cf69-447d-996f-d3ed37f73764"
+      }
+    },
+    "MRK": {
+      "symbol": "MRK",
+      "asset_class": "stock",
+      "qty": 0.0433687,
+      "entry_price": 150.8,
+      "entry_date": "2026-10-22",
+      "r_per_share": 12.421141105543846,
+      "stop_price": 138.37885889445616,
+      "highest_close": 147.24000549316406,
+      "bars_held": 1,
+      "invalidation_condition": "none",
+      "source": "reconciled",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "stop_failures": 1
       }
     }
   }
