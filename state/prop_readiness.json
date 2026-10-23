@@ -1,5 +1,5 @@
 {
- "ts": "2026-10-22T08:57:31+00:00",
+ "ts": "2026-10-23T05:25:20+00:00",
  "rules": {
   "profit_target_pct": 0.08,
   "phase2_target_pct": 0.05,
@@ -30,8 +30,8 @@
    },
    "forward": {
     "outcome": "open",
-    "days": 4,
-    "ret": 0.007500000000000062,
+    "days": 5,
+    "ret": 0.006699999999999928,
     "worst_day": -0.0015999999999999348,
     "max_loss": -0.0015999999999999348,
     "breached": false,
@@ -39,14 +39,14 @@
     "passed": false,
     "passed_on": null,
     "start": "2026-10-16",
-    "last": "2026-10-21"
+    "last": "2026-10-22"
    },
    "ready": false,
    "checks": [
     {
      "check": "at least 30 trading days of live paper record",
      "ok": false,
-     "value": "4 days"
+     "value": "5 days"
     },
     {
      "check": "never breached the daily or total loss limit on paper",
@@ -56,7 +56,7 @@
     {
      "check": "reached the 8% target on paper",
      "ok": false,
-     "value": "+0.8%"
+     "value": "+0.7%"
     },
     {
      "check": "out-of-sample simulated pass rate of at least 50%",
@@ -74,8 +74,8 @@
    "since": "2026-10-21",
    "backtest_pass_rate": 0.17753259779338015,
    "forward": {
-    "days": 0,
     "outcome": "open",
+    "days": 1,
     "ret": 0.0,
     "worst_day": 0.0,
     "max_loss": 0.0,
@@ -84,14 +84,14 @@
     "passed": false,
     "passed_on": null,
     "start": "2026-10-21",
-    "last": "2026-10-21"
+    "last": "2026-10-22"
    },
    "ready": false,
    "checks": [
     {
      "check": "at least 30 trading days of live paper record",
      "ok": false,
-     "value": "0 days"
+     "value": "1 days"
     },
     {
      "check": "never breached the daily or total loss limit on paper",
@@ -119,8 +119,8 @@
    "since": "2026-10-21",
    "backtest_pass_rate": 0.17051153460381144,
    "forward": {
-    "days": 0,
     "outcome": "open",
+    "days": 1,
     "ret": 0.0,
     "worst_day": 0.0,
     "max_loss": 0.0,
@@ -129,14 +129,14 @@
     "passed": false,
     "passed_on": null,
     "start": "2026-10-21",
-    "last": "2026-10-21"
+    "last": "2026-10-22"
    },
    "ready": false,
    "checks": [
     {
      "check": "at least 30 trading days of live paper record",
      "ok": false,
-     "value": "0 days"
+     "value": "1 days"
     },
     {
      "check": "never breached the daily or total loss limit on paper",
@@ -164,8 +164,8 @@
    "since": "2026-10-21",
    "backtest_pass_rate": 0.17853560682046138,
    "forward": {
-    "days": 0,
     "outcome": "open",
+    "days": 1,
     "ret": 0.0,
     "worst_day": 0.0,
     "max_loss": 0.0,
@@ -174,14 +174,14 @@
     "passed": false,
     "passed_on": null,
     "start": "2026-10-21",
-    "last": "2026-10-21"
+    "last": "2026-10-22"
    },
    "ready": false,
    "checks": [
     {
      "check": "at least 30 trading days of live paper record",
      "ok": false,
-     "value": "0 days"
+     "value": "1 days"
     },
     {
      "check": "never breached the daily or total loss limit on paper",
@@ -209,8 +209,8 @@
    "since": "2026-10-21",
    "backtest_pass_rate": 0.1905717151454363,
    "forward": {
-    "days": 0,
     "outcome": "open",
+    "days": 1,
     "ret": 0.0,
     "worst_day": 0.0,
     "max_loss": 0.0,
@@ -219,14 +219,14 @@
     "passed": false,
     "passed_on": null,
     "start": "2026-10-21",
-    "last": "2026-10-21"
+    "last": "2026-10-22"
    },
    "ready": false,
    "checks": [
     {
      "check": "at least 30 trading days of live paper record",
      "ok": false,
-     "value": "0 days"
+     "value": "1 days"
     },
     {
      "check": "never breached the daily or total loss limit on paper",

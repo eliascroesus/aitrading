@@ -9,10 +9,10 @@
       "r_per_share": 9.602674842452714,
       "stop_price": 136.6373251575473,
       "highest_close": 145.9499969482422,
-      "bars_held": 7,
+      "bars_held": 8,
       "invalidation_condition": "none",
       "source": "reconciled",
-      "stop_order_id": "74c7f7a1-1a2d-44dc-a7ec-cc1083181abf",
+      "stop_order_id": "5f6f2b6c-79c2-4311-8868-e85f2b69a778",
       "below_mid_streak": 0,
       "meta": {}
     },
@@ -23,12 +23,12 @@
       "entry_price": 387.0,
       "entry_date": "2026-10-19",
       "r_per_share": 22.373953426167276,
-      "stop_price": 364.6260465738327,
-      "highest_close": 398.95001220703125,
-      "bars_held": 7,
+      "stop_price": 367.3591436854442,
+      "highest_close": 405.44000244140625,
+      "bars_held": 8,
       "invalidation_condition": "none",
       "source": "reconciled",
-      "stop_order_id": "88381703-6ac9-436a-9990-b60cd9828ac8",
+      "stop_order_id": "dc7c2648-257f-48fa-a63e-55d3356df5f0",
       "below_mid_streak": 0,
       "meta": {}
     },
@@ -41,25 +41,25 @@
       "r_per_share": 13.312918612303406,
       "stop_price": 212.6770813876966,
       "highest_close": 226.77999877929688,
-      "bars_held": 2,
+      "bars_held": 3,
       "invalidation_condition": "close_below_entry_minus_3atr",
       "source": "primary",
-      "stop_order_id": "90a01ec2-1170-4066-8934-53c15c0e44ca",
+      "stop_order_id": "41d80943-f6d1-47f3-8cb1-11e379259d69",
       "below_mid_streak": 0,
       "meta": {
         "fill_pending": false,
         "order_id": "f237f586-887d-442f-a74a-00ee83675f23"
       }
     },
-    "MRK": {
-      "symbol": "MRK",
+    "CSX": {
+      "symbol": "CSX",
       "asset_class": "stock",
-      "qty": 0.04370162654532393,
-      "entry_price": 149.8800048828125,
-      "entry_date": "2026-10-21",
-      "r_per_share": 11.503833250915989,
-      "stop_price": 138.3761716318965,
-      "highest_close": 149.8800048828125,
+      "qty": 0.3472034185358709,
+      "entry_price": 51.66999816894531,
+      "entry_date": "2026-10-22",
+      "r_per_share": 2.8987747230888203,
+      "stop_price": 48.77122344585649,
+      "highest_close": 51.66999816894531,
       "bars_held": 0,
       "invalidation_condition": "close_below_ma50_2d",
       "source": "primary",
@@ -67,7 +67,26 @@
       "below_mid_streak": 0,
       "meta": {
         "fill_pending": true,
-        "order_id": "948fb118-c756-4c3a-a6dc-29baefda2b4e"
+        "order_id": "87742947-80cb-4db5-b2cf-4d6611d8967c"
+      }
+    },
+    "PKG": {
+      "symbol": "PKG",
+      "asset_class": "stock",
+      "qty": 0.032620922624661305,
+      "entry_price": 248.9199981689453,
+      "entry_date": "2026-10-22",
+      "r_per_share": 15.42969613521268,
+      "stop_price": 233.49030203373263,
+      "highest_close": 248.9199981689453,
+      "bars_held": 0,
+      "invalidation_condition": "close_below_ma50_2d",
+      "source": "primary",
+      "stop_order_id": "",
+      "below_mid_streak": 0,
+      "meta": {
+        "fill_pending": true,
+        "order_id": "de8f271e-cf69-447d-996f-d3ed37f73764"
       }
     }
   }

@@ -12,13 +12,13 @@
       "equity": 3.0,
       "start_equity": 3.0,
       "parent_start_equity": 100.0,
-      "voi": -0.007500000000000062,
-      "shadow_days": 7,
+      "voi": -0.006699999999999928,
+      "shadow_days": 8,
       "hypothesis": "",
       "notes": [],
       "metrics": {},
       "watch": [],
-      "last_mark": "2026-10-21"
+      "last_mark": "2026-10-22"
     },
     {
       "id": "sweep-stocks-entry-mode-template-cross",
@@ -183,16 +183,16 @@
       "status": "shadow",
       "born": "2026-10-21",
       "retired": null,
-      "equity": 101.38898199434996,
+      "equity": 101.0741790831736,
       "start_equity": 100.0,
       "parent_start_equity": 100.34,
-      "voi": 0.009803712708099876,
-      "shadow_days": 2,
+      "voi": 0.007452972812999725,
+      "shadow_days": 3,
       "hypothesis": "the firm's crypto rules on Hyperliquid's most traded perps; public prices, 1x, taker fee and funding charged; paper only, own $100 book",
       "notes": [],
       "metrics": {},
       "watch": [],
-      "last_mark": "2026-10-21"
+      "last_mark": "2026-10-22"
     },
     {
       "id": "macro-desk",
@@ -203,16 +203,16 @@
       "status": "shadow",
       "born": "2026-10-20",
       "retired": null,
-      "equity": 100.0,
+      "equity": 99.41144390647926,
       "start_equity": 100.0,
       "parent_start_equity": 100.34,
-      "voi": -0.004086107235399705,
-      "shadow_days": 2,
+      "voi": -0.009174378953943574,
+      "shadow_days": 3,
       "hypothesis": "the firm's macro rules on the major forex pairs, gold, silver and three index futures, long and short, no leverage; paper on the lab's simulator, own $100 book",
       "notes": [],
       "metrics": {},
       "watch": [],
-      "last_mark": "2026-10-21"
+      "last_mark": "2026-10-22"
     },
     {
       "id": "refine-crypto-entry-mode-high-breakout-3",
@@ -236,8 +236,8 @@
       "equity": 100.0,
       "start_equity": 100.0,
       "parent_start_equity": 100.59,
-      "voi": -0.0015906153693210356,
-      "shadow_days": 1,
+      "voi": -0.0007953076846605178,
+      "shadow_days": 2,
       "hypothesis": "refinement around the best cells found so far",
       "notes": [],
       "metrics": {
@@ -246,7 +246,7 @@
         "oos_dd": -0.293443890514126
       },
       "watch": [],
-      "last_mark": "2026-10-21"
+      "last_mark": "2026-10-22"
     },
     {
       "id": "refine-crypto-entry-mode-high-breakout-4",
@@ -271,8 +271,8 @@
       "equity": 100.0,
       "start_equity": 100.0,
       "parent_start_equity": 100.59,
-      "voi": -0.0015906153693210356,
-      "shadow_days": 1,
+      "voi": -0.0007953076846605178,
+      "shadow_days": 2,
       "hypothesis": "refinement around the best cells found so far",
       "notes": [],
       "metrics": {
@@ -281,7 +281,7 @@
         "oos_dd": -0.2934766723568958
       },
       "watch": [],
-      "last_mark": "2026-10-21"
+      "last_mark": "2026-10-22"
     },
     {
       "id": "evolve-crypto-entry-mode-high-breakout",
@@ -305,8 +305,8 @@
       "equity": 100.0,
       "start_equity": 100.0,
       "parent_start_equity": 100.59,
-      "voi": -0.0015906153693210356,
-      "shadow_days": 1,
+      "voi": -0.0007953076846605178,
+      "shadow_days": 2,
       "hypothesis": "mutation of one of the best cells found so far",
       "notes": [],
       "metrics": {
@@ -315,7 +315,7 @@
         "oos_dd": -0.293443890514126
       },
       "watch": [],
-      "last_mark": "2026-10-21"
+      "last_mark": "2026-10-22"
     },
     {
       "id": "evolve-crypto-entry-mode-high-breakout-2",
@@ -340,8 +340,8 @@
       "equity": 100.0,
       "start_equity": 100.0,
       "parent_start_equity": 100.59,
-      "voi": -0.0015906153693210356,
-      "shadow_days": 1,
+      "voi": -0.0007953076846605178,
+      "shadow_days": 2,
       "hypothesis": "mutation of one of the best cells found so far",
       "notes": [],
       "metrics": {
@@ -350,107 +350,10 @@
         "oos_dd": -0.293443890514126
       },
       "watch": [],
-      "last_mark": "2026-10-21"
+      "last_mark": "2026-10-22"
     }
   ],
   "iterations": [
-    {
-      "date": "2026-10-23",
-      "proposal": "evolve stocks: entry_mode=template_cross, trail_atr=3.833, failure_stop_bars=345, max_open_risk_pct=0.07, target_annual_vol=0.18, risk_per_trade_pct=0.014, max_positions=7, trail_atr_late=4.333, max_position_pct_etf=0.458, review_bars=42, min_pct_of_high=0.763, max_position_pct_stock=0.293",
-      "kind": "sweep",
-      "stage": "evolve",
-      "hypothesis": "mutation of one of the best cells found so far",
-      "overrides": {
-        "stocks.entry_mode": "template_cross",
-        "stocks.trail_atr": 3.833,
-        "stocks.failure_stop_bars": 345,
-        "risk.max_open_risk_pct": 0.07,
-        "risk.target_annual_vol": 0.18,
-        "risk.risk_per_trade_pct": 0.014,
-        "risk.max_positions": 7,
-        "stocks.trail_atr_late": 4.333,
-        "risk.max_position_pct_etf": 0.458,
-        "stocks.review_bars": 42,
-        "stocks.min_pct_of_high": 0.763,
-        "risk.max_position_pct_stock": 0.293
-      },
-      "sleeve": "stocks",
-      "cost_usd": 0.0,
-      "is_cagr": -0.022845178885783524,
-      "oos_cagr": 0.1052455693147154,
-      "is_dd": -0.37686634194274304,
-      "oos_dd": -0.2006905429167729,
-      "parent_oos_cagr": 0.02919629279012459,
-      "oos_prop": 0.053418803418803416,
-      "parent_oos_prop": 0.004273504273504274,
-      "oos_score": 0.017094017094017096,
-      "oos_prop_days": 49.0,
-      "oos_score_se": 0.04279996532672434,
-      "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
-      "verdict": "rejected: negative in-sample return"
-    },
-    {
-      "date": "2026-10-23",
-      "proposal": "evolve macro: max_position_pct_macro=1.0, impulse_min_z=1.75, risk_per_trade_pct=0.049, max_open_risk_pct=0.105, max_hold_bars=108, min_pct_of_high=0.808, trail_atr=7.334, take_profit_r=0.45",
-      "kind": "sweep",
-      "stage": "evolve",
-      "hypothesis": "mutation of one of the best cells found so far",
-      "overrides": {
-        "risk.max_position_pct_macro": 1.0,
-        "macro.impulse_min_z": 1.75,
-        "risk.risk_per_trade_pct": 0.049,
-        "risk.max_open_risk_pct": 0.105,
-        "macro.max_hold_bars": 108,
-        "macro.min_pct_of_high": 0.808,
-        "macro.trail_atr": 7.334,
-        "macro.take_profit_r": 0.45
-      },
-      "sleeve": "macro",
-      "cost_usd": 0.0,
-      "is_cagr": 0.015678396507339265,
-      "oos_cagr": -0.008881914475727393,
-      "is_dd": -0.22667882140157725,
-      "oos_dd": -0.26326365194489665,
-      "parent_oos_cagr": 0.04179486793763254,
-      "oos_prop": 0.0,
-      "parent_oos_prop": 0.01977401129943503,
-      "oos_score": -0.01765536723163842,
-      "oos_prop_days": 0.0,
-      "oos_score_se": 0.012022589504527467,
-      "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
-      "verdict": "rejected: OOS prop score -0.02 (pass 0%, breach 4%) does not beat parent +0.02"
-    },
-    {
-      "date": "2026-10-23",
-      "proposal": "evolve macro: max_position_pct_macro=1.0, impulse_min_z=1.75, risk_per_trade_pct=0.046, max_open_risk_pct=0.105, max_hold_bars=153, min_pct_of_high=0.808, trail_atr=7.334, exit_closes_below_mid=834",
-      "kind": "sweep",
-      "stage": "evolve",
-      "hypothesis": "mutation of one of the best cells found so far",
-      "overrides": {
-        "risk.max_position_pct_macro": 1.0,
-        "macro.impulse_min_z": 1.75,
-        "risk.risk_per_trade_pct": 0.046,
-        "risk.max_open_risk_pct": 0.105,
-        "macro.max_hold_bars": 153,
-        "macro.min_pct_of_high": 0.808,
-        "macro.trail_atr": 7.334,
-        "macro.exit_closes_below_mid": 834
-      },
-      "sleeve": "macro",
-      "cost_usd": 0.0,
-      "is_cagr": 0.030304901932305395,
-      "oos_cagr": 0.03911409196447169,
-      "is_dd": -0.36952725659027796,
-      "oos_dd": -0.3499455327009946,
-      "parent_oos_cagr": 0.04179486793763254,
-      "oos_prop": 0.022598870056497175,
-      "parent_oos_prop": 0.01977401129943503,
-      "oos_score": -0.006355932203389831,
-      "oos_prop_days": 36.5,
-      "oos_score_se": 0.02507218658102252,
-      "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
-      "verdict": "rejected: OOS prop score -0.01 (pass 2%, breach 6%) does not beat parent +0.02"
-    },
     {
       "date": "2026-10-23",
       "proposal": "evolve crypto: entry_mode=high_breakout, breakout_lookback=14, exit_closes_below_mid=334, trail_atr=6.334, crypto_sleeve_pct=0.932, max_open_risk_pct=0.075, risk_per_trade_pct=0.018, max_position_pct_crypto=0.581, max_daily_loss_pct=0.02, target_annual_vol=0.165",
@@ -6833,6 +6736,106 @@
       "oos_score_se": 0.04279825208772555,
       "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
       "verdict": "rejected: negative in-sample return"
+    },
+    {
+      "date": "2026-10-23",
+      "proposal": "evolve crypto: entry_mode=high_breakout, breakout_lookback=14, exit_closes_below_mid=168, trail_atr=6.334, crypto_sleeve_pct=0.972, max_open_risk_pct=0.03, risk_per_trade_pct=0.034, max_position_pct_crypto=0.6, max_daily_loss_pct=0.02",
+      "kind": "sweep",
+      "stage": "evolve",
+      "hypothesis": "mutation of one of the best cells found so far",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 14,
+        "crypto.exit_closes_below_mid": 168,
+        "crypto.trail_atr": 6.334,
+        "risk.crypto_sleeve_pct": 0.972,
+        "risk.max_open_risk_pct": 0.03,
+        "risk.risk_per_trade_pct": 0.034,
+        "risk.max_position_pct_crypto": 0.6,
+        "risk.max_daily_loss_pct": 0.02
+      },
+      "sleeve": "crypto",
+      "cost_usd": 0.0,
+      "is_cagr": 1.3373771702154413,
+      "oos_cagr": 0.5877581595323926,
+      "is_dd": -0.4756736060416398,
+      "oos_dd": -0.2934766723568958,
+      "parent_oos_cagr": 0.14917280702674773,
+      "oos_prop": 0.17051153460381144,
+      "parent_oos_prop": 0.048144433299899696,
+      "oos_score": 0.12738214643931794,
+      "oos_prop_days": 26.0,
+      "oos_score_se": 0.04602906591591024,
+      "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
+      "verdict": "passed but not spawned: tier base allows 4 children; 4 active"
+    },
+    {
+      "date": "2026-10-23",
+      "proposal": "evolve crypto: entry_mode=high_breakout, breakout_lookback=14, exit_closes_below_mid=168, trail_atr=6.334, crypto_sleeve_pct=0.851, max_open_risk_pct=0.03, risk_per_trade_pct=0.034, max_position_pct_crypto=0.6, max_daily_loss_pct=0.02, direction=both",
+      "kind": "sweep",
+      "stage": "evolve",
+      "hypothesis": "mutation of one of the best cells found so far",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 14,
+        "crypto.exit_closes_below_mid": 168,
+        "crypto.trail_atr": 6.334,
+        "risk.crypto_sleeve_pct": 0.851,
+        "risk.max_open_risk_pct": 0.03,
+        "risk.risk_per_trade_pct": 0.034,
+        "risk.max_position_pct_crypto": 0.6,
+        "risk.max_daily_loss_pct": 0.02,
+        "crypto.direction": "both"
+      },
+      "sleeve": "crypto",
+      "cost_usd": 0.0,
+      "is_cagr": 1.3373771702154413,
+      "oos_cagr": 0.625459331432342,
+      "is_dd": -0.4756736060416398,
+      "oos_dd": -0.2977572705416004,
+      "parent_oos_cagr": 0.14917280702674773,
+      "oos_prop": 0.20361083249749248,
+      "parent_oos_prop": 0.048144433299899696,
+      "oos_score": 0.14794383149448345,
+      "oos_prop_days": 28.0,
+      "oos_score_se": 0.050247214838804496,
+      "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
+      "verdict": "rejected: OOS drawdown -29.8% worse than tolerated -29.4%"
+    },
+    {
+      "date": "2026-10-23",
+      "proposal": "evolve stocks: entry_mode=template_cross, trail_atr=3.833, failure_stop_bars=180, max_open_risk_pct=0.07, target_annual_vol=0.18, risk_per_trade_pct=0.014, max_positions=7, trail_atr_late=4.333, max_position_pct_etf=0.458, review_bars=42, min_pct_of_high=0.885, exit_closes_below_mid=917",
+      "kind": "sweep",
+      "stage": "evolve",
+      "hypothesis": "mutation of one of the best cells found so far",
+      "overrides": {
+        "stocks.entry_mode": "template_cross",
+        "stocks.trail_atr": 3.833,
+        "stocks.failure_stop_bars": 180,
+        "risk.max_open_risk_pct": 0.07,
+        "risk.target_annual_vol": 0.18,
+        "risk.risk_per_trade_pct": 0.014,
+        "risk.max_positions": 7,
+        "stocks.trail_atr_late": 4.333,
+        "risk.max_position_pct_etf": 0.458,
+        "stocks.review_bars": 42,
+        "stocks.min_pct_of_high": 0.885,
+        "stocks.exit_closes_below_mid": 917
+      },
+      "sleeve": "stocks",
+      "cost_usd": 0.0,
+      "is_cagr": 0.017679475575779202,
+      "oos_cagr": 0.06899103135265072,
+      "is_dd": -0.27112493071683674,
+      "oos_dd": -0.3548128067447379,
+      "parent_oos_cagr": 0.02929633387043551,
+      "oos_prop": 0.057692307692307696,
+      "parent_oos_prop": 0.004273504273504274,
+      "oos_score": 0.016025641025641024,
+      "oos_prop_days": 51.0,
+      "oos_score_se": 0.044846295631070086,
+      "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
+      "verdict": "rejected: OOS drawdown -35.5% worse than tolerated -25.2%"
     }
   ]
 }

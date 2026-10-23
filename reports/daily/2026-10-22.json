@@ -1,0 +1,490 @@
+{
+  "primary": {
+    "run_date": "2026-10-22",
+    "label": "primary",
+    "equity_gross": 100.67,
+    "equity_net": 100.25192951,
+    "tier": "base",
+    "regime": {
+      "state": "green",
+      "crash_guard": false,
+      "risk_multiplier": 1.0,
+      "allow_new_stock": true,
+      "allow_new_etf": true,
+      "class_multipliers": {
+        "stock": 1.0,
+        "crypto": 1.0,
+        "etf": 1.0,
+        "macro": 1.0
+      }
+    },
+    "exits": [
+      {
+        "symbol": "MRK",
+        "reason": "news_material_negative",
+        "ok": true,
+        "price": 0.0,
+        "bars_held": 1,
+        "message": "OrderStatus.ACCEPTED",
+        "asset_class": "stock",
+        "pnl_usd": null,
+        "r_multiple": null
+      }
+    ],
+    "candidates": [
+      {
+        "symbol": "CSX",
+        "score": 0.8615,
+        "raw_close": 51.67,
+        "atr_pct": 1.8701,
+        "pct_of_high": 0.9666,
+        "z_reset": 1.4359,
+        "pullback_atr": 0.0
+      },
+      {
+        "symbol": "SJM",
+        "score": 0.7385,
+        "raw_close": 133.39,
+        "atr_pct": 2.2272,
+        "pct_of_high": 0.9816,
+        "z_reset": 1.1183,
+        "pullback_atr": 0.0
+      },
+      {
+        "symbol": "AIZ",
+        "score": 0.7231,
+        "raw_close": 288.85,
+        "atr_pct": 1.852,
+        "pct_of_high": 0.9533,
+        "z_reset": 1.161,
+        "pullback_atr": 2.2041
+      },
+      {
+        "symbol": "SWK",
+        "score": 0.6615,
+        "raw_close": 98.97,
+        "atr_pct": 2.8554,
+        "pct_of_high": 0.9537,
+        "z_reset": 0.9111,
+        "pullback_atr": 1.4624
+      },
+      {
+        "symbol": "REGN",
+        "score": 0.6462,
+        "raw_close": 819.09,
+        "atr_pct": 2.5963,
+        "pct_of_high": 0.9532,
+        "z_reset": 0.2414,
+        "pullback_atr": 1.5489
+      },
+      {
+        "symbol": "PFG",
+        "score": 0.6308,
+        "raw_close": 110.11,
+        "atr_pct": 2.0658,
+        "pct_of_high": 0.9086,
+        "z_reset": -0.5294,
+        "pullback_atr": 3.6929
+      },
+      {
+        "symbol": "PKG",
+        "score": 0.6,
+        "raw_close": 248.92,
+        "atr_pct": 2.0662,
+        "pct_of_high": 0.9637,
+        "z_reset": 0.5334,
+        "pullback_atr": 1.3327
+      },
+      {
+        "symbol": "BBY",
+        "score": 0.5846,
+        "raw_close": 99.83,
+        "atr_pct": 3.089,
+        "pct_of_high": 0.9991,
+        "z_reset": 0.835,
+        "pullback_atr": 0.0
+      }
+    ],
+    "decisions": [
+      {
+        "symbol": "CSX",
+        "action": "approve",
+        "invalidation": "close_below_ma50_2d",
+        "confidence": 0.6,
+        "rationale": "Top score 0.86, close above mid and long MAs, mom_vol_adj 1.52. High-materiality earnings beat plus guidance raise and an upgrade, no material negative, and no earnings date given. The attention spike is noted, but the setup is clean.",
+        "cost_usd": 0.01007204,
+        "note": ""
+      },
+      {
+        "symbol": "SJM",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.6,
+        "rationale": "Medium-materiality regulatory investigation (-0.4) with an attention spike. Sentiment signal is -0.1 and volume ratio 0.87 is below average. Positive news is only low materiality. Event risk outweighs the trend.",
+        "cost_usd": 0.00978416,
+        "note": ""
+      },
+      {
+        "symbol": "AIZ",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.0,
+        "rationale": "material negative news or suspected injection",
+        "cost_usd": 0.00045739,
+        "note": ""
+      },
+      {
+        "symbol": "SWK",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.65,
+        "rationale": "Earnings in 13 days, likely inside the blackout. Acquirer news is negative (-0.3), net sentiment is -0.1 and the fundamental signal is -0.1. Lowest conviction mix.",
+        "cost_usd": 0.00973446,
+        "note": ""
+      },
+      {
+        "symbol": "REGN",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.0,
+        "rationale": "material negative news or suspected injection",
+        "cost_usd": 0.00046989,
+        "note": ""
+      },
+      {
+        "symbol": "PKG",
+        "action": "reduce_half",
+        "invalidation": "close_below_ma50_2d",
+        "confidence": 0.5,
+        "rationale": "Uptrend above MAs with a 1.33 ATR pullback and volume ratio 1.23. High-materiality beat plus guidance raise. Score is only 0.6, mom_vol_adj is 0.66 and there is an attention spike, so it gets half size.",
+        "cost_usd": 0.009701360000000001,
+        "note": ""
+      },
+      {
+        "symbol": "BBY",
+        "action": "veto",
+        "invalidation": "none",
+        "confidence": 0.0,
+        "rationale": "material negative news or suspected injection",
+        "cost_usd": 0.00036599,
+        "note": ""
+      }
+    ],
+    "orders": [
+      {
+        "symbol": "CSX",
+        "side": "buy",
+        "notional": 17.94,
+        "ok": true,
+        "fill_price": 0.0,
+        "filled_qty": 0.0,
+        "message": "OrderStatus.ACCEPTED"
+      },
+      {
+        "symbol": "PKG",
+        "side": "buy",
+        "notional": 8.12,
+        "ok": true,
+        "fill_price": 0.0,
+        "filled_qty": 0.0,
+        "message": "OrderStatus.ACCEPTED"
+      }
+    ],
+    "ai_cost_usd": 0.04058529,
+    "notes": [],
+    "positions": [
+      {
+        "symbol": "COP",
+        "qty": 0.051422,
+        "entry": 146.24,
+        "stop": 136.6373,
+        "bars_held": 8,
+        "source": "reconciled",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "TRV",
+        "qty": 0.044496,
+        "entry": 387.0,
+        "stop": 367.3591,
+        "bars_held": 8,
+        "source": "reconciled",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "CVX",
+        "qty": 0.037612,
+        "entry": 225.99,
+        "stop": 212.6771,
+        "bars_held": 3,
+        "source": "primary",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "CSX",
+        "qty": 0.347203,
+        "entry": 51.66999816894531,
+        "stop": 48.7712,
+        "bars_held": 0,
+        "source": "primary",
+        "stop_armed": false,
+        "fill_pending": true
+      },
+      {
+        "symbol": "PKG",
+        "qty": 0.032621,
+        "entry": 248.9199981689453,
+        "stop": 233.4903,
+        "bars_held": 0,
+        "source": "primary",
+        "stop_armed": false,
+        "fill_pending": true
+      }
+    ]
+  },
+  "shadow": {
+    "run_date": "2026-10-22",
+    "label": "shadow-rules",
+    "equity_gross": 101.98081510768056,
+    "equity_net": 101.98081510768056,
+    "tier": "base",
+    "regime": {
+      "state": "green",
+      "crash_guard": false,
+      "risk_multiplier": 1.0,
+      "allow_new_stock": true,
+      "allow_new_etf": true,
+      "class_multipliers": {
+        "stock": 1.0,
+        "crypto": 1.0,
+        "etf": 1.0,
+        "macro": 1.0
+      }
+    },
+    "exits": [],
+    "candidates": [
+      {
+        "symbol": "CSX",
+        "score": 0.8615,
+        "raw_close": 51.67,
+        "atr_pct": 1.8701,
+        "pct_of_high": 0.9666,
+        "z_reset": 1.4359,
+        "pullback_atr": 0.0
+      },
+      {
+        "symbol": "SJM",
+        "score": 0.7385,
+        "raw_close": 133.39,
+        "atr_pct": 2.2272,
+        "pct_of_high": 0.9816,
+        "z_reset": 1.1183,
+        "pullback_atr": 0.0
+      },
+      {
+        "symbol": "AIZ",
+        "score": 0.7231,
+        "raw_close": 288.85,
+        "atr_pct": 1.852,
+        "pct_of_high": 0.9533,
+        "z_reset": 1.161,
+        "pullback_atr": 2.2041
+      },
+      {
+        "symbol": "SWK",
+        "score": 0.6615,
+        "raw_close": 98.97,
+        "atr_pct": 2.8554,
+        "pct_of_high": 0.9537,
+        "z_reset": 0.9111,
+        "pullback_atr": 1.4624
+      },
+      {
+        "symbol": "REGN",
+        "score": 0.6462,
+        "raw_close": 819.09,
+        "atr_pct": 2.5963,
+        "pct_of_high": 0.9532,
+        "z_reset": 0.2414,
+        "pullback_atr": 1.5489
+      },
+      {
+        "symbol": "PFG",
+        "score": 0.6308,
+        "raw_close": 110.11,
+        "atr_pct": 2.0658,
+        "pct_of_high": 0.9086,
+        "z_reset": -0.5294,
+        "pullback_atr": 3.6929
+      },
+      {
+        "symbol": "PKG",
+        "score": 0.6,
+        "raw_close": 248.92,
+        "atr_pct": 2.0662,
+        "pct_of_high": 0.9637,
+        "z_reset": 0.5334,
+        "pullback_atr": 1.3327
+      },
+      {
+        "symbol": "BBY",
+        "score": 0.5846,
+        "raw_close": 99.83,
+        "atr_pct": 3.089,
+        "pct_of_high": 0.9991,
+        "z_reset": 0.835,
+        "pullback_atr": 0.0
+      }
+    ],
+    "decisions": [
+      {
+        "symbol": "CSX",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "SJM",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "AIZ",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "SWK",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "REGN",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "PFG",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "PKG",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      },
+      {
+        "symbol": "BBY",
+        "action": "approve",
+        "invalidation": "none",
+        "confidence": null,
+        "rationale": "rules-only",
+        "cost_usd": 0.0,
+        "note": ""
+      }
+    ],
+    "orders": [],
+    "ai_cost_usd": 0.0,
+    "notes": [],
+    "positions": [
+      {
+        "symbol": "TRV",
+        "qty": 0.0445,
+        "entry": 387.1935,
+        "stop": 367.3591,
+        "bars_held": 8,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "CVX",
+        "qty": 0.074958,
+        "entry": 223.9919448852539,
+        "stop": 210.5941,
+        "bars_held": 8,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "MNST",
+        "qty": 0.333827,
+        "entry": 45.44270816802978,
+        "stop": 42.3722,
+        "bars_held": 7,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "MRK",
+        "qty": 0.090187,
+        "entry": 146.36313828277588,
+        "stop": 135.011,
+        "bars_held": 4,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      },
+      {
+        "symbol": "MTCH",
+        "qty": 0.261068,
+        "entry": 44.89243393135071,
+        "stop": 41.021,
+        "bars_held": 4,
+        "source": "shadow-rules",
+        "stop_armed": true,
+        "fill_pending": false
+      }
+    ]
+  },
+  "benchmarks": {
+    "SPY buy&hold": 100.09302613464214,
+    "BTC buy&hold": 100.55354638718725
+  },
+  "survival": {
+    "equity_gross": 100.67,
+    "equity_net": 100.25192951,
+    "ai_cost_total": 0.41807049,
+    "ai_cost_today": 0.04058529,
+    "budget_today": 0.050125964755,
+    "budget_remaining": 0.009540674754999999,
+    "runway_days": 1259.9872968072918,
+    "tier": "base",
+    "dead": false,
+    "death_reason": "",
+    "in_halt_cooldown": false,
+    "peak_equity": 100.75
+  }
+}
