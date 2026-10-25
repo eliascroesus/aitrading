@@ -1,0 +1,157 @@
+{
+  "inputs": {
+    "runs": [
+      {
+        "date": "2026-10-22-child-refine-crypto-entry-mode-high-breakout-3",
+        "equity": 100.0,
+        "equity_net": 100.0,
+        "n_positions": 0,
+        "ai_cost_usd": 0.0
+      },
+      {
+        "date": "2026-10-22-child-refine-crypto-entry-mode-high-breakout-3",
+        "equity": 100.0,
+        "equity_net": 100.0,
+        "n_positions": 0,
+        "ai_cost_usd": 0.0
+      },
+      {
+        "date": "2026-10-22-child-refine-crypto-entry-mode-high-breakout-4",
+        "equity": 100.0,
+        "equity_net": 100.0,
+        "n_positions": 0,
+        "ai_cost_usd": 0.0
+      },
+      {
+        "date": "2026-10-22-child-refine-crypto-entry-mode-high-breakout-4",
+        "equity": 100.0,
+        "equity_net": 100.0,
+        "n_positions": 0,
+        "ai_cost_usd": 0.0
+      },
+      {
+        "date": "2026-10-22",
+        "equity": 100.67,
+        "equity_net": 100.25192951,
+        "n_positions": 5,
+        "ai_cost_usd": 0.04058529
+      },
+      {
+        "date": "2026-10-22",
+        "equity": 100.4,
+        "equity_net": 99.98192951,
+        "n_positions": 6,
+        "ai_cost_usd": 0.0
+      }
+    ],
+    "n_decisions": 7,
+    "actions": {
+      "approve": 1,
+      "reduce_half": 1,
+      "veto": 5
+    },
+    "orders": [
+      {
+        "symbol": "CSX",
+        "side": "buy",
+        "notional": 17.94,
+        "ok": true,
+        "fill_price": 0.0,
+        "filled_qty": 0.0,
+        "message": "OrderStatus.ACCEPTED"
+      },
+      {
+        "symbol": "PKG",
+        "side": "buy",
+        "notional": 8.12,
+        "ok": true,
+        "fill_price": 0.0,
+        "filled_qty": 0.0,
+        "message": "OrderStatus.ACCEPTED"
+      }
+    ],
+    "exits": [
+      {
+        "symbol": "MRK",
+        "reason": "news_material_negative",
+        "ok": true,
+        "price": 0.0,
+        "bars_held": 1,
+        "message": "OrderStatus.ACCEPTED",
+        "asset_class": "stock",
+        "pnl_usd": null,
+        "r_multiple": null
+      }
+    ],
+    "llm_calls": 28,
+    "llm_failures": 0,
+    "ai_cost_usd": 0.042134985,
+    "cost_per_decision_usd": 0.006019283571428571,
+    "shadow_vs_primary": null
+  },
+  "report": {
+    "findings": [
+      {
+        "severity": "warning",
+        "area": "data",
+        "finding": "Journal integrity issues. Two child-refine run labels (high-breakout-3 and -4) each appear twice with identical rows. Two 2026-10-22 rows disagree: equity 100.67 vs 100.4, equity_net 100.25192951 vs 99.98192951. Positions go from 5 to 6 while only 2 orders are logged.",
+        "proposed_change": "Deduplicate runs by a unique run_id plus timestamp. Log one end-of-day equity snapshot per date. Reconcile n_positions against the order and exit logs before this journal is used for any review."
+      },
+      {
+        "severity": "warning",
+        "area": "cost",
+        "finding": "On 2026-10-22 the gap between equity and equity_net is about 0.418, but logged AI cost is 0.04058529 for the day and 0.042134985 for the week. Most of the deduction is not itemised. The second row shows equity_net 99.98192951, below the starting 100.",
+        "proposed_change": "Itemise every deduction that feeds equity_net (AI, commissions, spread, fees) per run so net performance and cost creep can be audited."
+      },
+      {
+        "severity": "warning",
+        "area": "data",
+        "finding": "Both buy orders (CSX notional 17.94, PKG 8.12) show fill_price 0.0 and filled_qty 0.0 with status ACCEPTED. The MRK exit shows price 0.0 and pnl_usd and r_multiple null. Fills and realised outcomes are unverified.",
+        "proposed_change": "Poll order status until filled or cancelled and record the actual fill price, quantity, pnl_usd and r_multiple. Treat unfilled ACCEPTED orders as pending, not as positions."
+      },
+      {
+        "severity": "warning",
+        "area": "calibration",
+        "finding": "The journal records no stated confidences, and the outcome fields are null. Calibration of LLM confidence against results cannot be assessed.",
+        "proposed_change": "Log the LLM's confidence for each decision alongside the realised r_multiple. Review a reliability table once enough closed trades exist."
+      },
+      {
+        "severity": "info",
+        "area": "process",
+        "finding": "Actions were veto 5, approve 1 and reduce_half 1 out of 7 decisions, so about 71% were vetoes. This is not veto-all, but it leans that way. With shadow_vs_primary null, there is no way to tell whether the vetoes avoided losses or forfeited gains.",
+        "proposed_change": "Enable shadow tracking of the rule-only signal for vetoed candidates. Flag for review if the veto share stays this high across further weeks without shadow evidence that vetoes add value."
+      },
+      {
+        "severity": "info",
+        "area": "strategy_drift",
+        "finding": "Child-refine variants 'crypto-entry-mode-high-breakout-3/4' ran with 0 positions, equity 100.0 and zero AI cost. There is no out-of-sample evidence for them. Repeated numbered refinements risk selecting a variant that wins only in-sample.",
+        "proposed_change": "Require a pre-registered out-of-sample or shadow period with a minimum trade count before any child variant is promoted. Log the count of variants tried so multiple-testing can be accounted for."
+      },
+      {
+        "severity": "info",
+        "area": "risk",
+        "finding": "MRK was exited after 1 bar for news_material_negative, with pnl unknown. LLM-driven discretionary exits can add turnover and cost without measured benefit.",
+        "proposed_change": "Track news-driven exits against a hold-to-rule-exit counterfactual in shadow before relying on them further."
+      },
+      {
+        "severity": "info",
+        "area": "cost",
+        "finding": "There were 28 LLM calls for 7 decisions (4 per decision) and 0 failures. Cost per decision is about 0.006 USD and total AI cost is 0.042134985. This is small relative to equity of about 100, but its value is unproven.",
+        "proposed_change": "Keep calls per decision capped. Review whether 4 calls per decision is needed once shadow comparison data exists."
+      }
+    ],
+    "cost_per_decision_usd": 0.006019283571428571,
+    "llm_added_value_assessment": "Not assessable. shadow_vs_primary is null, the exit pnl_usd and r_multiple are null, and the orders show no confirmed fills (fill_price 0.0). The LLM vetoed 5 of 7 decisions at roughly 0.006 USD per decision, but there is no counterfactual showing whether those vetoes helped. Net equity moved between 100.25192951 and 99.98192951 on the trading day, with an unexplained deduction far larger than AI cost. Enable shadow tracking and full fill and PnL logging before crediting the LLM with any value."
+  },
+  "call": {
+    "role": "reviewer",
+    "model": "claude-opus-5-5",
+    "ok": true,
+    "cost_usd": 0.052342,
+    "input_tokens": 833,
+    "output_tokens": 2132,
+    "cached_tokens": 0,
+    "stop_reason": "end_turn",
+    "error": ""
+  }
+}

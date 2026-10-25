@@ -1,6 +1,6 @@
 {
  "crypto_sleeve_pct": 0.4,
- "updated": "2026-10-19",
+ "updated": "2026-10-25",
  "history": [
   {
    "date": "2026-10-18",
@@ -37,6 +37,17 @@
   },
   {
    "date": "2026-10-19",
+   "from": 0.4,
+   "to": 0.4,
+   "why": "hold: only 0 closed trades in 42 days",
+   "scorecard": {
+    "window_days": 42,
+    "pnl_by_class": {},
+    "trades_by_class": {}
+   }
+  },
+  {
+   "date": "2026-10-25",
    "from": 0.4,
    "to": 0.4,
    "why": "hold: only 0 closed trades in 42 days",

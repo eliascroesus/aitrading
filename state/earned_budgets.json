@@ -4,5 +4,20 @@
   "value_add": -0.01495798497680556,
   "days": 5,
   "multiplier": 0.626050375579861
+ },
+ "operator": {
+  "date": "2026-10-25",
+  "multiplier": 0.88163230092313,
+  "proposals": 3,
+  "passed": 0,
+  "pass_rate": 0.2,
+  "lab_tests": 102188,
+  "lab_passed": 23181,
+  "lab_pass_rate": 0.2268519424601233,
+  "seats": {
+   "promoted": 0,
+   "retired": 0,
+   "on_paper": 0
+  }
  }
 }
