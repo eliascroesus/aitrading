@@ -356,70 +356,6 @@
   "iterations": [
     {
       "date": "2026-10-23",
-      "proposal": "evolve crypto: exit_closes_below_mid=168, trail_atr=6.334, crypto_sleeve_pct=0.932, max_open_risk_pct=0.075, risk_per_trade_pct=0.018, max_position_pct_crypto=0.625, max_daily_loss_pct=0.02",
-      "kind": "sweep",
-      "stage": "evolve",
-      "hypothesis": "mutation of one of the best cells found so far",
-      "overrides": {
-        "crypto.exit_closes_below_mid": 168,
-        "crypto.trail_atr": 6.334,
-        "risk.crypto_sleeve_pct": 0.932,
-        "risk.max_open_risk_pct": 0.075,
-        "risk.risk_per_trade_pct": 0.018,
-        "risk.max_position_pct_crypto": 0.625,
-        "risk.max_daily_loss_pct": 0.02
-      },
-      "sleeve": "crypto",
-      "cost_usd": 0.0,
-      "is_cagr": -0.012328476743502015,
-      "oos_cagr": 0.31181288304049404,
-      "is_dd": -0.049512112000232866,
-      "oos_dd": -0.30688000087279954,
-      "parent_oos_cagr": 0.14917280702674773,
-      "oos_prop": 0.09127382146439318,
-      "parent_oos_prop": 0.048144433299899696,
-      "oos_score": 0.07271815446339017,
-      "oos_prop_days": 27.0,
-      "oos_score_se": 0.03387854369075543,
-      "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
-      "verdict": "rejected: OOS drawdown -30.7% worse than tolerated -29.4%"
-    },
-    {
-      "date": "2026-10-23",
-      "proposal": "evolve crypto: entry_mode=high_breakout, breakout_lookback=14, exit_closes_below_mid=334, trail_atr=6.334, crypto_sleeve_pct=0.932, max_open_risk_pct=0.075, risk_per_trade_pct=0.018, max_position_pct_crypto=0.6, max_daily_loss_pct=0.02, direction=short, stop_initial_atr=2.894",
-      "kind": "sweep",
-      "stage": "evolve",
-      "hypothesis": "mutation of one of the best cells found so far",
-      "overrides": {
-        "crypto.entry_mode": "high_breakout",
-        "crypto.breakout_lookback": 14,
-        "crypto.exit_closes_below_mid": 334,
-        "crypto.trail_atr": 6.334,
-        "risk.crypto_sleeve_pct": 0.932,
-        "risk.max_open_risk_pct": 0.075,
-        "risk.risk_per_trade_pct": 0.018,
-        "risk.max_position_pct_crypto": 0.6,
-        "risk.max_daily_loss_pct": 0.02,
-        "crypto.direction": "short",
-        "crypto.stop_initial_atr": 2.894
-      },
-      "sleeve": "crypto",
-      "cost_usd": 0.0,
-      "is_cagr": 0.0,
-      "oos_cagr": 0.028835560201931232,
-      "is_dd": 0.0,
-      "oos_dd": -0.17877344489573632,
-      "parent_oos_cagr": 0.14917280702674773,
-      "oos_prop": 0.024072216649949848,
-      "parent_oos_prop": 0.048144433299899696,
-      "oos_score": 0.012036108324974924,
-      "oos_prop_days": 36.0,
-      "oos_score_se": 0.018994419887254643,
-      "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
-      "verdict": "rejected: OOS prop score +0.01 (pass 2%, breach 2%) does not beat parent +0.04"
-    },
-    {
-      "date": "2026-10-23",
       "proposal": "evolve macro: max_position_pct_macro=1.0, impulse_min_z=1.75, risk_per_trade_pct=0.039, max_open_risk_pct=0.105, max_hold_bars=108, min_pct_of_high=0.812, trail_atr=7.334, max_daily_loss_pct=0.026",
       "kind": "sweep",
       "stage": "evolve",
@@ -6827,6 +6763,48 @@
       "date": "2026-10-25",
       "proposal": "",
       "verdict": "skipped: daily AI budget exhausted (spent $0.0000, next call ~$0.0564)"
+    },
+    {
+      "date": "2026-11-01",
+      "proposal": "crypto 14-bar breakout, 6.3 ATR trail",
+      "hypothesis": "On the crypto parent, switching entry to high_breakout with breakout_lookback 14 and trail_atr 6.334 lifts OOS CAGR above the parent's 14.9% and passes more prop simulations while keeping drawdown inside the -29.4% tolerance.",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 14,
+        "crypto.trail_atr": 6.334
+      },
+      "sleeve": "crypto",
+      "cost_usd": 0.062441,
+      "kind": "variant",
+      "is_cagr": 0.5127251882794366,
+      "oos_cagr": 0.28784725228884,
+      "is_dd": -0.38879070941351157,
+      "oos_dd": -0.2669575044640544,
+      "parent_oos_cagr": 0.14917280702674773,
+      "oos_prop": 0.08224674022066199,
+      "parent_oos_prop": 0.048144433299899696,
+      "verdict": "passed but not spawned: tier base allows 4 children; 4 active"
+    },
+    {
+      "date": "2026-11-01",
+      "proposal": "crypto 32-bar breakout, 2% daily cap",
+      "hypothesis": "A slower 32-bar high_breakout entry with a 2% daily loss cap beats the crypto parent on prop pass rate, because the lab's 32-bar variant reached 57.5% OOS CAGR with drawdown near -29.3%.",
+      "overrides": {
+        "crypto.entry_mode": "high_breakout",
+        "crypto.breakout_lookback": 32,
+        "risk.max_daily_loss_pct": 0.02
+      },
+      "sleeve": "crypto",
+      "cost_usd": 0.062441,
+      "kind": "variant",
+      "is_cagr": 0.20647582655420638,
+      "oos_cagr": 0.22175347813787605,
+      "is_dd": -0.14901094156584982,
+      "oos_dd": -0.26686152602851254,
+      "parent_oos_cagr": 0.14917280702674773,
+      "oos_prop": 0.058174523570712136,
+      "parent_oos_prop": 0.048144433299899696,
+      "verdict": "passed but not spawned: tier base allows 4 children; 4 active"
     }
   ]
 }
