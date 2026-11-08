@@ -356,37 +356,6 @@
   "iterations": [
     {
       "date": "2026-10-23",
-      "proposal": "evolve macro: max_position_pct_macro=1.0, impulse_min_z=1.75, risk_per_trade_pct=0.039, max_open_risk_pct=0.105, max_hold_bars=108, min_pct_of_high=0.812, trail_atr=7.334, max_daily_loss_pct=0.026",
-      "kind": "sweep",
-      "stage": "evolve",
-      "hypothesis": "mutation of one of the best cells found so far",
-      "overrides": {
-        "risk.max_position_pct_macro": 1.0,
-        "macro.impulse_min_z": 1.75,
-        "risk.risk_per_trade_pct": 0.039,
-        "risk.max_open_risk_pct": 0.105,
-        "macro.max_hold_bars": 108,
-        "macro.min_pct_of_high": 0.812,
-        "macro.trail_atr": 7.334,
-        "risk.max_daily_loss_pct": 0.026
-      },
-      "sleeve": "macro",
-      "cost_usd": 0.0,
-      "is_cagr": -0.005883638958898985,
-      "oos_cagr": 0.030503235000086004,
-      "is_dd": -0.26005624978365016,
-      "oos_dd": -0.27361788739921733,
-      "parent_oos_cagr": 0.04179486793763254,
-      "oos_prop": 0.029661016949152543,
-      "parent_oos_prop": 0.01977401129943503,
-      "oos_score": -0.0035310734463276823,
-      "oos_prop_days": 29.0,
-      "oos_score_se": 0.028016340049491786,
-      "prop_key": "0.08/0.05/0.05/0.1/static/5d/60h/5s/0.5/intraday/se",
-      "verdict": "rejected: OOS prop score -0.00 (pass 3%, breach 7%) does not beat parent +0.02"
-    },
-    {
-      "date": "2026-10-23",
       "proposal": "evolve macro: max_position_pct_macro=1.0, impulse_min_z=1.75, risk_per_trade_pct=0.049, max_open_risk_pct=0.105, max_hold_bars=108, min_pct_of_high=0.808, trail_atr=7.334, exit_closes_below_mid=834, target_annual_vol=0.357",
       "kind": "sweep",
       "stage": "evolve",
@@ -6805,6 +6774,15 @@
       "oos_prop": 0.058174523570712136,
       "parent_oos_prop": 0.048144433299899696,
       "verdict": "passed but not spawned: tier base allows 4 children; 4 active"
+    },
+    {
+      "date": "2026-11-08",
+      "proposal": "",
+      "hypothesis": "",
+      "overrides": {},
+      "sleeve": "",
+      "cost_usd": 0.0,
+      "verdict": "no proposals (model reply rejected: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CgqxvFMs1kzzRq4G7xFwC'})"
     }
   ]
 }

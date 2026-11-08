@@ -6,11 +6,11 @@
   "multiplier": 0.626050375579861
  },
  "operator": {
-  "date": "2026-11-01",
-  "multiplier": 0.88163230092313,
-  "proposals": 3,
-  "passed": 0,
-  "pass_rate": 0.2,
+  "date": "2026-11-08",
+  "multiplier": 1.889212073406707,
+  "proposals": 5,
+  "passed": 2,
+  "pass_rate": 0.42857142857142855,
   "lab_tests": 102188,
   "lab_passed": 23181,
   "lab_pass_rate": 0.2268519424601233,
